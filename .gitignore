@@ -1,16 +1,14 @@
-# Prerequisites
-*.d
+# NSS files
+cert9.db
+pkcs11.txt
+key4.db
+config.log
 
 # Object files
 *.o
 *.ko
 *.obj
 *.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
 
 # Precompiled Headers
 *.gch
@@ -38,15 +36,19 @@
 
 # Debug files
 *.dSYM/
-*.su
-*.idb
-*.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Build files
+build
+.sconf_temp
+.sconsign.dblite
+
+# Sconf log
+config.log
+
+# vi swap files
+.*.swp
+
+# Data files
+*.dat
+*.raw
+*.tiff
