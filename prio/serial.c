@@ -34,9 +34,12 @@ static SECStatus
 object_to_mp_int (msgpack_object *obj, mp_int *n, const mp_int *max)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (obj != NULL);
   P_CHECKCB (obj->type == MSGPACK_OBJECT_STR);
+  P_CHECKCB (n != NULL);
 
   msgpack_object_str s = obj->via.str;
+  P_CHECKCB (s.ptr != NULL);
   MP_CHECKC (mp_read_unsigned_octets (n, (unsigned char *)s.ptr, s.size));
 
   P_CHECKCB (mp_cmp_z (n) >= 0);
@@ -50,6 +53,10 @@ static SECStatus
 serial_read_mp_int (msgpack_unpacker *upk, mp_int *n, const mp_int *max)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (n != NULL);
+  P_CHECKCB (max != NULL);
+
   msgpack_unpacked res;
   msgpack_unpacked_init (&res);
   UP_CHECK (msgpack_unpacker_next (upk, &res))
@@ -67,6 +74,9 @@ static SECStatus
 serial_read_int (msgpack_unpacker *upk, int *n)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (n != NULL);
+
   msgpack_unpacked res;
   msgpack_unpacked_init (&res);
   UP_CHECK (msgpack_unpacker_next (upk, &res))
@@ -86,10 +96,15 @@ static SECStatus
 serial_write_mp_array (msgpack_packer *pk, const_MPArray arr)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (arr != NULL);
+
   P_CHECK (msgpack_pack_array (pk, arr->len));
   for (int i = 0; i < arr->len; i++) {
     P_CHECK (serial_write_mp_int (pk, &arr->data[i]));
   }
+
+cleanup:
   return rv;
 }
 
@@ -98,6 +113,10 @@ serial_read_mp_array (msgpack_unpacker *upk, MPArray arr, size_t len, const mp_i
     *max)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (arr != NULL);
+  P_CHECKCB (max != NULL);
+
   msgpack_unpacked res;
   msgpack_unpacked_init (&res);
   UP_CHECK (msgpack_unpacker_next (upk, &res))
@@ -124,9 +143,14 @@ static SECStatus
 serial_write_beaver_triple (msgpack_packer *pk, const_BeaverTriple t)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (t != NULL);
+
   P_CHECK (serial_write_mp_int (pk, &t->a)); 
   P_CHECK (serial_write_mp_int (pk, &t->b)); 
   P_CHECK (serial_write_mp_int (pk, &t->c)); 
+
+cleanup:
   return rv;
 }
 
@@ -134,9 +158,15 @@ static SECStatus
 serial_read_beaver_triple (msgpack_unpacker *pk, BeaverTriple t, const mp_int *max)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (t != NULL);
+  P_CHECKCB (max != NULL);
+
   P_CHECK (serial_read_mp_int (pk, &t->a, max)); 
   P_CHECK (serial_read_mp_int (pk, &t->b, max)); 
   P_CHECK (serial_read_mp_int (pk, &t->c, max)); 
+
+cleanup:
   return rv;
 }
 
@@ -144,8 +174,12 @@ static SECStatus
 serial_write_server_a_data (msgpack_packer *pk, const struct server_a_data *A)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (A != NULL);
+
   P_CHECK (serial_write_mp_array (pk, A->data_shares)); 
   P_CHECK (serial_write_mp_array (pk, A->h_points)); 
+cleanup:
   return rv;
 }
 
@@ -154,10 +188,15 @@ serial_read_server_a_data (msgpack_unpacker *upk, struct server_a_data *A,
     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (A != NULL);
+
   P_CHECK (serial_read_mp_array (upk, A->data_shares, cfg->num_data_fields,
         &cfg->modulus)); 
   P_CHECK (serial_read_mp_array (upk, A->h_points, PrioConfig_hPoints (cfg),
         &cfg->modulus)); 
+
+cleanup:
   return rv;
 }
 
@@ -165,8 +204,13 @@ static SECStatus
 serial_write_prg_seed (msgpack_packer *pk, const PrioPRGSeed *seed)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (seed != NULL);
+
   P_CHECK (msgpack_pack_str (pk, PRG_SEED_LENGTH));
   P_CHECK (msgpack_pack_str_body (pk, seed, PRG_SEED_LENGTH));
+
+cleanup:
   return rv;
 }
 
@@ -174,6 +218,9 @@ static SECStatus
 serial_read_prg_seed (msgpack_unpacker *upk, PrioPRGSeed *seed)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (seed != NULL);
+
   msgpack_unpacked res;
   msgpack_unpacked_init (&res);
   UP_CHECK (msgpack_unpacker_next (upk, &res))
@@ -194,13 +241,25 @@ cleanup:
 static SECStatus 
 serial_write_server_b_data (msgpack_packer *pk, const struct server_b_data *B)
 {
-  return serial_write_prg_seed (pk, &B->seed);
+  SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (B != NULL);
+
+  rv = serial_write_prg_seed (pk, &B->seed);
+cleanup:
+  return rv;
 }
 
 static SECStatus 
 serial_read_server_b_data (msgpack_unpacker *upk, struct server_b_data *B)
 {
-  return serial_read_prg_seed (upk, &B->seed);
+  SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (B != NULL);
+  
+  rv =serial_read_prg_seed (upk, &B->seed);
+cleanup:
+  return rv;
 }
 
 SECStatus 
@@ -208,6 +267,9 @@ serial_write_packet_client (msgpack_packer *pk, const_PrioPacketClient p,
     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (p != NULL);
+
   P_CHECK (msgpack_pack_str (pk, cfg->batch_id_len));
   P_CHECK (msgpack_pack_str_body (pk, cfg->batch_id, cfg->batch_id_len));
 
@@ -230,6 +292,7 @@ serial_write_packet_client (msgpack_packer *pk, const_PrioPacketClient p,
       return SECFailure;
   }
 
+cleanup:
   return rv;
 }
 
@@ -237,6 +300,9 @@ SECStatus
 serial_read_server_id (msgpack_unpacker *upk, PrioServerId *s)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (s != NULL);
+
   int serv;
   P_CHECK (serial_read_int (upk, &serv));
   P_CHECKCB (serv == PRIO_SERVER_A || serv == PRIO_SERVER_B);
@@ -251,6 +317,8 @@ serial_read_packet_client (msgpack_unpacker *upk, PrioPacketClient p,
     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (p != NULL);
   msgpack_unpacked res;
   msgpack_unpacked_init (&res);
   UP_CHECK (msgpack_unpacker_next (upk, &res))
@@ -291,9 +359,13 @@ SECStatus
 PrioPacketVerify1_write (const_PrioPacketVerify1 p, msgpack_packer *pk)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (p != NULL);
+
   P_CHECK (serial_write_mp_int (pk, &p->share_d));
   P_CHECK (serial_write_mp_int (pk, &p->share_e));
 
+cleanup:
   return rv;
 }
 
@@ -302,9 +374,13 @@ PrioPacketVerify1_read (PrioPacketVerify1 p, msgpack_unpacker *upk,
     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (p != NULL);
+
   P_CHECK (serial_read_mp_int (upk, &p->share_d, &cfg->modulus));
   P_CHECK (serial_read_mp_int (upk, &p->share_e, &cfg->modulus));
 
+cleanup:
   return rv;
 }
 
@@ -312,8 +388,12 @@ SECStatus
 PrioPacketVerify2_write (const_PrioPacketVerify2 p, msgpack_packer *pk)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (pk != NULL);
+  P_CHECKCB (p != NULL);
+
   P_CHECK (serial_write_mp_int (pk, &p->share_out));
 
+cleanup:
   return rv;
 }
 
@@ -322,8 +402,12 @@ PrioPacketVerify2_read (PrioPacketVerify2 p, msgpack_unpacker *upk,
     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (upk != NULL);
+  P_CHECKCB (p != NULL);
+
   P_CHECK (serial_read_mp_int (upk, &p->share_out, &cfg->modulus));
 
+cleanup:
   return rv;
 }
 
@@ -331,9 +415,12 @@ SECStatus
 PrioTotalShare_write (const_PrioTotalShare t, msgpack_packer *pk)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (t != NULL);
+  P_CHECKCB (pk != NULL);
   P_CHECK (msgpack_pack_int (pk, t->idx));
   P_CHECK (serial_write_mp_array (pk, t->data_shares));
 
+cleanup:
   return rv;
 }
 
@@ -342,10 +429,13 @@ PrioTotalShare_read (PrioTotalShare t, msgpack_unpacker *upk,
     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
+  P_CHECKCB (t != NULL);
+  P_CHECKCB (upk != NULL);
   P_CHECK (serial_read_server_id (upk, &t->idx));
   P_CHECK (serial_read_mp_array (upk, t->data_shares, cfg->num_data_fields,
         &cfg->modulus));
 
+cleanup:
   return rv;
 }
 

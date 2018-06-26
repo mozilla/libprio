@@ -7,6 +7,7 @@
  */
 
 #include <mprio.h>
+#include <nss/blapit.h>
 #include <nss/pk11pub.h>
 #include <strings.h>
 
@@ -14,8 +15,6 @@
 #include "rand.h"
 #include "share.h"
 #include "util.h"
-
-#define AES_BLOCK_SIZE 16
 
 struct prg {
   PK11SlotInfo *slot;
@@ -32,7 +31,7 @@ PrioPRGSeed_randomize (PrioPRGSeed *key)
 PRG 
 PRG_new (const PrioPRGSeed key_in)
 {
-  PRG prg = malloc (sizeof (*prg));
+  PRG prg = malloc (sizeof (PRG));
   if (!prg) return NULL;
   prg->slot = NULL;
   prg->key = NULL;
@@ -41,27 +40,18 @@ PRG_new (const PrioPRGSeed key_in)
   SECStatus rv = SECSuccess;
   const CK_MECHANISM_TYPE cipher = CKM_AES_CTR;
 
-  P_CHECKA (prg->slot = PK11_GetBestSlot (cipher, NULL));
+  P_CHECKA (prg->slot = PK11_GetInternalSlot ());
 
   // Create a mutable copy of the key.
   PrioPRGSeed key_mut;
   memcpy (key_mut, key_in, PRG_SEED_LENGTH);
 
-  SECItem keyItem;
-  keyItem.type = siBuffer;
-  keyItem.data = key_mut;
-  keyItem.len = PRG_SEED_LENGTH;
+  SECItem keyItem = {siBuffer, key_mut, PRG_SEED_LENGTH};
 
   // The IV can be all zeros since we only encrypt once with
   // each AES key.
-  CK_AES_CTR_PARAMS param;
-  param.ulCounterBits = 128;
-  bzero (param.cb, 16);
-
-  SECItem paramItem;
-  paramItem.type = siBuffer;
-  paramItem.data = (void *)&param;
-  paramItem.len = sizeof (CK_AES_CTR_PARAMS);
+  CK_AES_CTR_PARAMS param = {128, {}};
+  SECItem paramItem = {siBuffer, (void *)&param, sizeof(CK_AES_CTR_PARAMS)};
 
   P_CHECKA (prg->key = PK11_ImportSymKey (prg->slot, cipher, PK11_OriginUnwrap,
         CKA_ENCRYPT, &keyItem, NULL));

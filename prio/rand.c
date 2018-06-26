@@ -21,11 +21,11 @@
 SECStatus
 rand_init (void)
 {
-  SECStatus rv = NSS_NoDB_Init (NULL);
-  if (rv != SECSuccess) 
-    return SECFailure;
+  if (NSS_IsInitialized ()) {
+    return SECSuccess;
+  }
 
-  return SECSuccess;
+  return NSS_NoDB_Init (NULL);
 }
 
 static SECStatus 
@@ -39,7 +39,7 @@ rand_bytes_internal (void *user_data, unsigned char *out, size_t n_bytes)
     return SECFailure;
   }
 
-  SECStatus rv;
+  SECStatus rv = SECFailure;
 
   int to_go = n_bytes;
   unsigned char *cp = out;

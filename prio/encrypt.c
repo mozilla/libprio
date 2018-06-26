@@ -96,7 +96,7 @@ Keypair_new (PrivateKey *pvtkey, PublicKey *pubkey)
   ecp.data[1] = oid_data->oid.len;
   memcpy (&ecp.data[2], oid_data->oid.data, oid_data->oid.len);
 
-  P_CHECKA (slot = PK11_GetBestSlot (CKM_EC_KEY_PAIR_GEN, NULL));
+  P_CHECKA (slot = PK11_GetInternalSlot ());
   P_CHECKA (*pvtkey = PK11_GenerateKeyPair(slot, CKM_EC_KEY_PAIR_GEN, &ecp, 
       (SECKEYPublicKey **)pubkey, PR_FALSE, PR_FALSE, NULL));
 
