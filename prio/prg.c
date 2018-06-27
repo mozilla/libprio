@@ -31,7 +31,7 @@ PrioPRGSeed_randomize (PrioPRGSeed *key)
 PRG 
 PRG_new (const PrioPRGSeed key_in)
 {
-  PRG prg = malloc (sizeof (PRG));
+  PRG prg = malloc (sizeof (struct prg));
   if (!prg) return NULL;
   prg->slot = NULL;
   prg->key = NULL;

@@ -10,6 +10,7 @@
 #ifndef __ENCRYPT_H__
 #define __ENCRYPT_H__
 
+#include <limits.h>
 #include <mprio.h>
 
 /*******
@@ -24,12 +25,20 @@
  * to implement these functions.
  */
 
-/*
- * Return the number of bytes needed to store a ciphertext
- * that encrypts a plaintext message of length `inputLen`
- * and authenticated data of length `adLen`.
+/* 
+ * Messages encrypted using this library must be smaller than MAX_ENCRYPT_LEN.
+ * Enforcing this length limit helps avoid integer overflow.
  */
-unsigned int PublicKey_encryptSize (unsigned int inputLen);
+#define MAX_ENCRYPT_LEN (INT_MAX >> 3)
+
+/*
+ * Write the number of bytes needed to store a ciphertext that encrypts a
+ * plaintext message of length `inputLen` and authenticated data of length
+ * `adLen` into the variable pointed to by `outputLen`. If `inputLen`
+ * is too large (larger than `MAX_ENCRYPT_LEN`), this function returns
+ * an error.
+ */
+SECStatus PublicKey_encryptSize (unsigned int inputLen, unsigned int *outputLen);
 
 /*
  * Generate a new keypair for public-key encryption.
@@ -41,6 +50,8 @@ SECStatus Keypair_new (PrivateKey *pvtkey, PublicKey *pubkey);
  * `output` should be large enough to store the ciphertext. Use the
  * `PublicKey_encryptSize()` function above to figure out how large of a buffer
  * you need.
+ *
+ * The value `inputLen` must be smaller than `MAX_ENCRYPT_LEN`.
  */
 SECStatus PublicKey_encrypt (PublicKey pubkey, 
     unsigned char *output, 

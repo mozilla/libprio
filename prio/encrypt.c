@@ -42,13 +42,12 @@ derive_dh_secret (PK11SymKey **shared_secret, PrivateKey priv, PublicKey pub)
         CKA_ENCRYPT | CKA_DECRYPT, 16,
         CKD_SHA256_KDF, NULL, NULL));
 
-
 cleanup:
   return rv;
 }
 
-SECStatus
-PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen)
+static SECStatus
+public_key_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen)
 {
   SECStatus rv = SECSuccess;
   PrivateKey eph_priv = NULL;
@@ -57,15 +56,18 @@ PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen
   if (dataLen != CURVE25519_KEY_LEN)
     return SECFailure;
 
+  unsigned char key_bytes[dataLen];
+  memcpy (key_bytes, data, dataLen);
+
   // TODO: Horrible hack. We should be able to import a public key
   // directly without having to generate one from scratch.
   P_CHECKC (Keypair_new (&eph_priv, pk));
   memcpy ((*pk)->u.ec.publicValue.data, data, CURVE25519_KEY_LEN);
 
 cleanup:
+  PrivateKey_clear (eph_priv);
   if (rv != SECSuccess)
     PublicKey_clear (*pk);
-  PrivateKey_clear (eph_priv);
   return rv;
 }
 
@@ -130,11 +132,15 @@ PublicKey_toBytes (const_PublicKey pubkey)
   return &pubkey->u.ec.publicValue;
 }
 
-unsigned int
-PublicKey_encryptSize (unsigned int inputLen)
+SECStatus
+PublicKey_encryptSize (unsigned int inputLen, unsigned int *outputLen)
 {
+  if (outputLen == NULL || inputLen >= MAX_ENCRYPT_LEN)
+    return SECFailure;
+
   // public key, IV, tag, and input
-  return CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES + GCM_TAG_LEN_BYTES + inputLen;
+  *outputLen = CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES + GCM_TAG_LEN_BYTES + inputLen;
+  return SECSuccess;
 }
 
 static void 
@@ -156,7 +162,7 @@ set_gcm_params (SECItem *paramItem, CK_GCM_PARAMS *param, unsigned char *nonce,
 
   paramItem->type = siBuffer;
   paramItem->data = (void *)param;
-  paramItem->len = sizeof (CK_AES_CTR_PARAMS);
+  paramItem->len = sizeof (*param);
 
 }
 
@@ -170,8 +176,14 @@ PublicKey_encrypt (PublicKey pubkey,
   if (pubkey == NULL)
     return SECFailure;
 
-  const unsigned int needLen = PublicKey_encryptSize (inputLen);
-  if (maxOutputLen < needLen)
+  if (inputLen >= MAX_ENCRYPT_LEN)
+    return SECFailure;
+
+  unsigned int needLen;
+  if (PublicKey_encryptSize (inputLen, &needLen) != SECSuccess)
+    return SECFailure;
+
+  if (maxOutputLen < needLen) 
     return SECFailure;
 
   SECStatus rv = SECSuccess;
@@ -224,14 +236,19 @@ PrivateKey_decrypt (PrivateKey privkey,
     return SECFailure;
 
   SECStatus rv = SECSuccess;
-  if (inputLen < PublicKey_encryptSize (0))
+  unsigned int headerLen;
+  if (PublicKey_encryptSize (0, &headerLen) != SECSuccess)
     return SECFailure;
 
-  const unsigned int msglen = inputLen - PublicKey_encryptSize (0);
-  if (maxOutputLen < msglen)
+  if (inputLen < headerLen) 
     return SECFailure;
 
-  P_CHECKC (PublicKey_import (&eph_pub, input, CURVE25519_KEY_LEN));
+  const unsigned int msglen = inputLen - headerLen;
+  if (maxOutputLen < msglen || msglen >= MAX_ENCRYPT_LEN)
+    return SECFailure;
+
+
+  P_CHECKC (public_key_import (&eph_pub, input, CURVE25519_KEY_LEN));
   unsigned char nonce[GCM_IV_LEN_BYTES];
   memcpy (nonce, input + CURVE25519_KEY_LEN, GCM_IV_LEN_BYTES);
 

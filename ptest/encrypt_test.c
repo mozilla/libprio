@@ -46,12 +46,14 @@ test_encrypt_once (int bad, unsigned int inlen)
   PublicKey pubkey2 = NULL;
   PrivateKey pvtkey2 = NULL;
 
-  unsigned int enclen = PublicKey_encryptSize (inlen);
-  unsigned int declen = enclen;
   unsigned char *bytes_in = NULL;
   unsigned char *bytes_enc = NULL;
   unsigned char *bytes_dec = NULL;
   
+  unsigned int enclen;
+  P_CHECKC (PublicKey_encryptSize (inlen, &enclen));
+  unsigned int declen = enclen;
+
   P_CHECKA (bytes_in = malloc (inlen));
   P_CHECKA (bytes_enc = malloc (enclen));
   P_CHECKA (bytes_dec= malloc (enclen));

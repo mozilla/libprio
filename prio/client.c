@@ -297,8 +297,8 @@ PrioClient_encode (const_PrioConfig cfg, const bool *data_in,
   P_CHECKC (serial_write_packet_client (&packerA, pA, cfg));
   P_CHECKC (serial_write_packet_client (&packerB, pB, cfg));
 
-  *aLen = PublicKey_encryptSize (sbufA.size);
-  *bLen = PublicKey_encryptSize (sbufB.size);
+  P_CHECKC (PublicKey_encryptSize (sbufA.size, aLen));
+  P_CHECKC (PublicKey_encryptSize (sbufB.size, bLen));
 
   P_CHECKA (*for_server_a = malloc (*aLen));
   P_CHECKA (*for_server_b = malloc (*bLen));
