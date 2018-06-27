@@ -384,6 +384,7 @@ PrioPacketVerify2_new (void)
 cleanup:
   if (rv != SECSuccess) {
     PrioPacketVerify2_clear (p); 
+    return NULL;
   }
   return p;
 }

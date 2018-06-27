@@ -113,7 +113,12 @@ MPArray_dup (const_MPArray src)
   if (!dst) return NULL;
 
   SECStatus rv = MPArray_copy (dst, src); 
-  return (rv == SECSuccess) ? dst : NULL;
+  if (rv == SECSuccess) {
+    return dst;
+  } else {
+    MPArray_clear (dst);
+    return NULL;
+  }
 }
 
 SECStatus
@@ -136,7 +141,7 @@ SECStatus
 MPArray_set_share (MPArray arrA, MPArray arrB, 
     const_MPArray src, const_PrioConfig cfg)
 {
-  SECStatus rv;
+  SECStatus rv = SECSuccess;
   if (arrA->len != src->len || arrB->len != src->len)
     return SECFailure;
 
