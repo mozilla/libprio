@@ -15,9 +15,8 @@
 #include "prio/rand.h"
 #include "prio/util.h"
 
-// Use Curve25519
+// Use curve25519
 #define CURVE_OID_TAG SEC_OID_CURVE25519
-#define CURVE25519_KEY_LEN 32
 
 // Use 96-bit IV
 #define GCM_IV_LEN_BYTES 12
@@ -26,6 +25,16 @@
 
 #define PRIO_TAG "PrioPacket"
 #define AAD_LEN (strlen (PRIO_TAG) + CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES)
+
+// The all-zeros curve25519 public key, as DER-encoded SKPI blob.
+static const uint8_t curve25519_spki_zeros[] = {
+  0x30, 0x39, 0x30, 0x14, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x09, 0x2b, 
+  0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01, 0x03, 0x21, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 
+};
+
 
 static SECStatus 
 derive_dh_secret (PK11SymKey **shared_secret, PrivateKey priv, PublicKey pub)
@@ -46,11 +55,11 @@ cleanup:
   return rv;
 }
 
-static SECStatus
-public_key_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen)
+SECStatus
+PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen)
 {
   SECStatus rv = SECSuccess;
-  PrivateKey eph_priv = NULL;
+  CERTSubjectPublicKeyInfo *pkinfo = NULL;
   *pk = NULL;
 
   if (dataLen != CURVE25519_KEY_LEN)
@@ -59,13 +68,23 @@ public_key_import (PublicKey *pk, const unsigned char *data, unsigned int dataLe
   unsigned char key_bytes[dataLen];
   memcpy (key_bytes, data, dataLen);
 
-  // TODO: Horrible hack. We should be able to import a public key
-  // directly without having to generate one from scratch.
-  P_CHECKC (Keypair_new (&eph_priv, pk));
+  const int spki_len = sizeof (curve25519_spki_zeros);
+  uint8_t spki_data[spki_len];
+  memcpy (spki_data, curve25519_spki_zeros, spki_len);
+  SECItem spki_item = { siBuffer, spki_data, spki_len };
+
+  // Import the all-zeros curve25519 public key. 
+  P_CHECKA (pkinfo = SECKEY_DecodeDERSubjectPublicKeyInfo (&spki_item));
+  P_CHECKA (*pk = SECKEY_ExtractPublicKey (pkinfo));
+
+  // Overwrite the all-zeros public key with the 32-byte curve25519 public key
+  // given as input.
   memcpy ((*pk)->u.ec.publicValue.data, data, CURVE25519_KEY_LEN);
 
 cleanup:
-  PrivateKey_clear (eph_priv);
+  if (pkinfo) 
+    SECKEY_DestroySubjectPublicKeyInfo (pkinfo);
+
   if (rv != SECSuccess)
     PublicKey_clear (*pk);
   return rv;
@@ -247,8 +266,7 @@ PrivateKey_decrypt (PrivateKey privkey,
   if (maxOutputLen < msglen || msglen >= MAX_ENCRYPT_LEN)
     return SECFailure;
 
-
-  P_CHECKC (public_key_import (&eph_pub, input, CURVE25519_KEY_LEN));
+  P_CHECKC (PublicKey_import (&eph_pub, input, CURVE25519_KEY_LEN));
   unsigned char nonce[GCM_IV_LEN_BYTES];
   memcpy (nonce, input + CURVE25519_KEY_LEN, GCM_IV_LEN_BYTES);
 

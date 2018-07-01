@@ -24,6 +24,9 @@ extern "C" {
 #define PRG_SEED_LENGTH AES_128_KEY_LENGTH
 typedef unsigned char PrioPRGSeed[PRG_SEED_LENGTH];
 
+/* Length of a curve25519 public key, in bytes. */
+#define CURVE25519_KEY_LEN 32
+
 /*
  * Type for each of the two servers.
  */
@@ -103,6 +106,13 @@ PrioConfig PrioConfig_newTest (int n_fields);
  * encrypt messages to the servers.
  */
 SECStatus Keypair_new (PrivateKey *pvtkey, PublicKey *pubkey);
+
+/*
+ * Import a new curve25519 public key from the raw bytes given. The key passed in
+ * as `data` should be of length `CURVE25519_KEY_LEN`. This function allocates
+ * a new PublicKey object, which the caller must free using `PublicKey_clear`.
+ */
+SECStatus PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen);
 
 void PublicKey_clear (PublicKey pubkey);
 void PrivateKey_clear (PrivateKey pvtkey);
