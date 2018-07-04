@@ -4,9 +4,6 @@
 We do our best to write bug-free code, but I have no doubt
 that there are scary bugs, side-channel attacks, and memory leaks 
 lurking herein. 
-If you are going to use this code for anything serious, please
-give the source a careful read-through first and hammer it with
-your favorite testing tools.
 
 **Important:**
 We have not yet implemented the items
@@ -113,7 +110,6 @@ To clean up the object and binary files, run:
 The files in this directory are:
 ````
 /build      - Binaries, object files, etc.
-/encrypt    - Simple public-key encryption
 /include    - Exported header files
               (Note: The public header is <mprio.h> since
               NSPR already has a file called <prio.h>.)
@@ -122,12 +118,6 @@ The files in this directory are:
 /prio       - Prio library core code
 /ptest      - Tests and test runner
 ````
-
-## Security-Critical TODOs 
-<a name="security"></a>
-* Check that our usage of the NSS random-number generator is correct.
-* Check that our usage of the NSS public-key encryption methods
-
 
 ## Optimizations and features not yet implemented
 * **Server compute.**
