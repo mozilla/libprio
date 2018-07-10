@@ -35,6 +35,18 @@ static const uint8_t curve25519_spki_zeros[] = {
   0x00, 
 };
 
+static inline uint8_t
+hex_to_int (char h)
+{
+  return (h > '9') ? toupper (h) - 'A' + 10 : (h - '0');
+}
+
+static inline unsigned char 
+int_to_hex (uint8_t i)
+{
+  return (i > 0x09) ? ((i - 10) + 'A') : i + '0';
+}
+
 
 static SECStatus 
 derive_dh_secret (PK11SymKey **shared_secret, PrivateKey priv, PublicKey pub)
@@ -88,6 +100,60 @@ cleanup:
   if (rv != SECSuccess)
     PublicKey_clear (*pk);
   return rv;
+}
+
+SECStatus
+PublicKey_import_hex (PublicKey *pk, const unsigned char *hex_data, unsigned int dataLen)
+{
+  unsigned char raw_bytes[CURVE25519_KEY_LEN];
+
+  if (dataLen != 2*CURVE25519_KEY_LEN)
+    return SECFailure;
+
+  for (unsigned int i=0; i<dataLen; i++) {
+    if (!isxdigit (hex_data[i]))
+      return SECFailure;
+  }
+
+  const unsigned char *p = hex_data;
+  for (unsigned int i=0; i<CURVE25519_KEY_LEN; i++) {
+    uint8_t d0 = hex_to_int (p[0]);
+    uint8_t d1 = hex_to_int (p[1]);
+    raw_bytes[i] = (d0 << 4) | d1;
+    p += 2;
+  }
+
+  return PublicKey_import (pk, raw_bytes, CURVE25519_KEY_LEN);
+}
+
+SECStatus 
+PublicKey_export (const_PublicKey pk, unsigned char data[CURVE25519_KEY_LEN])
+{
+  if (pk == NULL) return SECFailure;
+
+  memcpy (data, pk->u.ec.publicValue.data, CURVE25519_KEY_LEN);
+
+  return SECSuccess;
+}
+
+SECStatus 
+PublicKey_export_hex (const_PublicKey pk, unsigned char data[(2*CURVE25519_KEY_LEN)+1])
+{
+  unsigned char raw_data[CURVE25519_KEY_LEN];
+  if (PublicKey_export (pk, raw_data) != SECSuccess)
+    return SECFailure;
+
+  const unsigned char *p = raw_data;
+  for (unsigned int i=0; i<CURVE25519_KEY_LEN; i++) {
+    unsigned char bytel = p[0] & 0x0f;
+    unsigned char byteu = (p[0] & 0xf0) >> 4;
+    data[2*i] = int_to_hex (byteu);
+    data[2*i + 1] = int_to_hex (bytel);
+    p++;
+  }
+
+  data[2*CURVE25519_KEY_LEN] = '\0';
+  return SECSuccess;
 }
 
 SECStatus 

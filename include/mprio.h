@@ -114,6 +114,27 @@ SECStatus Keypair_new (PrivateKey *pvtkey, PublicKey *pubkey);
  */
 SECStatus PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen);
 
+/*
+ * Import a new curve25519 public key from a hex string that contains only the
+ * characters 0-9a-fA-F. The hex string passed in as `hex_data` should be of
+ * length `2*CURVE25519_KEY_LEN`. This function allocates a new PublicKey
+ * object, which the caller must free using `PublicKey_clear`.
+ */
+SECStatus PublicKey_import_hex (PublicKey *pk, const unsigned char *hex_data,
+    unsigned int dataLen);
+
+/*
+ * Export a curve25519 public key as a raw byte-array.
+ */
+SECStatus PublicKey_export (const_PublicKey pk, unsigned char data[CURVE25519_KEY_LEN]);
+
+/*
+ * Export a curve25519 public key as a NULL-terminated hex string.
+ */
+SECStatus PublicKey_export_hex (const_PublicKey pk, 
+    unsigned char data[(2*CURVE25519_KEY_LEN)+1]);
+
+
 void PublicKey_clear (PublicKey pubkey);
 void PrivateKey_clear (PrivateKey pvtkey);
 
