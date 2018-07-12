@@ -343,7 +343,7 @@ PrioPacketClient_decrypt (PrioPacketClient p, const_PrioConfig cfg,
         (unsigned char *)msgpack_unpacker_buffer (&upk), &bytes_decrypted,
         data_len, data_in, data_len));
   msgpack_unpacker_buffer_consumed (&upk, bytes_decrypted);
- 
+
   P_CHECKC (serial_read_packet_client (&upk, p, cfg)); 
 
 cleanup:

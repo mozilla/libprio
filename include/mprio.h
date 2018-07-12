@@ -24,8 +24,11 @@ extern "C" {
 #define PRG_SEED_LENGTH AES_128_KEY_LENGTH
 typedef unsigned char PrioPRGSeed[PRG_SEED_LENGTH];
 
-/* Length of a curve25519 public key, in bytes. */
+/* Length of a raw curve25519 public key, in bytes. */
 #define CURVE25519_KEY_LEN 32
+
+/* Length of a hex-encoded curve25519 public key, in bytes. */
+#define CURVE25519_KEY_LEN_HEX 64
 
 /*
  * Type for each of the two servers.
@@ -117,7 +120,7 @@ SECStatus PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned i
 /*
  * Import a new curve25519 public key from a hex string that contains only the
  * characters 0-9a-fA-F. The hex string passed in as `hex_data` should be of
- * length `2*CURVE25519_KEY_LEN`. This function allocates a new PublicKey
+ * length `CURVE25519_KEY_LEN_HEX`. This function allocates a new PublicKey
  * object, which the caller must free using `PublicKey_clear`.
  */
 SECStatus PublicKey_import_hex (PublicKey *pk, const unsigned char *hex_data,
@@ -132,7 +135,7 @@ SECStatus PublicKey_export (const_PublicKey pk, unsigned char data[CURVE25519_KE
  * Export a curve25519 public key as a NULL-terminated hex string.
  */
 SECStatus PublicKey_export_hex (const_PublicKey pk, 
-    unsigned char data[(2*CURVE25519_KEY_LEN)+1]);
+    unsigned char data[CURVE25519_KEY_LEN_HEX+1]);
 
 
 void PublicKey_clear (PublicKey pubkey);

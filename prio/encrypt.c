@@ -107,7 +107,7 @@ PublicKey_import_hex (PublicKey *pk, const unsigned char *hex_data, unsigned int
 {
   unsigned char raw_bytes[CURVE25519_KEY_LEN];
 
-  if (dataLen != 2*CURVE25519_KEY_LEN)
+  if (dataLen != CURVE25519_KEY_LEN_HEX)
     return SECFailure;
 
   for (unsigned int i=0; i<dataLen; i++) {
