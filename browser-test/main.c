@@ -6,10 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#define _GNU_SOURCE
+
 #include <mprio.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 
 #include "prio/encrypt.h"
 #include "prio/util.h"
@@ -114,7 +117,6 @@ verify_full (const char *path_to_xpcshell, int pathlen)
   unsigned char *for_server_a = NULL;
   unsigned char *for_server_b = NULL;
 
-  sranddev ();
   const int seed = rand ();
   srand (seed);
   printf ("Using srand seed %d\n", seed);
