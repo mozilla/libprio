@@ -1,0 +1,42 @@
+import os
+
+Import('env')
+
+mpi_env = env.Clone()
+mpi_env.Replace(CFLAGS = [ "-O2", "-pedantic", "-Wall"])
+
+mpi_env.Append(CFLAGS = [
+  "-Wno-unknown-pragmas",
+  "-Wno-parentheses-equality",
+  "-Wno-unused-variable"])
+
+
+src = [
+"montmulf.c",
+"mpi.c",
+"mplogic.c",
+"mpprime.c",
+"primes.c",
+"mp_comba.c",
+"mp_gf2m.c",
+"mpmontg.c",
+"mulsqr.c",
+#"mpvalpha.c",
+#"mpi_arm.c",
+#"mpi_hp.c",
+#"mpi_x86_asm.c",
+#"mpi_sparc.c",
+#"mpcpucache.c",
+#"mpi_amd64.c", 
+#"mpv_sparc.c", 
+]
+
+libs = [
+]
+
+# Enable mp_print()
+mpi_env.Append(CFLAGS = ['-DMP_IOFUNC'])
+
+mpi_env.Append(LIBS = libs)
+mpi_env.StaticLibrary("mpi", src)
+
