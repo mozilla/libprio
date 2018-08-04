@@ -9,7 +9,6 @@
 #define _GNU_SOURCE
 
 #include <mprio.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -255,14 +254,12 @@ verify_full (const char *path_to_xpcshell, int pathlen)
     P_CHECKCB (output[i] == data_items[i]);
   }
 
+  puts ("Success!");
 
 cleanup:
   if (rv != SECSuccess) {
     fprintf (stderr, "Warning: unexpected failure.\n");
   }
-
-  // Hangs forever since xpcshell doesn't shut down cleanly.
-  //if (shell) pclose (shell);
 
   if (for_server_a) free (for_server_a);
   if (for_server_b) free (for_server_b);
@@ -291,10 +288,6 @@ cleanup:
 
   Prio_clear ();
 
-  puts ("Success! Shutting down xpcshell...");
-  // Kills self and xpcshell 
-  killpg (0, 9);
-
   return !(rv == SECSuccess);
 }
 
@@ -302,7 +295,7 @@ int
 main (int argc, char **argv)
 {
   puts("== Prio browser test utility. ==");
-  puts("Expects to be run in the same directory as encode-once.js.");
+  puts("(Note: Expects to be run in the same directory as encode-once.js.)");
   if (argc != 2) {
     fprintf (stderr, "Usage ./%s <path_to_xpcshell>\n", argv[0]);
     return 1;
