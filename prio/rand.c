@@ -18,14 +18,22 @@
 
 #define CHUNK_SIZE 8192
 
+static NSSInitContext *prioGlobalContext = NULL;
+
 SECStatus
 rand_init (void)
 {
-  if (NSS_IsInitialized ()) {
+  if (prioGlobalContext) 
     return SECSuccess;
-  }
 
-  return NSS_NoDB_Init (NULL);
+  prioGlobalContext = NSS_InitContext ("", "", "", "", NULL, 
+      NSS_INIT_READONLY | 
+      NSS_INIT_NOCERTDB | 
+      NSS_INIT_NOMODDB | 
+      NSS_INIT_FORCEOPEN | 
+      NSS_INIT_NOROOTINIT);
+
+  return (prioGlobalContext != NULL) ? SECSuccess : SECFailure;
 }
 
 static SECStatus 
@@ -112,7 +120,13 @@ rand_int_rng (mp_int *out, const mp_int *max,
 void
 rand_clear (void)
 {
-  NSS_Shutdown ();
-  PR_Cleanup ();
+  if (prioGlobalContext) {
+    NSS_ShutdownContext (prioGlobalContext);
+#ifdef DO_PR_CLEANUP
+    PR_Cleanup ();
+#endif    
+  }
+
+  prioGlobalContext = NULL;
 }
 

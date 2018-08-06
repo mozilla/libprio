@@ -23,7 +23,7 @@ if env["DEBUG"]:
 env.Append(LIBS = ["mprio", "mpi", "nss3", "nspr4"], \
   LIBPATH = ['#build/prio', "#build/mpi"],
   CFLAGS = [ "-Wall", "-Werror", "-Wextra", "-O3", "-std=c99", 
-    "-I/usr/include/nspr"])
+    "-I/usr/include/nspr", "-DDO_PR_CLEANUP"])
 
 env.Append(CPPPATH = ["#include", "#."])
 Export('env')
