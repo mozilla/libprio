@@ -9,16 +9,16 @@
 #ifndef __PRIO_H__
 #define __PRIO_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <msgpack.h>
 #include <nss/blapit.h>
 #include <nss/pk11pub.h>
 #include <nss/seccomon.h>
 #include <stdbool.h>
 #include <stddef.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Seed for a pseudo-random generator (PRG). */
 #define PRG_SEED_LENGTH AES_128_KEY_LENGTH
