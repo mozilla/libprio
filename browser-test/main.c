@@ -11,7 +11,7 @@
 #include <mprio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #include "prio/encrypt.h"
 #include "prio/util.h"
@@ -111,7 +111,7 @@ verify_full (const char *path_to_xpcshell, int pathlen)
   FILE *shell = NULL;
   int cmdlen = pathlen + 2*CURVE25519_KEY_LEN_HEX + 128;
   char cmd[cmdlen];
-  bzero (cmd, cmdlen);
+  memset (cmd, 0, cmdlen);
 
   unsigned char *for_server_a = NULL;
   unsigned char *for_server_b = NULL;
@@ -125,7 +125,7 @@ verify_full (const char *path_to_xpcshell, int pathlen)
 
   //unsigned char batch_id_str[] = "abcde";
   unsigned char batch_id_str[32];
-  bzero (batch_id_str, sizeof batch_id_str);
+  memset (batch_id_str, 0, sizeof batch_id_str);
   snprintf ((char *)batch_id_str, sizeof batch_id_str, "%d", rand());
   
   bool data_items[ndata];
