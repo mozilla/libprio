@@ -11,7 +11,7 @@
 #include <mprio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #include "prio/encrypt.h"
 #include "prio/util.h"

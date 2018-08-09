@@ -8,7 +8,7 @@
 
 #include <mprio.h>
 #include <msgpack.h>
-#include <strings.h>
+#include <string.h>
 #include "mutest.h"
 
 #include "prio/client.h"

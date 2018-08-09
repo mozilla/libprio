@@ -9,7 +9,7 @@
 #include <mprio.h>
 #include <nss/blapit.h>
 #include <nss/pk11pub.h>
-#include <strings.h>
+#include <string.h>
 
 #include "prg.h"
 #include "rand.h"
