@@ -77,7 +77,7 @@ void serial_client (int bad)
   }
 
   if (bad == 2) {
-    bzero (sbufA.data, sbufA.size);
+    memset (sbufA.data, 0, sbufA.size);
   }
 
   const int size_a = sbufA.size;

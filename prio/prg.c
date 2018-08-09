@@ -90,7 +90,7 @@ PRG_get_bytes_internal (void *prg_vp, unsigned char *bytes, size_t len)
   PRG prg = (PRG)prg_vp;
 
   unsigned char in[len];
-  bzero (in, len);
+  memset (in, 0, len);
 
   int outlen;
   SECStatus rv = PK11_CipherOp (prg->ctx, bytes, &outlen, len, in, len);

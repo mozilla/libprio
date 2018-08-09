@@ -170,7 +170,7 @@ PrioPacketClient_new (const_PrioConfig cfg, PrioServerId for_server)
       p->shares.A.h_points = NULL;
       break;
     case PRIO_SERVER_B:
-      bzero (p->shares.B.seed, PRG_SEED_LENGTH);
+      memset (p->shares.B.seed, 0, PRG_SEED_LENGTH);
       break;
     default:
       // Should never get here
