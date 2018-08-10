@@ -14,7 +14,12 @@ env = Environment(options = opts,
                   ENV = os.environ)
 if "CFLAGS" in os.environ:
   env.Append(CFLAGS = SCons.Util.CLVar(os.getenv("CFLAGS")))
-print env["CFLAGS"]
+if "CPPFLAGS" in os.environ:
+  env.Append(CPPFLAGS = SCons.Util.CLVar(os.getenv("CPPFLAGS")))
+if "CXXFLAGS" in os.environ:
+  env.Append(CXXFLAGS = SCons.Util.CLVar(os.getenv("CXXFLAGS")))
+if "LDFLAGS" in os.environ:
+  env.Append(LINKFLAGS = SCons.Util.CLVar(os.getenv("LDFLAGS")))
 
 if env["DEBUG"]: 
     print "DEBUG MODE!"
