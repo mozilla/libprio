@@ -8,8 +8,8 @@
 
 #include <stdio.h>
 #include <mprio.h>
+#include <mpi.h>
 
-#include "mpi/mpi.h"
 #include "prio/config.h"
 #include "prio/mparray.h"
 #include "prio/poly.h"

@@ -9,7 +9,8 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "mpi/mpi.h"
+#include <mpi.h>
+
 #include "mparray.h"
 
 struct prio_config {

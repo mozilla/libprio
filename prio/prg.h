@@ -11,8 +11,8 @@
 
 #include <nss/blapit.h>
 #include <stdlib.h>
+#include <mpi.h>
 
-#include "mpi/mpi.h"
 #include "config.h"
 
 typedef struct prg *PRG;

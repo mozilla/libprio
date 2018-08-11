@@ -7,8 +7,8 @@
  */
 
 
+#include <mpi.h>
 
-#include "mpi/mpi.h"
 #include "prio/prg.h"
 #include "prio/util.h"
 #include "mutest.h"

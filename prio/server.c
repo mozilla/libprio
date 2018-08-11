@@ -9,8 +9,8 @@
 #include <mprio.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <mpi.h>
 
-#include "mpi/mpi.h"
 #include "client.h"
 #include "prg.h"
 #include "poly.h"

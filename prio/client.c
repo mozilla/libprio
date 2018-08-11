@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mprio.h>
+#include <mpi.h>
 
-#include "mpi/mpi.h"
 #include "client.h"
 #include "config.h"
 #include "encrypt.h"

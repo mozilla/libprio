@@ -10,7 +10,8 @@
 #ifndef __SHARE_H__
 #define __SHARE_H__
 
-#include "mpi/mpi.h"
+#include <mpi.h>
+
 #include "config.h"
 
 struct beaver_triple {

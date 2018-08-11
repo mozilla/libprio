@@ -7,9 +7,9 @@
  */
 
 #include <mprio.h>
+#include <mpi.h>
 #include "mutest.h"
 
-#include "mpi/mpi.h"
 #include "prio/client.h"
 #include "prio/server.h"
 #include "prio/server.c"

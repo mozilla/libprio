@@ -10,7 +10,7 @@
 #define __UTIL_H__
 
 #include <mprio.h>
-#include "mpi/mpi.h"
+#include <mpi.h>
 
 // Minimum of two values
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
-#include "mpi/mpi.h"
+#include <mpi.h>
+
 #include "prio/rand.h"
 #include "prio/util.h"
 #include "mutest.h"

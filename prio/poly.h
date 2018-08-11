@@ -11,8 +11,8 @@
 
 #include <mprio.h>
 #include <stdbool.h>
+#include <mpi.h>
 
-#include "mpi/mpi.h"
 #include "mparray.h"
 
 /*

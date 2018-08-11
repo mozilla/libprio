@@ -11,7 +11,7 @@
 
 #include <nss/seccomon.h>
 #include <stdlib.h>
-#include "mpi/mpi.h"
+#include <mpi.h>
 
 /*
  * Typedef for function pointer. A function pointer of type RandBytesFunc
