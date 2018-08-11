@@ -64,7 +64,9 @@ read_browser_reply (FILE *infile,
   char *raw_input = NULL;
   size_t rawLen = 0;
 
+  puts ("Getting line of input.");
   P_CHECKCB (getline (&raw_input, &rawLen, infile) > 0);
+  puts ("Got line of input.");
 
   P_CHECKA (*for_server_a = malloc (rawLen * sizeof (unsigned char)));
   P_CHECKA (*for_server_b = malloc (rawLen * sizeof (unsigned char)));
@@ -76,10 +78,14 @@ read_browser_reply (FILE *infile,
 
   // Header is 14 chars long
   const char *new_input;
+  puts ("Reading string A");
   P_CHECKC (read_string_from_hex (for_server_a, aLen, raw_input + 14, &new_input));
+  puts ("Read string A");
 
   // Skip over for_server_a string and one-char delimeter
+  puts ("Reading string B");
   P_CHECKC (read_string_from_hex (for_server_b, bLen, new_input, NULL));
+  puts ("Read string B");
 
 cleanup:
   if (raw_input) free (raw_input);
@@ -151,7 +157,8 @@ verify_full (const char *path_to_xpcshell, int pathlen)
       data_items[0], data_items[1], data_items[2]);
 
   printf ("> %s\n", cmd);
-  P_CHECKA (shell = popen(cmd, "r+"));
+  P_CHECKA (shell = popen(cmd, "r"));
+  puts("Ran command.");
 
   // Use the default configuration parameters.
   P_CHECKA (cfg = PrioConfig_new (ndata, pkA, pkB, batch_id_str, 
@@ -189,7 +196,9 @@ verify_full (const char *path_to_xpcshell, int pathlen)
   // Read in the client data packets
   unsigned int aLen = 0, bLen = 0;
 
+  puts ("Reading...");
   P_CHECKC (read_browser_reply (shell, &for_server_a, &aLen, &for_server_b, &bLen));
+  printf ("Read reply from browser. LenA: %u, LenB: %u\n", aLen, bLen);
 
   // II. VALIDATION PROTOCOL. (at servers)
   //
@@ -210,11 +219,13 @@ verify_full (const char *path_to_xpcshell, int pathlen)
   // Set up a Prio verifier object.
   P_CHECKC (PrioVerifier_set_data (vA, for_server_a, aLen));
   P_CHECKC (PrioVerifier_set_data (vB, for_server_b, bLen));
+  puts("Imported data.");
 
   // Both servers produce a packet1. Server A sends p1A to Server B
   // and vice versa.
   P_CHECKC (PrioPacketVerify1_set_data (p1A, vA));
   P_CHECKC (PrioPacketVerify1_set_data (p1B, vB));
+  puts("Set data.");
 
   // Both servers produce a packet2. Server A sends p2A to Server B
   // and vice versa.
@@ -225,8 +236,10 @@ verify_full (const char *path_to_xpcshell, int pathlen)
   // is valid. (In fact, only Server A needs to perform this 
   // check, since Server A can just tell Server B whether the check 
   // succeeded or failed.) 
+  puts ("Checking validity.");
   P_CHECKC (PrioVerifier_isValid (vA, p2A, p2B)); 
   P_CHECKC (PrioVerifier_isValid (vB, p2A, p2B)); 
+  puts ("Are valid.");
 
   // If we get here, the client packet is valid, so add it to the aggregate
   // statistic counter for both servers.
