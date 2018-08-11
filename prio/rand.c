@@ -7,10 +7,10 @@
  */
 
 #include <limits.h>
+#include <mprio.h>
 #include <nss/nss.h>
 #include <nss/pk11pub.h>
 #include <nspr/prinit.h>
-#include <mprio.h>
 
 #include "debug.h"
 #include "rand.h"

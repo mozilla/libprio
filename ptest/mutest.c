@@ -13,10 +13,11 @@
  * Please, read the README file for more details.
  */
 
-#include "mutest.h" /* MU_* constants, mu_print() */
 #include <mprio.h>
 #include <stdio.h> /* printf(), fprintf() */
 #include <string.h> /* strncmp() */
+
+#include "mutest.h" /* MU_* constants, mu_print() */
 
 /*
  * note that all global variables are public because they need to be accessed

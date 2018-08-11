@@ -9,9 +9,9 @@
 #ifndef _FFT__H
 #define _FFT__H
 
+#include <mpi.h>
 #include <mprio.h>
 #include <stdbool.h>
-#include <mpi.h>
 
 #include "mparray.h"
 

@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
-#include <mprio.h>
 #include <mpi.h>
+#include <mprio.h>
 
 #include "prio/client.h"
 #include "prio/config.h"

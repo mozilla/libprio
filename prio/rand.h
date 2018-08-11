@@ -9,9 +9,9 @@
 #ifndef __RAND_H__
 #define __RAND_H__
 
+#include <mpi.h>
 #include <nss/seccomon.h>
 #include <stdlib.h>
-#include <mpi.h>
 
 /*
  * Typedef for function pointer. A function pointer of type RandBytesFunc
