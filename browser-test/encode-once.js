@@ -7,21 +7,39 @@
  */
 
 ChromeUtils.import('resource://gre/modules/Services.jsm');
-Services.prefs.setStringPref('prio.publicKeyA', arguments[0]);
-Services.prefs.setStringPref('prio.publicKeyB', arguments[1]);
 
-var prio = new PrioEncoder();
+let [publicKeyA, publicKeyB, batchID, param1, param2, param3] = arguments;
 
-var l = prio.encode(arguments[2], {
-  'hasCrashedInLast24Hours': Number(arguments[3]),
-  'hasDefaultHomepage': Number(arguments[4]),
-  'hasUsedPrivateBrowsing': Number(arguments[5])
-}).then(function(v) {
-  function intToHex(x) { return x.toString(16).padStart(2, '0'); };
-  function toHexString(arr) { return arr.map(intToHex).join(','); };
-  console.log(toHexString(v[0]) + ',$' + toHexString(v[1]));
-  console.log('');
-}, function(v) {
-  console.log('Failure.');
-  console.log(v);
-});
+Services.prefs.setStringPref('prio.publicKeyA', publicKeyA);
+Services.prefs.setStringPref('prio.publicKeyB', publicKeyB);
+
+async function test() {
+  let params =  {
+    'browserIsUserDefault': Number(param1),
+    'safeModeUsage': Number(param2),
+    'startupCrashDetected': Number(param3)
+  };
+
+  try {
+    let result = await PrioEncoder.encode(batchID, params);
+
+    const toTypedArray = byteString => {
+      let u8Array = new Uint8Array(byteString.length);
+      for (let i in byteString) {
+          u8Array[i] = byteString.charCodeAt(i);
+      }
+      return u8Array;
+    }
+
+    const toHexString = bytes =>
+      bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0') + ',', '');
+
+    console.log(toHexString(toTypedArray(result.a)) + '$' + toHexString(toTypedArray(result.b)));
+    console.log('');
+  } catch(e) {
+    console.log('Failure.', e);
+    console.log(v);
+  }
+}
+
+test().then();
