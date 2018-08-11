@@ -9,8 +9,8 @@
 #ifndef __MPARRAY_H__
 #define __MPARRAY_H__
 
+#include <mpi.h>
 #include <mprio.h>
-#include "mpi/mpi.h"
 
 struct mparray {
   int len;

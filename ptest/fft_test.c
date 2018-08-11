@@ -6,15 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
-#include <stdio.h>
+#include <mpi.h>
 #include <mprio.h>
+#include <stdio.h>
 
-#include "mpi/mpi.h"
+#include "mutest.h"
 #include "prio/config.h"
 #include "prio/mparray.h"
 #include "prio/poly.h"
 #include "prio/util.h"
-#include "mutest.h"
 
 void 
 mu_test__fft_one (void)

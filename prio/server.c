@@ -6,11 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
+#include <mpi.h>
 #include <mprio.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "mpi/mpi.h"
 #include "client.h"
 #include "prg.h"
 #include "poly.h"

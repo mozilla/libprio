@@ -9,10 +9,10 @@
 #ifndef __PRG_H__
 #define __PRG_H__
 
+#include <mpi.h>
 #include <nss/blapit.h>
 #include <stdlib.h>
 
-#include "mpi/mpi.h"
 #include "config.h"
 
 typedef struct prg *PRG;

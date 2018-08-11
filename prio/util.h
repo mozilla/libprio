@@ -9,8 +9,8 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+#include <mpi.h>
 #include <mprio.h>
-#include "mpi/mpi.h"
 
 // Minimum of two values
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

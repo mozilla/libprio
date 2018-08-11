@@ -6,15 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
-#include "mutest.h"
-
+#include <nspr.h>
 #include <nss/nss.h>
 #include <nss/secoidt.h>
-#include <nspr.h>
 #include <nss/keyhi.h>
 #include <nss/pk11pub.h>
 #include <nss/cert.h>
 
+#include "mutest.h"
 #include "prio/encrypt.h"
 #include "prio/rand.h"
 #include "prio/util.h"

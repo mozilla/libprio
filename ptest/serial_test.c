@@ -9,8 +9,8 @@
 #include <mprio.h>
 #include <msgpack.h>
 #include <string.h>
-#include "mutest.h"
 
+#include "mutest.h"
 #include "prio/client.h"
 #include "prio/config.h"
 #include "prio/serial.h"

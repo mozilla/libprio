@@ -5,12 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <mpi.h>
+#include <mprio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mprio.h>
 
-#include "mpi/mpi.h"
 #include "client.h"
 #include "config.h"
 #include "encrypt.h"

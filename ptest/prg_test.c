@@ -6,12 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
+#include <mpi.h>
 
-
-#include "mpi/mpi.h"
+#include "mutest.h"
 #include "prio/prg.h"
 #include "prio/util.h"
-#include "mutest.h"
 
 void
 mu_test__prg_simple (void) 

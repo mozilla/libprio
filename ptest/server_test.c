@@ -6,10 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
+#include <mpi.h>
 #include <mprio.h>
-#include "mutest.h"
 
-#include "mpi/mpi.h"
+#include "mutest.h"
 #include "prio/client.h"
 #include "prio/server.h"
 #include "prio/server.c"

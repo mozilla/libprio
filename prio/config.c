@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
-#include <stdlib.h>
 #include <mprio.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "params.h"

@@ -6,10 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
 
-#include "mpi/mpi.h"
+#include <mpi.h>
+
+#include "mutest.h"
 #include "prio/rand.h"
 #include "prio/util.h"
-#include "mutest.h"
 
 void 
 mu_test__util_msb_mast (void)
