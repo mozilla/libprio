@@ -186,6 +186,7 @@ Keypair_new (PrivateKey *pvtkey, PublicKey *pubkey)
   P_CHECKA (slot = PK11_GetInternalSlot ());
   P_CHECKA (*pvtkey = PK11_GenerateKeyPair(slot, CKM_EC_KEY_PAIR_GEN, &ecp, 
       (SECKEYPublicKey **)pubkey, PR_FALSE, PR_FALSE, NULL));
+  PK11_FreeSlot (slot);
 
 cleanup:
   if (ecp.data)
