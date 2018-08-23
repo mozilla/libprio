@@ -17,7 +17,6 @@ src = [
 "mplogic.c",
 "mpprime.c",
 "primes.c",
-"mp_comba.c",
 "mp_gf2m.c",
 "mpmontg.c",
 "mulsqr.c",
