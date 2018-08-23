@@ -69,7 +69,7 @@
     }\
   } while(0);
 
-inline int
+static inline int
 next_power_of_two (int val)
 {
   int i = val;
@@ -85,7 +85,7 @@ next_power_of_two (int val)
 /* 
  * Return a mask that masks out all of the zero bits
  */
-inline unsigned char
+static inline unsigned char
 msb_mask (unsigned char val)
 {
   unsigned char mask;
