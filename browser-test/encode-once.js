@@ -15,9 +15,9 @@ Services.prefs.setStringPref('prio.publicKeyB', publicKeyB);
 
 async function test() {
   let params =  {
-    'browserIsUserDefault': Number(param1),
+    'startupCrashDetected': Number(param1),
     'safeModeUsage': Number(param2),
-    'startupCrashDetected': Number(param3)
+    'browserIsUserDefault': Number(param3)
   };
 
   try {
@@ -34,7 +34,7 @@ async function test() {
     const toHexString = bytes =>
       bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0') + ',', '');
 
-    console.log(toHexString(toTypedArray(result.a)) + '$' + toHexString(toTypedArray(result.b)));
+    console.log(toHexString(result.a) + '$' + toHexString(result.b));
     console.log('');
   } catch(e) {
     console.log('Failure.', e);
