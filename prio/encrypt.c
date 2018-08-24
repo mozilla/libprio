@@ -24,7 +24,9 @@
 #define GCM_TAG_LEN_BYTES 16
 
 #define PRIO_TAG "PrioPacket"
-#define AAD_LEN (strlen (PRIO_TAG) + CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES)
+#define AAD_LEN 55
+
+#define CURVE25519_SPKI_ZEROS_LEN 59
 
 // The all-zeros curve25519 public key, as DER-encoded SKPI blob.
 static const uint8_t curve25519_spki_zeros[] = {
@@ -77,13 +79,12 @@ PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen
   if (dataLen != CURVE25519_KEY_LEN)
     return SECFailure;
 
-  unsigned char key_bytes[dataLen];
+  unsigned char key_bytes[CURVE25519_KEY_LEN];
   memcpy (key_bytes, data, dataLen);
 
-  const int spki_len = sizeof (curve25519_spki_zeros);
-  uint8_t spki_data[spki_len];
-  memcpy (spki_data, curve25519_spki_zeros, spki_len);
-  SECItem spki_item = { siBuffer, spki_data, spki_len };
+  uint8_t spki_data[CURVE25519_SPKI_ZEROS_LEN];
+  memcpy (spki_data, curve25519_spki_zeros, CURVE25519_SPKI_ZEROS_LEN);
+  SECItem spki_item = { siBuffer, spki_data, CURVE25519_SPKI_ZEROS_LEN};
 
   // Import the all-zeros curve25519 public key. 
   P_CHECKA (pkinfo = SECKEY_DecodeDERSubjectPublicKeyInfo (&spki_item));
