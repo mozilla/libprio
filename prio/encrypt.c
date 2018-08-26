@@ -24,9 +24,7 @@
 #define GCM_TAG_LEN_BYTES 16
 
 #define PRIO_TAG "PrioPacket"
-#define AAD_LEN 55
-
-#define CURVE25519_SPKI_ZEROS_LEN 59
+#define AAD_LEN (strlen (PRIO_TAG) + CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES)
 
 // The all-zeros curve25519 public key, as DER-encoded SKPI blob.
 static const uint8_t curve25519_spki_zeros[] = {
@@ -75,6 +73,7 @@ PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen
   SECStatus rv = SECSuccess;
   CERTSubjectPublicKeyInfo *pkinfo = NULL;
   *pk = NULL;
+  uint8_t *spki_data = NULL;
 
   if (dataLen != CURVE25519_KEY_LEN)
     return SECFailure;
@@ -82,9 +81,10 @@ PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen
   unsigned char key_bytes[CURVE25519_KEY_LEN];
   memcpy (key_bytes, data, dataLen);
 
-  uint8_t spki_data[CURVE25519_SPKI_ZEROS_LEN];
-  memcpy (spki_data, curve25519_spki_zeros, CURVE25519_SPKI_ZEROS_LEN);
-  SECItem spki_item = { siBuffer, spki_data, CURVE25519_SPKI_ZEROS_LEN};
+  const int spki_len = sizeof (curve25519_spki_zeros);
+  P_CHECKA (spki_data = malloc (spki_len));
+  memcpy (spki_data, curve25519_spki_zeros, spki_len);
+  SECItem spki_item = { siBuffer, spki_data, spki_len };
 
   // Import the all-zeros curve25519 public key. 
   P_CHECKA (pkinfo = SECKEY_DecodeDERSubjectPublicKeyInfo (&spki_item));
@@ -95,6 +95,9 @@ PublicKey_import (PublicKey *pk, const unsigned char *data, unsigned int dataLen
   memcpy ((*pk)->u.ec.publicValue.data, data, CURVE25519_KEY_LEN);
 
 cleanup:
+  if (spki_data) 
+    free (spki_data);
+
   if (pkinfo) 
     SECKEY_DestroySubjectPublicKeyInfo (pkinfo);
 
@@ -277,9 +280,10 @@ PublicKey_encrypt (PublicKey pubkey,
   PublicKey eph_pub = NULL;  
   PrivateKey eph_priv = NULL;  
   PK11SymKey *aes_key = NULL;  
+  unsigned char *aadBuf = NULL;
 
   unsigned char nonce[GCM_IV_LEN_BYTES];
-  unsigned char aadBuf[AAD_LEN];
+  P_CHECKA (aadBuf = safe_calloc (AAD_LEN, sizeof (unsigned char)));
   P_CHECKC (rand_bytes (nonce, GCM_IV_LEN_BYTES));
 
   P_CHECKC (Keypair_new (&eph_priv, &eph_pub));
@@ -300,6 +304,8 @@ PublicKey_encrypt (PublicKey pubkey,
   *outputLen = *outputLen + CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES;
 
 cleanup:
+  if (aadBuf) 
+    free (aadBuf);
   PublicKey_clear (eph_pub);
   PrivateKey_clear (eph_priv);
   if (aes_key) 
@@ -317,7 +323,7 @@ PrivateKey_decrypt (PrivateKey privkey,
 {
   PK11SymKey *aes_key = NULL;
   PublicKey eph_pub = NULL;
-  unsigned char aad_buf[AAD_LEN];
+  unsigned char *aad_buf = NULL;
 
   if (privkey == NULL)
     return SECFailure;
@@ -334,6 +340,7 @@ PrivateKey_decrypt (PrivateKey privkey,
   if (maxOutputLen < msglen || msglen >= MAX_ENCRYPT_LEN)
     return SECFailure;
 
+  P_CHECKA (aad_buf = safe_calloc (AAD_LEN, sizeof (unsigned char)));
   P_CHECKC (PublicKey_import (&eph_pub, input, CURVE25519_KEY_LEN));
   unsigned char nonce[GCM_IV_LEN_BYTES];
   memcpy (nonce, input + CURVE25519_KEY_LEN, GCM_IV_LEN_BYTES);
@@ -349,6 +356,8 @@ PrivateKey_decrypt (PrivateKey privkey,
         outputLen, maxOutputLen, input + offset, inputLen - offset));
 
 cleanup:
+  if (aad_buf)
+    free (aad_buf);
   PublicKey_clear (eph_pub);
   if (aes_key) 
     PK11_FreeSymKey (aes_key);
