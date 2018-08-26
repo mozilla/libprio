@@ -98,5 +98,16 @@ msb_mask (unsigned char val)
  */
 #define UNUSED(x) (void)(x)
 
+/*
+ * A calloc() that explicitly checks for overflow.
+ */
+static inline void *
+safe_calloc (size_t count, size_t size)
+{
+  if (count * size < count) 
+    return NULL;
+  return calloc (count, size);
+}
+
 #endif /* __UTIL_H__ */
 
