@@ -63,25 +63,19 @@ fft_interpolate_raw (mp_int *out,
     const mp_int *mod, bool invert)
 {
   SECStatus rv = SECSuccess;
-  mp_int tmp[nPoints];
-  mp_int ySub[nPoints];
-  mp_int rootsSub[nPoints];
-  for (int i=0; i<nPoints;i++) {
-    MP_DIGITS (&tmp[i]) = NULL;
-    MP_DIGITS (&ySub[i]) = NULL;
-    MP_DIGITS (&rootsSub[i]) = NULL;
-  }
+  MPArray tmp = NULL;
+  MPArray ySub = NULL;
+  MPArray rootsSub = NULL;
 
   mp_int n_inverse;
   MP_DIGITS (&n_inverse) = NULL;
 
-  for (int i=0; i<nPoints;i++) {
-    MP_CHECKC (mp_init (&tmp[i]));
-    MP_CHECKC (mp_init (&ySub[i]));
-    MP_CHECKC (mp_init (&rootsSub[i]));
-  }
+  P_CHECKA (tmp = MPArray_new (nPoints));
+  P_CHECKA (ySub = MPArray_new (nPoints));
+  P_CHECKA (rootsSub = MPArray_new (nPoints));
 
-  MP_CHECK (fft_recurse(out, mod, nPoints, roots, ys, tmp, ySub, rootsSub));
+  MP_CHECKC (fft_recurse(out, mod, nPoints, roots, ys, 
+        tmp->data, ySub->data, rootsSub->data));
 
   if (invert) {
     MP_CHECKC (mp_init (&n_inverse));
@@ -94,13 +88,11 @@ fft_interpolate_raw (mp_int *out,
   }
 
 cleanup:
-  mp_clear (&n_inverse); 
-  for (int i=0; i<nPoints;i++) {
-    mp_clear(&tmp[i]);
-    mp_clear(&ySub[i]);
-    mp_clear(&rootsSub[i]);
-  }
+  if (tmp) MPArray_clear (tmp);
+  if (ySub) MPArray_clear (ySub);
+  if (rootsSub) MPArray_clear (rootsSub);
 
+  mp_clear (&n_inverse); 
   return rv;
 } 
 
@@ -138,12 +130,16 @@ poly_fft (MPArray points_out, const_MPArray points_in,
   if (cfg->n_roots % n_points != 0) 
     return SECFailure;
 
-  mp_int scaled_roots[n_points];
-  P_CHECK (poly_fft_get_roots (scaled_roots, n_points, cfg, invert));
+  mp_int *scaled_roots = NULL;
 
-  MP_CHECK (fft_interpolate_raw (points_out->data, points_in->data, n_points, 
+  P_CHECKA (scaled_roots = safe_calloc (n_points, sizeof (mp_int)));
+  P_CHECKC (poly_fft_get_roots (scaled_roots, n_points, cfg, invert));
+
+  MP_CHECKC (fft_interpolate_raw (points_out->data, points_in->data, n_points, 
       scaled_roots, &cfg->modulus, invert));
 
+cleanup:
+  if (scaled_roots) free (scaled_roots);
   return SECSuccess;
 }
 
@@ -172,9 +168,10 @@ poly_interp_evaluate (mp_int *value, const_MPArray poly_points,
 {
   SECStatus rv;
   MPArray coeffs = NULL;
+  mp_int *roots = NULL;
   const int N = poly_points->len;
-  mp_int roots[N];
-  
+
+  P_CHECKA (roots = safe_calloc (N, sizeof (mp_int)));
   P_CHECKA (coeffs = MPArray_new (N));
   P_CHECKC (poly_fft_get_roots (roots, N, cfg, false));
 
@@ -183,6 +180,7 @@ poly_interp_evaluate (mp_int *value, const_MPArray poly_points,
   P_CHECKC (poly_eval (value, coeffs, eval_at, cfg));
 
 cleanup:
+  if (roots) free (roots);
   MPArray_clear (coeffs);
   return rv;
 }

@@ -25,7 +25,7 @@ MPArray_new (int len)
   arr->data = NULL;
   arr->len = len;
 
-  P_CHECKA(arr->data = calloc (len, sizeof (mp_int)));
+  P_CHECKA(arr->data = safe_calloc (len, sizeof (mp_int)));
 
   // Initialize these to NULL so that we can figure
   // out which allocations failed (if any)
@@ -69,7 +69,7 @@ MPArray_resize (MPArray arr, int newlen)
     return rv;  
 
   // TODO: Use realloc for this?
-  mp_int *newdata = calloc (newlen, sizeof (mp_int));
+  mp_int *newdata = safe_calloc (newlen, sizeof (mp_int));
   if (newdata == NULL)
     return SECFailure;
 
