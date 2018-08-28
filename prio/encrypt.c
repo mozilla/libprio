@@ -35,10 +35,32 @@ static const uint8_t curve25519_spki_zeros[] = {
   0x00, 
 };
 
+// Note that we do not use isxdigit because it is locale-dependent
+// See: https://github.com/mozilla/libprio/issues/20
+static inline char
+is_hex_digit (char c)
+{
+    return ('0' <= c && c <= '9') ||
+           ('a' <= c && c <= 'f') ||
+           ('A' <= c && c <= 'F');
+}
+
+// Note that we do not use toupper because it is locale-dependent
+// See: https://github.com/mozilla/libprio/issues/20
+static inline char
+to_upper (char c)
+{
+  if (c >= 'a' && c <= 'z') {
+    return (c + 'A' - 'a');
+  } else {
+    return c;
+  }
+}
+
 static inline uint8_t
 hex_to_int (char h)
 {
-  return (h > '9') ? toupper (h) - 'A' + 10 : (h - '0');
+  return (h > '9') ? to_upper (h) - 'A' + 10 : (h - '0');
 }
 
 static inline unsigned char 
@@ -111,7 +133,7 @@ PublicKey_import_hex (PublicKey *pk, const unsigned char *hex_data, unsigned int
     return SECFailure;
 
   for (unsigned int i=0; i<dataLen; i++) {
-    if (!isxdigit (hex_data[i]))
+    if (!is_hex_digit (hex_data[i]))
       return SECFailure;
   }
 
