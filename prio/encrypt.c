@@ -48,11 +48,10 @@ is_hex_digit (char c)
 // Note that we do not use toupper because it is locale-dependent
 // See: https://github.com/mozilla/libprio/issues/20
 static inline char
-to_upper(char c)
+to_upper (char c)
 {
-  if( c >= 'a' && c <= 'z')
-  {
-    return (c = c + 'A' - 'a');
+  if (c >= 'a' && c <= 'z') {
+    return (c + 'A' - 'a');
   } else {
     return c;
   }
@@ -134,7 +133,7 @@ PublicKey_import_hex (PublicKey *pk, const unsigned char *hex_data, unsigned int
     return SECFailure;
 
   for (unsigned int i=0; i<dataLen; i++) {
-    if (!is_hex_digit(hex_data[i]))
+    if (!is_hex_digit (hex_data[i]))
       return SECFailure;
   }
 
