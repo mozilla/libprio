@@ -12,8 +12,10 @@ addons:
     packages:
     - libnspr4-dev
     - libnss3-dev
+    - clang-format-3.9
 
 script:
+  - ./scripts/clang-format.sh
   - scons
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./build/ptest/ptest -v
