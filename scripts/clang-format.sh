@@ -42,7 +42,7 @@ suffix="$(date +%s)"
 patch="/tmp/$prefix-$suffix.patch"
 
 for file in $FILES; do
-    clang-format -style=file "$file" | \
+    clang-format -style=Mozilla "$file" | \
         diff -u "$file" - | \
         sed -e "1s|--- |--- a/|" -e "2s|+++ -|+++ b/$file|" >> "$patch"
 done
