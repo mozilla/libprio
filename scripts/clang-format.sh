@@ -3,7 +3,26 @@
 # Originally from Godot Engine project (MIT License)
 #
 
-CLANG_FORMAT=clang-format
+die() {
+    echo " *** ERROR: " $*
+    exit 1
+}
+
+CLANG_FORMAT_VERSION="clang-format version 3.9"
+
+if which clang-format-3.9 > /dev/null; then
+    alias clang-format=clang-format-3.9
+elif which clang-format > /dev/null; then
+    case "$(clang-format --version)" in
+        "$CLANG_FORMAT_VERSION"*)
+            ;;
+        *)
+            die "clang-format 3.9 required"
+            ;;
+    esac
+else
+    die "$CLANG_FORMAT_VERSION required"
+fi
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Check the whole commit range against $TRAVIS_BRANCH, the base merge branch
@@ -23,7 +42,7 @@ suffix="$(date +%s)"
 patch="/tmp/$prefix-$suffix.patch"
 
 for file in $FILES; do
-    "$CLANG_FORMAT" -style=file "$file" | \
+    clang-format -style=file "$file" | \
         diff -u "$file" - | \
         sed -e "1s|--- |--- a/|" -e "2s|+++ -|+++ b/$file|" >> "$patch"
 done

@@ -116,8 +116,8 @@ test_client_agg(int nclients)
     }
   }
 
-  // rv = SECFailure;
-  // goto cleanup;
+// rv = SECFailure;
+// goto cleanup;
 
 cleanup:
   mu_check(rv == SECSuccess);
