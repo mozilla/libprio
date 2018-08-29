@@ -82,6 +82,7 @@ and you will have to download [msgpack-c 2.1.5 or newer here](https://github.com
 since the Ubuntu packages for msgpack are far out of date.
 
 For macOS using Homebrew:
+
     $ brew install nss nspr scons msgpack
 
     $ export LDFLAGS="-L/usr/local/opt/nss/lib"
