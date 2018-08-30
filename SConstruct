@@ -12,6 +12,9 @@ opts.AddVariables(
 
 env = Environment(options = opts,
                   ENV = os.environ)
+
+env.Tool('clang')
+
 if "CFLAGS" in os.environ:
   env.Append(CFLAGS = SCons.Util.CLVar(os.getenv("CFLAGS")))
 if "CPPFLAGS" in os.environ:
