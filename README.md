@@ -74,7 +74,7 @@ You must first install
 [NSS/NSPR](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS), 
 [SCons](http://scons.org/) version 3.0.1 (or newer?), and
 [msgpack-c](https://github.com/msgpack/msgpack-c) version 2.1.5 (or newer?).
-On Ubuntu, you can instal NSS and scons with:
+On Ubuntu, you can install NSS and scons with:
 
     $ sudo apt install scons libnspr4-dev libnss3-dev 
 
