@@ -102,7 +102,7 @@ To print debug messages while compiling:
 
 To compile with debug symbols, run:
 
-    $ scons BUILDTYPE=DEBUG
+    $ scons DEBUG=1
 
 To clean up the object and binary files, run:
 

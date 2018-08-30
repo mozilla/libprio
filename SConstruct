@@ -7,7 +7,7 @@ import SCons
 
 opts = Variables()
 opts.AddVariables(
-    BoolVariable("DEBUG", "Make debug build", 1),
+    BoolVariable("DEBUG", "Make debug build", 0),
     BoolVariable("VERBOSE", "Show full build information", 0))
 
 env = Environment(options = opts,
