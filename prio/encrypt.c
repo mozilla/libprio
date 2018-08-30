@@ -50,7 +50,7 @@ static inline char
 to_upper(char c)
 {
   if (c >= 'a' && c <= 'z') {
-    return (c + 'A' - 'a');
+    return c - 0x20;
   } else {
     return c;
   }
