@@ -15,21 +15,13 @@ Services.prefs.setStringPref('prio.publicKeyB', publicKeyB);
 
 async function test() {
   let params =  {
-    'startupCrashDetected': Number(param1),
-    'safeModeUsage': Number(param2),
-    'browserIsUserDefault': Number(param3)
+    'browserIsUserDefault': Number(param1),
+    'newTabPageEnabled': Number(param2),
+    'userChromeCssLoaded': Number(param3)
   };
 
   try {
     let result = await PrioEncoder.encode(batchID, params);
-
-    const toTypedArray = byteString => {
-      let u8Array = new Uint8Array(byteString.length);
-      for (let i in byteString) {
-          u8Array[i] = byteString.charCodeAt(i);
-      }
-      return u8Array;
-    }
 
     const toHexString = bytes =>
       bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0') + ',', '');
