@@ -16,7 +16,7 @@ Services.prefs.setStringPref('prio.publicKeyB', publicKeyB);
 let params =  {
   'browserIsUserDefault': Number(param1),
   'newTabPageEnabled': Number(param2),
-  'userChromeCssLoaded': Number(param3)
+  'pdfViewerUsed': Number(param3)
 };
 
 try {
