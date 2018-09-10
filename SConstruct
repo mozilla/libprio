@@ -15,20 +15,17 @@ env = Environment(options = opts,
 
 env.Tool('clang')
 
-if "CFLAGS" in os.environ:
-  env.Append(CFLAGS = SCons.Util.CLVar(os.getenv("CFLAGS")))
-if "CPPFLAGS" in os.environ:
-  env.Append(CPPFLAGS = SCons.Util.CLVar(os.getenv("CPPFLAGS")))
-if "CXXFLAGS" in os.environ:
-  env.Append(CXXFLAGS = SCons.Util.CLVar(os.getenv("CXXFLAGS")))
-if "LDFLAGS" in os.environ:
-  env.Append(LINKFLAGS = SCons.Util.CLVar(os.getenv("LDFLAGS")))
+# Add extra compiler flags from the environment
+for flag in ["CCFLAGS", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LDFLAGS"]:
+  if flag in os.environ:
+    env.Append(**{flag: SCons.Util.CLVar(os.getenv(flag))})
 
 if env["DEBUG"]: 
-    print "DEBUG MODE!"
-    env.Append(CPPFLAGS = [ "-g", "-DDEBUG"])
+    print("DEBUG MODE!")
+    env.Append(CCFLAGS = ["-g", "-DDEBUG"])
 
-env.Append(LIBS = ["mprio", "mpi", "nss3", "nspr4"], \
+env.Append(
+  LIBS = ["mprio", "mpi", "nss3", "nspr4"],
   LIBPATH = ['#build/prio', "#build/mpi"],
   CFLAGS = [ "-Wall", "-Werror", "-Wextra", "-O3", "-std=c99", 
     "-I/usr/include/nspr", "-Impi", "-DDO_PR_CLEANUP"])
