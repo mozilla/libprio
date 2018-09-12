@@ -16,7 +16,7 @@ env = Environment(options = opts,
 env.Tool('clang')
 
 # Add extra compiler flags from the environment
-for flag in ["CCFLAGS", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LDFLAGS"]:
+for flag in ["CCFLAGS", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LINKFLAGS"]:
   if flag in os.environ:
     env.Append(**{flag: SCons.Util.CLVar(os.getenv(flag))})
 
