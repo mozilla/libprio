@@ -112,7 +112,7 @@ rand_int_rng(mp_int* out, const mp_int* max, RandBytesFunc rng_func,
     MP_CHECK(mp_read_unsigned_octets(out, buf, nbytes));
   } while (mp_cmp(out, max) != -1);
 
-  return 0;
+  return SECSuccess;
 }
 
 void

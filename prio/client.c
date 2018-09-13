@@ -211,7 +211,7 @@ PrioPacketClient_set_data(const_PrioConfig cfg, const bool* data_in,
     return SECFailure;
 
   P_CHECKC(PrioPRGSeed_randomize(&pB->shares.B.seed));
-  P_CHECKA(prgB = PRG_new(pB->shares.B.seed));
+  P_CHECKA(prgB = PRG_new(pB->shares.B.seed, PRIO_DEFAULT_PRG));
 
   P_CHECKC(BeaverTriple_set_rand(cfg, pA->triple, pB->triple));
   P_CHECKA(client_data = MPArray_new_bool(data_len, data_in));
