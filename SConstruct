@@ -33,7 +33,6 @@ env.Append(
 env.Append(CPPPATH = ["#include", "#."])
 Export('env')
 
-SConscript('browser-test/SConscript', variant_dir='build/browser-test')
 SConscript('mpi/SConscript', variant_dir='build/mpi')
 SConscript('pclient/SConscript', variant_dir='build/pclient')
 SConscript('prio/SConscript', variant_dir='build/prio')
