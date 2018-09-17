@@ -10,7 +10,7 @@
 #define __PRG_H__
 
 #include <mpi.h>
-#include <nss/blapit.h>
+#include <blapit.h>
 #include <stdlib.h>
 
 #include "config.h"

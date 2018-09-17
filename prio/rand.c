@@ -8,9 +8,9 @@
 
 #include <limits.h>
 #include <mprio.h>
-#include <nspr/prinit.h>
-#include <nss/nss.h>
-#include <nss/pk11pub.h>
+#include <prinit.h>
+#include <nss.h>
+#include <pk11pub.h>
 
 #include "debug.h"
 #include "rand.h"

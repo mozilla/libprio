@@ -7,11 +7,11 @@
  */
 
 #include <nspr.h>
-#include <nss/cert.h>
-#include <nss/keyhi.h>
-#include <nss/nss.h>
-#include <nss/pk11pub.h>
-#include <nss/secoidt.h>
+#include <cert.h>
+#include <keyhi.h>
+#include <nss.h>
+#include <pk11pub.h>
+#include <secoidt.h>
 
 #include "mutest.h"
 #include "prio/encrypt.h"

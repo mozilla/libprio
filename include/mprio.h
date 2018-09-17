@@ -14,9 +14,9 @@ extern "C" {
 #endif
 
 #include <msgpack.h>
-#include <nss/blapit.h>
-#include <nss/pk11pub.h>
-#include <nss/seccomon.h>
+#include <blapit.h>
+#include <pk11pub.h>
+#include <seccomon.h>
 #include <stdbool.h>
 #include <stddef.h>
 
