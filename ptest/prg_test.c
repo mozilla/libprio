@@ -13,14 +13,14 @@
 #include "prio/util.h"
 
 void
-mu_test__prg_simple(void)
+test__prg_simple(PRGMethod meth)
 {
   SECStatus rv = SECSuccess;
   PrioPRGSeed key;
   PRG prg = NULL;
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
-  P_CHECKA(prg = PRG_new(key));
+  P_CHECKA(prg = PRG_new(key, meth));
 
 cleanup:
   mu_check(rv == SECSuccess);
@@ -28,7 +28,28 @@ cleanup:
 }
 
 void
-mu_test__prg_repeat(void)
+mu_test__prg_fail(void)
+{
+  SECStatus rv = SECSuccess;
+  PrioPRGSeed key;
+  PRG prg = NULL;
+
+  P_CHECKC(PrioPRGSeed_randomize(&key));
+  mu_check(PRG_new(key, 3) == NULL);
+
+cleanup:
+  PRG_clear(prg);
+}
+
+void
+mu_test__prg_simple(void)
+{
+  test__prg_simple(PRG_SIMPLE);
+  test__prg_simple(PRG_BUFFERING);
+}
+
+void
+test__prg_repeat(PRGMethod meth)
 {
   SECStatus rv = SECSuccess;
   const int buflen = 10000;
@@ -43,8 +64,8 @@ mu_test__prg_repeat(void)
   buf2[3] = 'b';
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
-  P_CHECKA(prg1 = PRG_new(key));
-  P_CHECKA(prg2 = PRG_new(key));
+  P_CHECKA(prg1 = PRG_new(key, meth));
+  P_CHECKA(prg2 = PRG_new(key, meth));
 
   P_CHECKC(PRG_get_bytes(prg1, buf1, buflen));
   P_CHECKC(PRG_get_bytes(prg2, buf2, buflen));
@@ -64,7 +85,14 @@ cleanup:
 }
 
 void
-mu_test__prg_repeat_int(void)
+mu_test__prg_repeat(void)
+{
+  test__prg_repeat(PRG_SIMPLE);
+  test__prg_repeat(PRG_BUFFERING);
+}
+
+void
+test__prg_repeat_int(PRGMethod meth)
 {
   SECStatus rv = SECSuccess;
   const int tries = 10000;
@@ -80,8 +108,8 @@ mu_test__prg_repeat_int(void)
   PRG prg2 = NULL;
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
-  P_CHECKA(prg1 = PRG_new(key));
-  P_CHECKA(prg2 = PRG_new(key));
+  P_CHECKA(prg1 = PRG_new(key, meth));
+  P_CHECKA(prg2 = PRG_new(key, meth));
 
   MP_CHECKC(mp_init(&max));
   MP_CHECKC(mp_init(&out1));
@@ -104,39 +132,55 @@ cleanup:
 }
 
 void
+mu_test__prg_repeat_int(void)
+{
+  test__prg_repeat_int(PRG_SIMPLE);
+  test__prg_repeat_int(PRG_BUFFERING);
+}
+
+void
 test_prg_once(int limit)
 {
   SECStatus rv = SECSuccess;
   PrioPRGSeed key;
   mp_int max;
-  mp_int out;
-  PRG prg = NULL;
+  mp_int out1, out2;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
 
   MP_DIGITS(&max) = NULL;
-  MP_DIGITS(&out) = NULL;
+  MP_DIGITS(&out1) = NULL;
+  MP_DIGITS(&out2) = NULL;
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
-  P_CHECKA(prg = PRG_new(key));
+  P_CHECKA(prg1 = PRG_new(key, PRG_SIMPLE));
+  P_CHECKA(prg2 = PRG_new(key, PRG_BUFFERING));
 
   MP_CHECKC(mp_init(&max));
-  MP_CHECKC(mp_init(&out));
+  MP_CHECKC(mp_init(&out1));
+  MP_CHECKC(mp_init(&out2));
 
   mp_set(&max, limit);
 
-  P_CHECKC(PRG_get_int(prg, &out, &max));
-  mu_check(mp_cmp_d(&out, limit) == -1);
-  mu_check(mp_cmp_z(&out) > -1);
+  P_CHECKC(PRG_get_int(prg1, &out1, &max));
+  P_CHECKC(PRG_get_int(prg2, &out2, &max));
+  mu_check(mp_cmp_d(&out1, limit) == -1);
+  mu_check(mp_cmp_z(&out1) > -1);
+  mu_check(mp_cmp(&out1, &out2) == 0);
 
 cleanup:
   mu_check(rv == SECSuccess);
   mp_clear(&max);
-  mp_clear(&out);
-  PRG_clear(prg);
+  mp_clear(&out1);
+  mp_clear(&out2);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
 }
 
 void
 mu_test_prg__multiple_of_8(void)
 {
+  test_prg_once(16);
   test_prg_once(256);
   test_prg_once(256 * 256);
 }
@@ -171,7 +215,7 @@ mu_test_prg__bit(void)
 }
 
 void
-test_prg_distribution(int limit)
+test_prg_distribution(PRGMethod meth, int limit)
 {
   int bins[limit];
   SECStatus rv = SECSuccess;
@@ -184,7 +228,7 @@ test_prg_distribution(int limit)
   MP_DIGITS(&out) = NULL;
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
-  P_CHECKA(prg = PRG_new(key));
+  P_CHECKA(prg = PRG_new(key, meth));
 
   MP_CHECKC(mp_init(&max));
   MP_CHECKC(mp_init(&out));
@@ -223,23 +267,26 @@ cleanup:
 void
 mu_test__prg_distribution123(void)
 {
-  test_prg_distribution(123);
+  test_prg_distribution(PRG_SIMPLE, 123);
+  test_prg_distribution(PRG_BUFFERING, 123);
 }
 
 void
 mu_test__prg_distribution257(void)
 {
-  test_prg_distribution(257);
+  test_prg_distribution(PRG_SIMPLE, 257);
+  test_prg_distribution(PRG_BUFFERING, 257);
 }
 
 void
 mu_test__prg_distribution259(void)
 {
-  test_prg_distribution(259);
+  test_prg_distribution(PRG_SIMPLE, 259);
+  test_prg_distribution(PRG_BUFFERING, 259);
 }
 
 void
-test_prg_distribution_large(mp_int* max)
+test_prg_distribution_large(PRGMethod meth, mp_int* max)
 {
   const int limit = 16;
   int bins[limit];
@@ -251,7 +298,7 @@ test_prg_distribution_large(mp_int* max)
   MP_DIGITS(&out) = NULL;
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
-  P_CHECKA(prg = PRG_new(key));
+  P_CHECKA(prg = PRG_new(key, meth));
 
   MP_CHECKC(mp_init(&out));
 
@@ -289,7 +336,8 @@ mu_test__prg_distribution_large(void)
 
   char bytes[] = "FF1230985198451798EDC8123";
   MP_CHECKC(mp_read_radix(&max, bytes, 16));
-  test_prg_distribution_large(&max);
+  test_prg_distribution_large(PRG_SIMPLE, &max);
+  test_prg_distribution_large(PRG_BUFFERING, &max);
 
 cleanup:
   mu_check(rv == SECSuccess);
@@ -297,7 +345,7 @@ cleanup:
 }
 
 void
-mu_test__prg_share_arr(void)
+test__prg_share_arr(PRGMethod meth)
 {
   SECStatus rv = SECSuccess;
   PrioConfig cfg = NULL;
@@ -310,7 +358,7 @@ mu_test__prg_share_arr(void)
   P_CHECKC(PrioPRGSeed_randomize(&seed));
   P_CHECKA(arr = MPArray_new(10));
   P_CHECKA(arr_share = MPArray_new(10));
-  P_CHECKA(prg = PRG_new(seed));
+  P_CHECKA(prg = PRG_new(seed, meth));
 
   for (int i = 0; i < 10; i++) {
     mp_set(&arr->data[i], i);
@@ -320,7 +368,7 @@ mu_test__prg_share_arr(void)
 
   // Reset PRG
   PRG_clear(prg);
-  P_CHECKA(prg = PRG_new(seed));
+  P_CHECKA(prg = PRG_new(seed, meth));
 
   // Read pseudorandom values into arr
   P_CHECKC(PRG_get_array(prg, arr, &cfg->modulus));
@@ -338,4 +386,57 @@ cleanup:
   MPArray_clear(arr);
   MPArray_clear(arr_share);
   PrioConfig_clear(cfg);
+}
+
+void
+mu_test__prg_share_arr(void)
+{
+  test__prg_share_arr(PRG_SIMPLE);
+  test__prg_share_arr(PRG_BUFFERING);
+}
+
+void
+test__prg_match(int len)
+{
+  SECStatus rv = SECSuccess;
+  PrioPRGSeed key;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
+
+  unsigned char* buf1 = NULL;
+  unsigned char* buf2 = NULL;
+
+  P_CHECKA(buf1 = calloc(len, sizeof(unsigned char)));
+  P_CHECKA(buf2 = calloc(len, sizeof(unsigned char)));
+
+  P_CHECKC(PrioPRGSeed_randomize(&key));
+  P_CHECKA(prg1 = PRG_new(key, PRG_SIMPLE));
+  P_CHECKA(prg2 = PRG_new(key, PRG_BUFFERING));
+
+  for (int i = 0; i < 5; i++) {
+    P_CHECKC(PRG_get_bytes(prg1, buf1, len));
+    P_CHECKC(PRG_get_bytes(prg2, buf2, len));
+    P_CHECKCB(memcmp(buf1, buf2, len) == 0);
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
+  free(buf1);
+  free(buf2);
+}
+
+void
+mu_test__prg_match(void)
+{
+  test__prg_match(5);
+  test__prg_match(16);
+  test__prg_match(17);
+  test__prg_match(2048);
+  test__prg_match(2049);
+  test__prg_match(4096);
+  test__prg_match(4097);
+  test__prg_match(16385);
+  test__prg_match(2512 * 1250);
 }

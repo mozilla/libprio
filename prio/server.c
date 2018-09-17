@@ -33,7 +33,7 @@ PrioServer_new(const_PrioConfig cfg, PrioServerId server_idx,
   s->prg = NULL;
 
   P_CHECKA(s->data_shares = MPArray_new(s->cfg->num_data_fields));
-  P_CHECKA(s->prg = PRG_new(seed));
+  P_CHECKA(s->prg = PRG_new(seed, PRIO_DEFAULT_PRG));
 
 cleanup:
   if (rv != SECSuccess) {
@@ -297,7 +297,7 @@ PrioVerifier_set_data(PrioVerifier v, unsigned char* data,
   }
 
   if (v->s->idx == PRIO_SERVER_B) {
-    P_CHECKA(prgB = PRG_new(v->clientp->shares.B.seed));
+    P_CHECKA(prgB = PRG_new(v->clientp->shares.B.seed, PRIO_DEFAULT_PRG));
     P_CHECKC(PRG_get_array(prgB, v->data_sharesB, &v->s->cfg->modulus));
     P_CHECKC(PRG_get_array(prgB, v->h_pointsB, &v->s->cfg->modulus));
   }

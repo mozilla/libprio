@@ -15,13 +15,48 @@
 
 #include "config.h"
 
+/*
+ * To implement a PRG, we use AES in CTR mode. We use two different
+ * implementations.
+ *
+ * The bottom line is:
+ * - Use `PRG_SIMPLE` on Linux and Mac OS.
+ * - Use `PRG_BUFFERING` on Windows.
+ *
+ * For more details:
+ * - PRG_SIMPLE sets up a single `PK11_Context` and invokes `PK11_CipherOp`
+ *   many times on this context to generate pseudorandom bytes. Because of
+ *   a bug in the NSS implementation of AES-NI on Windows, calling
+ * `PK11_CipherOp`
+ *   many times on the same `PK11_Context` triggers an assertion failure.
+ *
+ * - PRG_BUFFERING maintains an internal buffer of `PRG_BUFFER_SIZE` bytes
+ *   of AES-CTR output. When this buffer is empty, the PRG sets up a fresh
+ *   `PK11_Context` and invokes `PK11_CipherOp` once on this context to
+ *   refill the buffer. This avoids the NSS Windows AES-NI Windows bug.
+ *
+ * The two modes should produce byte-identical output. Once the NSS bug
+ * is patched, we should get rid of `PRG_BUFFERING`.
+ */
+
+typedef enum {
+  PRG_SIMPLE,
+  PRG_BUFFERING // Workaround to avoid w64 AES-NI NSS bug
+} PRGMethod;
+
+#ifdef _MSC_VER
+#define PRIO_DEFAULT_PRG (PRG_BUFFERING)
+#else
+#define PRIO_DEFAULT_PRG (PRG_SIMPLE)
+#endif
+
 typedef struct prg* PRG;
 typedef const struct prg* const_PRG;
 
 /*
  * Initialize or destroy a pseudo-random generator.
  */
-PRG PRG_new(const PrioPRGSeed key);
+PRG PRG_new(const PrioPRGSeed key, PRGMethod meth);
 void PRG_clear(PRG prg);
 
 /*
