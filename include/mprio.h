@@ -13,8 +13,8 @@
 extern "C" {
 #endif
 
-#include <msgpack.h>
 #include <blapit.h>
+#include <msgpack.h>
 #include <pk11pub.h>
 #include <seccomon.h>
 #include <stdbool.h>

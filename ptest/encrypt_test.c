@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <nspr.h>
 #include <cert.h>
 #include <keyhi.h>
+#include <nspr.h>
 #include <nss.h>
 #include <pk11pub.h>
 #include <secoidt.h>

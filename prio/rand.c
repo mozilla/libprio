@@ -8,9 +8,9 @@
 
 #include <limits.h>
 #include <mprio.h>
-#include <prinit.h>
 #include <nss.h>
 #include <pk11pub.h>
+#include <prinit.h>
 
 #include "debug.h"
 #include "rand.h"
