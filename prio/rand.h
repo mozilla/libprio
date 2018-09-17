@@ -10,7 +10,7 @@
 #define __RAND_H__
 
 #include <mpi.h>
-#include <nss/seccomon.h>
+#include <seccomon.h>
 #include <stdlib.h>
 
 /*

@@ -6,12 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <cert.h>
+#include <keyhi.h>
 #include <nspr.h>
-#include <nss/cert.h>
-#include <nss/keyhi.h>
-#include <nss/nss.h>
-#include <nss/pk11pub.h>
-#include <nss/secoidt.h>
+#include <nss.h>
+#include <pk11pub.h>
+#include <secoidt.h>
 
 #include "mutest.h"
 #include "prio/encrypt.h"

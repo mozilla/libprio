@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <blapit.h>
 #include <mprio.h>
-#include <nss/blapit.h>
-#include <nss/pk11pub.h>
+#include <pk11pub.h>
 #include <string.h>
 
 #include "prg.h"

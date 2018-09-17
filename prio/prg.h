@@ -9,8 +9,8 @@
 #ifndef __PRG_H__
 #define __PRG_H__
 
+#include <blapit.h>
 #include <mpi.h>
-#include <nss/blapit.h>
 #include <stdlib.h>
 
 #include "config.h"
