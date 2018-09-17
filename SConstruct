@@ -28,7 +28,7 @@ env.Append(
   LIBS = ["mprio", "mpi", "nss3", "nspr4"],
   LIBPATH = ['#build/prio', "#build/mpi"],
   CFLAGS = [ "-Wall", "-Werror", "-Wextra", "-O3", "-std=c99", 
-    "-I/usr/include/nspr", "-Impi", "-DDO_PR_CLEANUP"])
+    "-I/usr/include/nspr", "-I/usr/include/nss", "-Impi", "-DDO_PR_CLEANUP"])
 
 env.Append(CPPPATH = ["#include", "#."])
 Export('env')
