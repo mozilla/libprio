@@ -46,10 +46,10 @@ rootsInv = ",\n".join(rootsInvL)
 output = """
 /*
  * Copyright (c) 2018, Henry Corrigan-Gibbs
- * 
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 /****
@@ -61,15 +61,16 @@ output = """
 #define __PARAMS_H__
 
 // A prime modulus p.
-static const char *Modulus = "%(modulus)x";
+static const char Modulus[] = "%(modulus)x";
 
 // A generator g of a subgroup of Z*_p.
-// static const char *Generator = "%(generator)x";
+// static const char Generator[] = "%(generator)x";
 
 // The generator g generates a subgroup of
-// order 2^IntGen2Order in Z*_p.
+// order 2^Generator2Order in Z*_p.
 static const int Generator2Order = %(twoorder)d;
 
+// clang-format off
 static const char *Roots[] = {
     %(roots)s
 };
@@ -77,6 +78,7 @@ static const char *Roots[] = {
 static const char *RootsInv[] = {
     %(rootsInv)s
 };
+// clang-format on
 
 #endif /* __PARAMS_H__ */
 """ % {
@@ -87,4 +89,4 @@ static const char *RootsInv[] = {
     'rootsInv': rootsInv, 
 }
 
-print output
+print output,
