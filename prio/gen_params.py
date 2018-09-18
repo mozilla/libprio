@@ -45,7 +45,35 @@ nontrivialRootsInv = rootsInvL[1:]
 nontrivialRootsInv.reverse()
 assert nontrivialRoots == nontrivialRootsInv
 
-rootsStrings = ['"%x"' % x for x in rootsL]
+# Instead of generating:
+#
+# static const char* const Roots[] = { "...", ... };
+#
+# we generate one long character array that is the equivalent of:
+#
+# struct roots {
+#   const char r0[SIZE];
+#   const char r1[SIZE];
+#   ...
+# };
+#
+# Because we're no longer storing pointers, just the raw character data,
+# this storage format is smaller and can be shared between processes.
+#
+# We use individual characters, rather than strings, because some compilers
+# reject long concatenated string constants.
+def c_table(strings):
+    def entry(s):
+        chars = ', '.join("'%s'" % x for x in s)
+        return '/* "{root}" */ {chars}, \'\\0\''.format(root=s, chars=chars)
+
+    # Pad all strings to be the same width.
+    width = max(len(s) for s in strings)
+    strings = ["{root:0>{width}s}".format(root=s, width=width) for s in strings]
+    # + 1 for the null terminator in each entry.
+    return width + 1, ',\n    '.join(entry(s) for s in strings)
+
+(width, table) = c_table(['%x' % x for x in rootsL])
 
 output = """
 /*
@@ -74,8 +102,11 @@ static const char Modulus[] = "%(modulus)x";
 // order 2^Generator2Order in Z*_p.
 static const int Generator2Order = %(twoorder)d;
 
+// Width of entries in Roots.
+static const unsigned int RootWidth = %(width)d;
+
 // clang-format off
-static const char *Roots[] = {
+static const char Roots[] = {
     %(roots)s
 };
 // clang-format on
@@ -85,7 +116,8 @@ static const char *Roots[] = {
     'modulus': modulus,
     'generator': gen12,
     'twoorder': 12,
-    'roots': ',\n    '.join(rootsStrings), 
+    'width': width,
+    'roots': table, 
 }
 
 print output,

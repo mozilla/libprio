@@ -24,20 +24,22 @@
 //    p = (2^k)q + 1.
 // The roots are integers such that r^{2^k} = 1 mod p.
 static SECStatus
-initialize_roots(MPArray arr, const char* values[], bool inverted)
+initialize_roots(MPArray arr, const char values[], bool inverted)
 {
   // TODO: Read in only the number of roots of unity we need.
   // Right now we read in all 4096 roots whether or not we use
   // them all.
-  MP_CHECK(mp_read_radix(&arr->data[0], values[0], 16));
+  MP_CHECK(mp_read_radix(&arr->data[0], &values[0], 16));
   unsigned int len = arr->len;
+  unsigned int n_chars = len * RootWidth;
   if (inverted) {
-    for (unsigned int i = len - 1; i > 0; i--) {
-      MP_CHECK(mp_read_radix(&arr->data[len - i], values[i], 16));
+    for (unsigned int i = n_chars - RootWidth, j = 1; i > 0;
+         i -= RootWidth, j++) {
+      MP_CHECK(mp_read_radix(&arr->data[j], &values[i], 16));
     }
   } else {
-    for (unsigned int i = 1; i < len; i++) {
-      MP_CHECK(mp_read_radix(&arr->data[i], values[i], 16));
+    for (unsigned int i = RootWidth, j = 1; i < n_chars; i += RootWidth, j++) {
+      MP_CHECK(mp_read_radix(&arr->data[j], &values[i], 16));
     }
   }
 
