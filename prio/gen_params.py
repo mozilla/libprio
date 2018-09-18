@@ -37,11 +37,15 @@ for i in range(1, 2**12):
     assert rootsInvL[i] != 1 
 assert ((rootsInvL[2**12 - 1] * gen12inv) % modulus) == 1
 
-rootsL = map(lambda x: '   "%x"' % x, rootsL)
-rootsInvL = map(lambda x: '   "%x"' % x, rootsInvL)
+# We're going to save space by storing the roots once, and using that same
+# data for both the roots and the inverse roots, so make sure we can do that.
+assert rootsL[0] == rootsInvL[0]
+nontrivialRoots = rootsL[1:]
+nontrivialRootsInv = rootsInvL[1:]
+nontrivialRootsInv.reverse()
+assert nontrivialRoots == nontrivialRootsInv
 
-roots = ",\n".join(rootsL)
-rootsInv = ",\n".join(rootsInvL)
+rootsStrings = ['"%x"' % x for x in rootsL]
 
 output = """
 /*
@@ -74,10 +78,6 @@ static const int Generator2Order = %(twoorder)d;
 static const char *Roots[] = {
     %(roots)s
 };
-
-static const char *RootsInv[] = {
-    %(rootsInv)s
-};
 // clang-format on
 
 #endif /* __PARAMS_H__ */
@@ -85,8 +85,7 @@ static const char *RootsInv[] = {
     'modulus': modulus,
     'generator': gen12,
     'twoorder': 12,
-    'roots': roots, 
-    'rootsInv': rootsInv, 
+    'roots': ',\n    '.join(rootsStrings), 
 }
 
 print output,
