@@ -32,6 +32,11 @@ initialize_roots(MPArray arr, const char values[], bool inverted)
   MP_CHECK(mp_read_radix(&arr->data[0], &values[0], 16));
   unsigned int len = arr->len;
   unsigned int n_chars = len * RootWidth;
+
+  if (n_chars != sizeof(Roots)) {
+    return SECFailure;
+  }
+
   if (inverted) {
     for (unsigned int i = n_chars - RootWidth, j = 1; i > 0;
          i -= RootWidth, j++) {
