@@ -40,6 +40,9 @@ verify_full(void)
   const unsigned char* batch_id = (unsigned char*)"prio_batch_2018-04-17";
   const unsigned int batch_id_len = strlen((char*)batch_id);
 
+  unsigned long* output = NULL;
+  bool* data_items = NULL;
+
   // Initialize NSS random number generator.
   P_CHECKC(Prio_init());
 
@@ -49,9 +52,8 @@ verify_full(void)
   // Number of clients to simulate.
   const int nclients = 10;
 
-  // New scope to avoid goto weirdness
-  {
-    bool data_items[ndata];
+  P_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
     // Generate keypairs for servers
     P_CHECKC(Keypair_new(&skA, &pkA));
@@ -159,7 +161,6 @@ verify_full(void)
       free(for_server_b);
       for_server_a = NULL;
       for_server_b = NULL;
-    }
 
     // The servers repeat the steps above for each client submission.
 
@@ -174,7 +175,6 @@ verify_full(void)
 
     // Once Server A has tA and tB, it can learn the aggregate statistics
     // in the clear.
-    unsigned long output[ndata];
     P_CHECKC(PrioTotalShare_final(cfg, output, tA, tB));
 
     // Now the output[i] contains a counter that indicates how many clients
@@ -192,6 +192,10 @@ cleanup:
     free(for_server_a);
   if (for_server_b)
     free(for_server_b);
+  if (output)
+    free(output);
+  if (data_items)
+    free(data_items);
 
   PrioTotalShare_clear(tA);
   PrioTotalShare_clear(tB);

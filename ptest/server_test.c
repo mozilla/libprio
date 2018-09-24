@@ -63,6 +63,7 @@ mu_test__verify_new(void)
   PrioVerifier vB = NULL;
   unsigned char* for_a = NULL;
   unsigned char* for_b = NULL;
+  bool* data_items = NULL;
 
   mp_int fR, gR, hR;
   MP_DIGITS(&fR) = NULL;
@@ -77,8 +78,7 @@ mu_test__verify_new(void)
   P_CHECKA(cfg = PrioConfig_new(214, pkA, pkB, (unsigned char*)"testbatch", 9));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  {
-    bool data_items[ndata];
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
     for (int i = 0; i < ndata; i++) {
       // Arbitrary data
       data_items[i] = (i % 3 == 1) || (i % 5 == 3);
@@ -113,17 +113,13 @@ mu_test__verify_new(void)
     MP_CHECKC(mp_addmod(&vA->share_hR, &vB->share_hR, &cfg->modulus, &hR));
 
     MP_CHECKC(mp_mulmod(&fR, &gR, &cfg->modulus, &fR));
-
-    // puts ("fR");
-    // mp_print (&fR, stdout);
-    // puts ("hR");
-    // mp_print (&hR, stdout);
     mu_check(mp_cmp(&fR, &hR) == 0);
-  }
 
 cleanup:
   mu_check(rv == SECSuccess);
 
+  if (data_items)
+    free(data_items);
   if (for_a)
     free(for_a);
   if (for_b)
@@ -165,6 +161,7 @@ verify_full(int tweak)
   PrioPacketVerify2 p2B = NULL;
   unsigned char* for_a = NULL;
   unsigned char* for_b = NULL;
+  bool* data_items = NULL;
 
   mp_int fR, gR, hR;
   MP_DIGITS(&fR) = NULL;
@@ -179,8 +176,7 @@ verify_full(int tweak)
   P_CHECKA(cfg = PrioConfig_new(47, pkA, pkB, (unsigned char*)"test4", 5));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  {
-    bool data_items[ndata];
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
     for (int i = 0; i < ndata; i++) {
       // Arbitrary data
       data_items[i] = (i % 3 == 1) || (i % 5 == 3);
@@ -232,13 +228,14 @@ verify_full(int tweak)
     int shouldBe = tweak ? SECFailure : SECSuccess;
     mu_check(PrioVerifier_isValid(vA, p2A, p2B) == shouldBe);
     mu_check(PrioVerifier_isValid(vB, p2A, p2B) == shouldBe);
-  }
 
 cleanup:
   if (!tweak) {
     mu_check(rv == SECSuccess);
   }
 
+  if (data_items)
+    free(data_items);
   if (for_a)
     free(for_a);
   if (for_b)

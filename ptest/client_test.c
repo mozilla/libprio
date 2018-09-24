@@ -20,14 +20,14 @@ mu_test_client__new(void)
   PrioConfig cfg = NULL;
   PrioPacketClient pA = NULL;
   PrioPacketClient pB = NULL;
+  bool* data_items = NULL;
 
   P_CHECKA(cfg = PrioConfig_newTest(23));
   P_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
   P_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
 
-  {
     const int ndata = PrioConfig_numDataFields(cfg);
-    bool data_items[ndata];
+    P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
     for (int i = 0; i < ndata; i++) {
       // Arbitrary data
@@ -35,10 +35,11 @@ mu_test_client__new(void)
     }
 
     P_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
-  }
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (data_items)
+    free(data_items);
 
   PrioPacketClient_clear(pA);
   PrioPacketClient_clear(pB);
@@ -64,6 +65,8 @@ test_client_agg(int nclients)
   unsigned char* for_b = NULL;
   const unsigned char* batch_id = (unsigned char*)"test_batch";
   unsigned int batch_id_len = strlen((char*)batch_id);
+  bool* data_items = NULL;
+  unsigned long* output = NULL;
 
   PrioPRGSeed seed;
   P_CHECKC(PrioPRGSeed_randomize(&seed));
@@ -80,8 +83,7 @@ test_client_agg(int nclients)
 
   const int ndata = PrioConfig_numDataFields(cfg);
 
-  {
-    bool data_items[ndata];
+    P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
     for (int i = 0; i < ndata; i++) {
       // Arbitrary data
       data_items[i] = (i % 3 == 1) || (i % 5 == 3);
@@ -108,19 +110,19 @@ test_client_agg(int nclients)
     mu_check(PrioTotalShare_set_data(tA, sA) == SECSuccess);
     mu_check(PrioTotalShare_set_data(tB, sB) == SECSuccess);
 
-    unsigned long output[ndata];
+    P_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
     mu_check(PrioTotalShare_final(cfg, output, tA, tB) == SECSuccess);
     for (int i = 0; i < ndata; i++) {
       unsigned long v = ((i % 3 == 1) || (i % 5 == 3));
       mu_check(output[i] == v * nclients);
     }
-  }
-
-// rv = SECFailure;
-// goto cleanup;
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (data_items)
+    free(data_items);
+  if (output)
+    free(output);
   if (for_a)
     free(for_a);
   if (for_b)

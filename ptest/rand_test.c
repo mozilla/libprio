@@ -81,13 +81,15 @@ void
 test_rand_distribution(int limit)
 {
   SECStatus rv = SECSuccess;
-  int bins[limit];
+  int* bins = NULL;
 
   mp_int max;
   mp_int out;
 
   MP_DIGITS(&max) = NULL;
   MP_DIGITS(&out) = NULL;
+
+  P_CHECKA(bins = calloc(limit, sizeof(int)));
 
   MP_CHECKC(mp_init(&max));
   MP_CHECKC(mp_init(&out));
@@ -118,6 +120,8 @@ test_rand_distribution(int limit)
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (bins)
+    free(bins);
   mp_clear(&max);
   mp_clear(&out);
 }
@@ -145,11 +149,12 @@ test_rand_distribution_large(mp_int* max)
 {
   SECStatus rv = SECSuccess;
   int limit = 16;
-  int bins[limit];
+  int* bins = NULL;
 
   mp_int out;
   MP_DIGITS(&out) = NULL;
   MP_CHECKC(mp_init(&out));
+  P_CHECKA(bins = calloc(limit, sizeof(int)));
 
   for (int i = 0; i < limit; i++) {
     bins[i] = 0;
@@ -171,6 +176,8 @@ test_rand_distribution_large(mp_int* max)
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (bins)
+    free(bins);
   mp_clear(&out);
 }
 

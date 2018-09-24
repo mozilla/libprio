@@ -32,19 +32,21 @@ mu_test__prg_repeat(void)
 {
   SECStatus rv = SECSuccess;
   const int buflen = 10000;
-  unsigned char buf1[buflen];
-  unsigned char buf2[buflen];
+  unsigned char* buf1 = NULL;
+  unsigned char* buf2 = NULL;
 
   PrioPRGSeed key;
   PRG prg1 = NULL;
   PRG prg2 = NULL;
 
-  buf1[3] = 'a';
-  buf2[3] = 'b';
-
   P_CHECKC(PrioPRGSeed_randomize(&key));
   P_CHECKA(prg1 = PRG_new(key));
   P_CHECKA(prg2 = PRG_new(key));
+  P_CHECKA(buf1 = calloc(buflen, sizeof(unsigned char)));
+  P_CHECKA(buf2 = calloc(buflen, sizeof(unsigned char)));
+
+  buf1[3] = 'a';
+  buf2[3] = 'b';
 
   P_CHECKC(PRG_get_bytes(prg1, buf1, buflen));
   P_CHECKC(PRG_get_bytes(prg2, buf2, buflen));
@@ -59,6 +61,10 @@ mu_test__prg_repeat(void)
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (buf1)
+    free(buf1);
+  if (buf2)
+    free(buf2);
   PRG_clear(prg1);
   PRG_clear(prg2);
 }
@@ -173,7 +179,7 @@ mu_test_prg__bit(void)
 void
 test_prg_distribution(int limit)
 {
-  int bins[limit];
+  int* bins = NULL;
   SECStatus rv = SECSuccess;
   PrioPRGSeed key;
   mp_int max;
@@ -185,6 +191,7 @@ test_prg_distribution(int limit)
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
   P_CHECKA(prg = PRG_new(key));
+  P_CHECKA(bins = calloc(limit, sizeof(int)));
 
   MP_CHECKC(mp_init(&max));
   MP_CHECKC(mp_init(&out));
@@ -215,6 +222,8 @@ test_prg_distribution(int limit)
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (bins)
+    free(bins);
   mp_clear(&max);
   mp_clear(&out);
   PRG_clear(prg);
@@ -242,7 +251,7 @@ void
 test_prg_distribution_large(mp_int* max)
 {
   const int limit = 16;
-  int bins[limit];
+  int* bins = NULL;
   SECStatus rv = SECSuccess;
   PrioPRGSeed key;
   mp_int out;
@@ -252,6 +261,7 @@ test_prg_distribution_large(mp_int* max)
 
   P_CHECKC(PrioPRGSeed_randomize(&key));
   P_CHECKA(prg = PRG_new(key));
+  P_CHECKA(bins = calloc(limit, sizeof(int)));
 
   MP_CHECKC(mp_init(&out));
 
@@ -275,6 +285,8 @@ test_prg_distribution_large(mp_int* max)
 
 cleanup:
   mu_check(rv == SECSuccess);
+  if (bins)
+    free(bins);
   mp_clear(&out);
   PRG_clear(prg);
 }
