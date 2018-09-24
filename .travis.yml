@@ -16,6 +16,6 @@ addons:
 
 script:
   - ./scripts/clang-format.sh
-  - scons
+  - scons DEBUG=1
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./build/ptest/ptest -v

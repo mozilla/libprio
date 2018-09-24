@@ -22,7 +22,10 @@ for flag in ["CCFLAGS", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LINKFLAGS"]:
 
 if env["DEBUG"]: 
     print("DEBUG MODE!")
-    env.Append(CCFLAGS = ["-g", "-DDEBUG"])
+    sanitizers = ['-fsanitize=address,undefined', \
+                  '-fno-sanitize-recover=undefined,integer,nullability']
+    env.Append(CCFLAGS = ["-g", "-DDEBUG"] + sanitizers,
+               LINKFLAGS = sanitizers)
 
 env.Append(
   LIBS = ["mprio", "mpi", "nss3", "nspr4"],
