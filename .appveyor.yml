@@ -28,9 +28,10 @@ branches:
     - master
 
 install:
-  - hg clone https://hg.mozilla.org/projects/nspr
-  - hg clone https://hg.mozilla.org/projects/nss
-  - git clone https://github.com/msgpack/msgpack-c
+  - pip install --upgrade pip setuptools wheel SCons==3.0.1
+#  - hg clone https://hg.mozilla.org/projects/nspr
+#  - hg clone https://hg.mozilla.org/projects/nss
+#  - git clone https://github.com/msgpack/msgpack-c
 
 # Uncomment these lines to expose RDP access information to the build machine in the build log.
 #init:
@@ -40,6 +41,7 @@ install:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 build_script:
+  - scons
   # - scons DEBUG=1
   # - ./build/ptest/ptest -v
 
