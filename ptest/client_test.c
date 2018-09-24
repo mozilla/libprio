@@ -26,15 +26,15 @@ mu_test_client__new(void)
   P_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
   P_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
 
-    const int ndata = PrioConfig_numDataFields(cfg);
-    P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  const int ndata = PrioConfig_numDataFields(cfg);
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
-    for (int i = 0; i < ndata; i++) {
-      // Arbitrary data
-      data_items[i] = (i % 3 == 1) || (i % 5 == 3);
-    }
+  for (int i = 0; i < ndata; i++) {
+    // Arbitrary data
+    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
+  }
 
-    P_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
+  P_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
 
 cleanup:
   mu_check(rv == SECSuccess);
@@ -83,39 +83,38 @@ test_client_agg(int nclients)
 
   const int ndata = PrioConfig_numDataFields(cfg);
 
-    P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
-    for (int i = 0; i < ndata; i++) {
-      // Arbitrary data
-      data_items[i] = (i % 3 == 1) || (i % 5 == 3);
-    }
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  for (int i = 0; i < ndata; i++) {
+    // Arbitrary data
+    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
+  }
 
-    for (int i = 0; i < nclients; i++) {
-      unsigned int aLen, bLen;
-      P_CHECKC(
-        PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
+  for (int i = 0; i < nclients; i++) {
+    unsigned int aLen, bLen;
+    P_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
 
-      P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
-      P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
+    P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
+    P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
 
-      mu_check(PrioServer_aggregate(sA, vA) == SECSuccess);
-      mu_check(PrioServer_aggregate(sB, vB) == SECSuccess);
+    mu_check(PrioServer_aggregate(sA, vA) == SECSuccess);
+    mu_check(PrioServer_aggregate(sB, vB) == SECSuccess);
 
-      free(for_a);
-      free(for_b);
+    free(for_a);
+    free(for_b);
 
-      for_a = NULL;
-      for_b = NULL;
-    }
+    for_a = NULL;
+    for_b = NULL;
+  }
 
-    mu_check(PrioTotalShare_set_data(tA, sA) == SECSuccess);
-    mu_check(PrioTotalShare_set_data(tB, sB) == SECSuccess);
+  mu_check(PrioTotalShare_set_data(tA, sA) == SECSuccess);
+  mu_check(PrioTotalShare_set_data(tB, sB) == SECSuccess);
 
-    P_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
-    mu_check(PrioTotalShare_final(cfg, output, tA, tB) == SECSuccess);
-    for (int i = 0; i < ndata; i++) {
-      unsigned long v = ((i % 3 == 1) || (i % 5 == 3));
-      mu_check(output[i] == v * nclients);
-    }
+  P_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
+  mu_check(PrioTotalShare_final(cfg, output, tA, tB) == SECSuccess);
+  for (int i = 0; i < ndata; i++) {
+    unsigned long v = ((i % 3 == 1) || (i % 5 == 3));
+    mu_check(output[i] == v * nclients);
+  }
 
 cleanup:
   mu_check(rv == SECSuccess);
