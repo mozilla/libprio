@@ -63,6 +63,7 @@ mu_test__verify_new(void)
   PrioVerifier vB = NULL;
   unsigned char* for_a = NULL;
   unsigned char* for_b = NULL;
+  bool* data_items = NULL;
 
   mp_int fR, gR, hR;
   MP_DIGITS(&fR) = NULL;
@@ -77,53 +78,48 @@ mu_test__verify_new(void)
   P_CHECKA(cfg = PrioConfig_new(214, pkA, pkB, (unsigned char*)"testbatch", 9));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  {
-    bool data_items[ndata];
-    for (int i = 0; i < ndata; i++) {
-      // Arbitrary data
-      data_items[i] = (i % 3 == 1) || (i % 5 == 3);
-    }
-
-    P_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
-    P_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
-
-    unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
-
-    MP_CHECKC(mp_init(&fR));
-    MP_CHECKC(mp_init(&gR));
-    MP_CHECKC(mp_init(&hR));
-
-    P_CHECKA(vA = PrioVerifier_new(sA));
-    P_CHECKA(vB = PrioVerifier_new(sB));
-    P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
-    P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
-
-    PrioPacketClient pA = vA->clientp;
-    PrioPacketClient pB = vB->clientp;
-    MP_CHECKC(mp_addmod(&pA->f0_share, &pB->f0_share, &cfg->modulus, &fR));
-    MP_CHECKC(mp_addmod(&pA->g0_share, &pB->g0_share, &cfg->modulus, &gR));
-    MP_CHECKC(mp_addmod(&pA->h0_share, &pB->h0_share, &cfg->modulus, &hR));
-
-    MP_CHECKC(mp_mulmod(&fR, &gR, &cfg->modulus, &fR));
-    mu_check(mp_cmp(&fR, &hR) == 0);
-
-    MP_CHECKC(mp_addmod(&vA->share_fR, &vB->share_fR, &cfg->modulus, &fR));
-    MP_CHECKC(mp_addmod(&vA->share_gR, &vB->share_gR, &cfg->modulus, &gR));
-    MP_CHECKC(mp_addmod(&vA->share_hR, &vB->share_hR, &cfg->modulus, &hR));
-
-    MP_CHECKC(mp_mulmod(&fR, &gR, &cfg->modulus, &fR));
-
-    // puts ("fR");
-    // mp_print (&fR, stdout);
-    // puts ("hR");
-    // mp_print (&hR, stdout);
-    mu_check(mp_cmp(&fR, &hR) == 0);
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  for (int i = 0; i < ndata; i++) {
+    // Arbitrary data
+    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
   }
+
+  P_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
+  P_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
+
+  unsigned int aLen, bLen;
+  P_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
+
+  MP_CHECKC(mp_init(&fR));
+  MP_CHECKC(mp_init(&gR));
+  MP_CHECKC(mp_init(&hR));
+
+  P_CHECKA(vA = PrioVerifier_new(sA));
+  P_CHECKA(vB = PrioVerifier_new(sB));
+  P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
+  P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
+
+  PrioPacketClient pA = vA->clientp;
+  PrioPacketClient pB = vB->clientp;
+  MP_CHECKC(mp_addmod(&pA->f0_share, &pB->f0_share, &cfg->modulus, &fR));
+  MP_CHECKC(mp_addmod(&pA->g0_share, &pB->g0_share, &cfg->modulus, &gR));
+  MP_CHECKC(mp_addmod(&pA->h0_share, &pB->h0_share, &cfg->modulus, &hR));
+
+  MP_CHECKC(mp_mulmod(&fR, &gR, &cfg->modulus, &fR));
+  mu_check(mp_cmp(&fR, &hR) == 0);
+
+  MP_CHECKC(mp_addmod(&vA->share_fR, &vB->share_fR, &cfg->modulus, &fR));
+  MP_CHECKC(mp_addmod(&vA->share_gR, &vB->share_gR, &cfg->modulus, &gR));
+  MP_CHECKC(mp_addmod(&vA->share_hR, &vB->share_hR, &cfg->modulus, &hR));
+
+  MP_CHECKC(mp_mulmod(&fR, &gR, &cfg->modulus, &fR));
+  mu_check(mp_cmp(&fR, &hR) == 0);
 
 cleanup:
   mu_check(rv == SECSuccess);
 
+  if (data_items)
+    free(data_items);
   if (for_a)
     free(for_a);
   if (for_b)
@@ -165,6 +161,7 @@ verify_full(int tweak)
   PrioPacketVerify2 p2B = NULL;
   unsigned char* for_a = NULL;
   unsigned char* for_b = NULL;
+  bool* data_items = NULL;
 
   mp_int fR, gR, hR;
   MP_DIGITS(&fR) = NULL;
@@ -179,66 +176,66 @@ verify_full(int tweak)
   P_CHECKA(cfg = PrioConfig_new(47, pkA, pkB, (unsigned char*)"test4", 5));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  {
-    bool data_items[ndata];
-    for (int i = 0; i < ndata; i++) {
-      // Arbitrary data
-      data_items[i] = (i % 3 == 1) || (i % 5 == 3);
-    }
-
-    P_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
-    P_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
-
-    unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
-
-    if (tweak == 5) {
-      for_a[3] = 3;
-      for_a[4] = 4;
-    }
-
-    P_CHECKA(vA = PrioVerifier_new(sA));
-    P_CHECKA(vB = PrioVerifier_new(sB));
-    P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
-    P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
-
-    if (tweak == 3) {
-      mp_add_d(&vA->share_fR, 1, &vA->share_fR);
-    }
-
-    if (tweak == 4) {
-      mp_add_d(&vB->share_gR, 1, &vB->share_gR);
-    }
-
-    P_CHECKA(p1A = PrioPacketVerify1_new());
-    P_CHECKA(p1B = PrioPacketVerify1_new());
-
-    P_CHECKC(PrioPacketVerify1_set_data(p1A, vA));
-    P_CHECKC(PrioPacketVerify1_set_data(p1B, vB));
-
-    if (tweak == 1) {
-      mp_add_d(&p1B->share_d, 1, &p1B->share_d);
-    }
-
-    P_CHECKA(p2A = PrioPacketVerify2_new());
-    P_CHECKA(p2B = PrioPacketVerify2_new());
-    P_CHECKC(PrioPacketVerify2_set_data(p2A, vA, p1A, p1B));
-    P_CHECKC(PrioPacketVerify2_set_data(p2B, vB, p1A, p1B));
-
-    if (tweak == 2) {
-      mp_add_d(&p2A->share_out, 1, &p2B->share_out);
-    }
-
-    int shouldBe = tweak ? SECFailure : SECSuccess;
-    mu_check(PrioVerifier_isValid(vA, p2A, p2B) == shouldBe);
-    mu_check(PrioVerifier_isValid(vB, p2A, p2B) == shouldBe);
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  for (int i = 0; i < ndata; i++) {
+    // Arbitrary data
+    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
   }
+
+  P_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
+  P_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
+
+  unsigned int aLen, bLen;
+  P_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
+
+  if (tweak == 5) {
+    for_a[3] = 3;
+    for_a[4] = 4;
+  }
+
+  P_CHECKA(vA = PrioVerifier_new(sA));
+  P_CHECKA(vB = PrioVerifier_new(sB));
+  P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
+  P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
+
+  if (tweak == 3) {
+    mp_add_d(&vA->share_fR, 1, &vA->share_fR);
+  }
+
+  if (tweak == 4) {
+    mp_add_d(&vB->share_gR, 1, &vB->share_gR);
+  }
+
+  P_CHECKA(p1A = PrioPacketVerify1_new());
+  P_CHECKA(p1B = PrioPacketVerify1_new());
+
+  P_CHECKC(PrioPacketVerify1_set_data(p1A, vA));
+  P_CHECKC(PrioPacketVerify1_set_data(p1B, vB));
+
+  if (tweak == 1) {
+    mp_add_d(&p1B->share_d, 1, &p1B->share_d);
+  }
+
+  P_CHECKA(p2A = PrioPacketVerify2_new());
+  P_CHECKA(p2B = PrioPacketVerify2_new());
+  P_CHECKC(PrioPacketVerify2_set_data(p2A, vA, p1A, p1B));
+  P_CHECKC(PrioPacketVerify2_set_data(p2B, vB, p1A, p1B));
+
+  if (tweak == 2) {
+    mp_add_d(&p2A->share_out, 1, &p2B->share_out);
+  }
+
+  int shouldBe = tweak ? SECFailure : SECSuccess;
+  mu_check(PrioVerifier_isValid(vA, p2A, p2B) == shouldBe);
+  mu_check(PrioVerifier_isValid(vB, p2A, p2B) == shouldBe);
 
 cleanup:
   if (!tweak) {
     mu_check(rv == SECSuccess);
   }
 
+  if (data_items)
+    free(data_items);
   if (for_a)
     free(for_a);
   if (for_b)

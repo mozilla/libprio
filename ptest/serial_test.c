@@ -24,7 +24,8 @@ gen_client_packets(const_PrioConfig cfg, PrioPacketClient pA,
   SECStatus rv = SECSuccess;
 
   const int ndata = cfg->num_data_fields;
-  bool data_items[ndata];
+  bool* data_items = NULL;
+  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
   for (int i = 0; i < ndata; i++) {
     data_items[i] = (i % 3 == 1) || (i % 5 == 3);
@@ -33,6 +34,8 @@ gen_client_packets(const_PrioConfig cfg, PrioPacketClient pA,
   P_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
 
 cleanup:
+  if (data_items)
+    free(data_items);
   return rv;
 }
 
