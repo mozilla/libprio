@@ -220,11 +220,13 @@ Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey)
   P_CHECKA(*pvtkey = PK11_GenerateKeyPair(slot, CKM_EC_KEY_PAIR_GEN, &ecp,
                                           (SECKEYPublicKey**)pubkey, PR_FALSE,
                                           PR_FALSE, NULL));
-  PK11_FreeSlot(slot);
-
 cleanup:
-  if (ecp.data)
+  if (slot) {
+    PK11_FreeSlot(slot);
+  }
+  if (ecp.data) {
     free(ecp.data);
+  }
   if (rv != SECSuccess) {
     PublicKey_clear(*pubkey);
     PrivateKey_clear(*pvtkey);
