@@ -16,6 +16,6 @@ addons:
 
 script:
   - ./scripts/clang-format.sh
-  - scons DEBUG=1
+  - scons DEBUG=1 SANITIZE=1
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./build/ptest/ptest -v
