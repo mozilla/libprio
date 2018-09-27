@@ -139,7 +139,7 @@ mu_test_decrypt_wrong_key(void)
 }
 
 void
-mu_test_export(void)
+mu_test_export_pubkey(void)
 {
   SECStatus rv = SECSuccess;
   PublicKey pubkey = NULL;
@@ -160,6 +160,188 @@ mu_test_export(void)
 cleanup:
   mu_check(rv == SECSuccess);
   PublicKey_clear(pubkey);
+  return;
+}
+
+void
+mu_test_export_pubkey_zeros(void)
+{
+  SECStatus rv = SECSuccess;
+  PublicKey pubkey = NULL;
+
+  unsigned char raw_bytes[CURVE25519_KEY_LEN];
+  unsigned char raw_bytes2[CURVE25519_KEY_LEN];
+  for (int i = 0; i < CURVE25519_KEY_LEN; i++) {
+    raw_bytes[i] = (3 * i + 7) % 0xFF;
+  }
+
+  for (int i = 0; i < 15; i++) {
+    raw_bytes[i] = 0;
+  }
+
+  P_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
+  P_CHECKC(PublicKey_export(pubkey, raw_bytes2));
+
+  for (int i = 0; i < CURVE25519_KEY_LEN; i++) {
+    mu_check(raw_bytes[i] == raw_bytes2[i]);
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PublicKey_clear(pubkey);
+  return;
+}
+
+void
+test_export_privkey(int zeros)
+{
+  SECStatus rv = SECSuccess;
+  PublicKey pubkey = NULL;
+  PrivateKey pvtkey = NULL;
+  PrivateKey pvtkey_imp = NULL;
+  unsigned char privData[CURVE25519_KEY_LEN];
+  unsigned char privData2[CURVE25519_KEY_LEN];
+  unsigned char pubData[CURVE25519_KEY_LEN];
+  unsigned char input[67];
+  unsigned char output[256];
+  unsigned char decrypt[256];
+
+  for (unsigned int i = 0; i < sizeof(input); i++) {
+    input[i] = i;
+  }
+
+  P_CHECKC(Keypair_new(&pvtkey, &pubkey));
+  P_CHECKC(PrivateKey_export(pvtkey, privData));
+  P_CHECKC(PublicKey_export(pubkey, pubData));
+
+  if (zeros) {
+    // Zero out leading bytes of private key
+    memset(privData, 0, 5);
+  }
+
+  P_CHECKC(PrivateKey_import(&pvtkey_imp, privData, CURVE25519_KEY_LEN, pubData,
+                             CURVE25519_KEY_LEN));
+  P_CHECKC(PrivateKey_export(pvtkey_imp, privData2));
+
+  mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
+
+  if (!zeros) {
+    unsigned int outputLen;
+    P_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
+                               input, sizeof(input)));
+
+    // Check that can decrypt with imported private key.
+    unsigned int plainLen;
+    P_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
+                                output, outputLen));
+
+    mu_check(plainLen == sizeof(input));
+    mu_check(!memcmp(input, decrypt, sizeof(input)));
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PublicKey_clear(pubkey);
+  PrivateKey_clear(pvtkey);
+  PrivateKey_clear(pvtkey_imp);
+  return;
+}
+
+void
+mu_test_export_privkey(void)
+{
+  test_export_privkey(0);
+}
+
+void
+mu_test_export_privkey_zeros(void)
+{
+  test_export_privkey(1);
+}
+
+void
+test_export_hex_privkey(int zeros)
+{
+  SECStatus rv = SECSuccess;
+  PublicKey pubkey = NULL;
+  PrivateKey pvtkey = NULL;
+  PrivateKey pvtkey_imp = NULL;
+  unsigned char privData[CURVE25519_KEY_LEN_HEX + 1];
+  unsigned char privData2[CURVE25519_KEY_LEN_HEX + 1];
+  unsigned char pubData[CURVE25519_KEY_LEN_HEX + 1];
+  unsigned char input[67];
+  unsigned char output[256];
+  unsigned char decrypt[256];
+
+  for (unsigned int i = 0; i < sizeof(input); i++) {
+    input[i] = i;
+  }
+
+  P_CHECKC(Keypair_new(&pvtkey, &pubkey));
+  P_CHECKC(PrivateKey_export_hex(pvtkey, privData));
+  P_CHECKC(PublicKey_export_hex(pubkey, pubData));
+
+  if (zeros) {
+    // Zero out leading bytes of private key with ASCII zero
+    memset(privData, '0', 5);
+  }
+
+  P_CHECKC(PrivateKey_import_hex(&pvtkey_imp, privData, CURVE25519_KEY_LEN_HEX,
+                                 pubData, CURVE25519_KEY_LEN_HEX));
+  P_CHECKC(PrivateKey_export_hex(pvtkey_imp, privData2));
+
+  mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
+
+  if (!zeros) {
+    unsigned int outputLen;
+    P_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
+                               input, sizeof(input)));
+
+    // Check that can decrypt with imported private key.
+    unsigned int plainLen;
+    P_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
+                                output, outputLen));
+
+    mu_check(plainLen == sizeof(input));
+    mu_check(!memcmp(input, decrypt, sizeof(input)));
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PublicKey_clear(pubkey);
+  PrivateKey_clear(pvtkey);
+  PrivateKey_clear(pvtkey_imp);
+  return;
+}
+
+void
+mu_test_export_hex_privkey(void)
+{
+  test_export_hex_privkey(0);
+}
+
+void
+mu_test_export_hex_privkey_zeros(void)
+{
+  test_export_hex_privkey(1);
+}
+
+void
+mu_test_import_hex_wrongsize(void)
+{
+  PrivateKey pvtkey = NULL;
+  unsigned char privData[CURVE25519_KEY_LEN + 1];
+
+  mu_check(PrivateKey_import_hex(&pvtkey, privData, 7, privData, 8) ==
+           SECFailure);
+  mu_check(PrivateKey_import_hex(&pvtkey, privData, 32, privData, 1024) ==
+           SECFailure);
+  mu_check(PrivateKey_import_hex(&pvtkey, privData, 31, privData, 32) ==
+           SECFailure);
+  mu_check(PrivateKey_import_hex(&pvtkey, NULL, 32, privData, 32) ==
+           SECFailure);
+  mu_check(PrivateKey_import_hex(&pvtkey, privData, 32, NULL, 32) ==
+           SECFailure);
   return;
 }
 
