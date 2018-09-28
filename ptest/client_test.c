@@ -9,6 +9,7 @@
 #include <mprio.h>
 
 #include "mutest.h"
+#include "test_util.h"
 #include "prio/client.h"
 #include "prio/server.h"
 #include "prio/util.h"
@@ -22,19 +23,19 @@ mu_test_client__new(void)
   PrioPacketClient pB = NULL;
   bool* data_items = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(23));
-  P_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
-  P_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
+  PT_CHECKA(cfg = PrioConfig_newTest(23));
+  PT_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
+  PT_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
   for (int i = 0; i < ndata; i++) {
     // Arbitrary data
     data_items[i] = (i % 3 == 1) || (i % 5 == 3);
   }
 
-  P_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
+  PT_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
 
 cleanup:
   mu_check(rv == SECSuccess);
@@ -69,21 +70,21 @@ test_client_agg(int nclients)
   unsigned long* output = NULL;
 
   PrioPRGSeed seed;
-  P_CHECKC(PrioPRGSeed_randomize(&seed));
+  PT_CHECKC(PrioPRGSeed_randomize(&seed));
 
-  P_CHECKC(Keypair_new(&skA, &pkA));
-  P_CHECKC(Keypair_new(&skB, &pkB));
-  P_CHECKA(cfg = PrioConfig_new(133, pkA, pkB, batch_id, batch_id_len));
-  P_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
-  P_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
-  P_CHECKA(tA = PrioTotalShare_new());
-  P_CHECKA(tB = PrioTotalShare_new());
-  P_CHECKA(vA = PrioVerifier_new(sA));
-  P_CHECKA(vB = PrioVerifier_new(sB));
+  PT_CHECKC(Keypair_new(&skA, &pkA));
+  PT_CHECKC(Keypair_new(&skB, &pkB));
+  PT_CHECKA(cfg = PrioConfig_new(133, pkA, pkB, batch_id, batch_id_len));
+  PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
+  PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
+  PT_CHECKA(tA = PrioTotalShare_new());
+  PT_CHECKA(tB = PrioTotalShare_new());
+  PT_CHECKA(vA = PrioVerifier_new(sA));
+  PT_CHECKA(vB = PrioVerifier_new(sB));
 
   const int ndata = PrioConfig_numDataFields(cfg);
 
-  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
   for (int i = 0; i < ndata; i++) {
     // Arbitrary data
     data_items[i] = (i % 3 == 1) || (i % 5 == 3);
@@ -91,10 +92,10 @@ test_client_agg(int nclients)
 
   for (int i = 0; i < nclients; i++) {
     unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
+    PT_CHECKC(PrioClient_encode(cfg, data_items, &for_a, &aLen, &for_b, &bLen));
 
-    P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
-    P_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
+    PT_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
+    PT_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
 
     mu_check(PrioServer_aggregate(sA, vA) == SECSuccess);
     mu_check(PrioServer_aggregate(sB, vB) == SECSuccess);
@@ -109,7 +110,7 @@ test_client_agg(int nclients)
   mu_check(PrioTotalShare_set_data(tA, sA) == SECSuccess);
   mu_check(PrioTotalShare_set_data(tB, sB) == SECSuccess);
 
-  P_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
+  PT_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
   mu_check(PrioTotalShare_final(cfg, output, tA, tB) == SECSuccess);
   for (int i = 0; i < ndata; i++) {
     unsigned long v = ((i % 3 == 1) || (i % 5 == 3));

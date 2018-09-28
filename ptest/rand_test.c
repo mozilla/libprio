@@ -9,6 +9,8 @@
 #include <mpi.h>
 
 #include "mutest.h"
+#include "test_util.h"
+#include "test_util.h"
 #include "prio/rand.h"
 #include "prio/util.h"
 
@@ -89,10 +91,10 @@ test_rand_distribution(int limit)
   MP_DIGITS(&max) = NULL;
   MP_DIGITS(&out) = NULL;
 
-  P_CHECKA(bins = calloc(limit, sizeof(int)));
+  PT_CHECKA(bins = calloc(limit, sizeof(int)));
 
-  MP_CHECKC(mp_init(&max));
-  MP_CHECKC(mp_init(&out));
+  MPT_CHECKC(mp_init(&max));
+  MPT_CHECKC(mp_init(&out));
 
   mp_set(&max, limit);
 
@@ -106,7 +108,7 @@ test_rand_distribution(int limit)
     mu_check(mp_cmp_z(&out) > -1);
 
     unsigned char ival[2] = { 0x00, 0x00 };
-    MP_CHECKC(mp_to_fixlen_octets(&out, ival, 2));
+    MPT_CHECKC(mp_to_fixlen_octets(&out, ival, 2));
     if (ival[1] + 256 * ival[0] < limit) {
       bins[ival[1] + 256 * ival[0]] += 1;
     } else {
@@ -153,20 +155,20 @@ test_rand_distribution_large(mp_int* max)
 
   mp_int out;
   MP_DIGITS(&out) = NULL;
-  MP_CHECKC(mp_init(&out));
-  P_CHECKA(bins = calloc(limit, sizeof(int)));
+  MPT_CHECKC(mp_init(&out));
+  PT_CHECKA(bins = calloc(limit, sizeof(int)));
 
   for (int i = 0; i < limit; i++) {
     bins[i] = 0;
   }
 
   for (int i = 0; i < 100 * limit * limit; i++) {
-    MP_CHECKC(rand_int(&out, max));
+    MPT_CHECKC(rand_int(&out, max));
     mu_check(mp_cmp(&out, max) == -1);
     mu_check(mp_cmp_z(&out) > -1);
 
     unsigned long res;
-    MP_CHECKC(mp_mod_d(&out, limit, &res));
+    MPT_CHECKC(mp_mod_d(&out, limit, &res));
     bins[res] += 1;
   }
 
@@ -187,10 +189,10 @@ mu_test__rand_distribution_large(void)
   SECStatus rv = SECSuccess;
   mp_int max;
   MP_DIGITS(&max) = NULL;
-  MP_CHECKC(mp_init(&max));
+  MPT_CHECKC(mp_init(&max));
 
   char bytes[] = "FF1230985198451798EDC8123";
-  MP_CHECKC(mp_read_radix(&max, bytes, 16));
+  MPT_CHECKC(mp_read_radix(&max, bytes, 16));
   test_rand_distribution_large(&max);
 
 cleanup:

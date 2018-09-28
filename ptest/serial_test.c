@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "mutest.h"
+#include "test_util.h"
 #include "prio/client.h"
 #include "prio/config.h"
 #include "prio/serial.h"
@@ -25,13 +26,13 @@ gen_client_packets(const_PrioConfig cfg, PrioPacketClient pA,
 
   const int ndata = cfg->num_data_fields;
   bool* data_items = NULL;
-  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
   for (int i = 0; i < ndata; i++) {
     data_items[i] = (i % 3 == 1) || (i % 5 == 3);
   }
 
-  P_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
+  PT_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
 
 cleanup:
   if (data_items)
@@ -64,17 +65,17 @@ serial_client(int bad)
   msgpack_sbuffer_init(&sbufB);
   msgpack_packer_init(&pkB, &sbufB, msgpack_sbuffer_write);
 
-  P_CHECKA(cfg = PrioConfig_new(100, NULL, NULL, batch_id1, batch_id_len));
-  P_CHECKA(cfg2 = PrioConfig_new(100, NULL, NULL, batch_id2, batch_id_len));
-  P_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
-  P_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
-  P_CHECKA(qA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
-  P_CHECKA(qB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
+  PT_CHECKA(cfg = PrioConfig_new(100, NULL, NULL, batch_id1, batch_id_len));
+  PT_CHECKA(cfg2 = PrioConfig_new(100, NULL, NULL, batch_id2, batch_id_len));
+  PT_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
+  PT_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
+  PT_CHECKA(qA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
+  PT_CHECKA(qB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
 
-  P_CHECKC(gen_client_packets(cfg, pA, pB));
+  PT_CHECKC(gen_client_packets(cfg, pA, pB));
 
-  P_CHECKC(serial_write_packet_client(&pkA, pA, cfg));
-  P_CHECKC(serial_write_packet_client(&pkB, pB, cfg));
+  PT_CHECKC(serial_write_packet_client(&pkA, pA, cfg));
+  PT_CHECKC(serial_write_packet_client(&pkB, pB, cfg));
 
   if (bad == 1) {
     sbufA.size = 1;
@@ -87,11 +88,11 @@ serial_client(int bad)
   const int size_a = sbufA.size;
   const int size_b = sbufB.size;
 
-  P_CHECKCB(msgpack_unpacker_init(&upkA, 0));
-  P_CHECKCB(msgpack_unpacker_init(&upkB, 0));
+  PT_CHECKCB(msgpack_unpacker_init(&upkA, 0));
+  PT_CHECKCB(msgpack_unpacker_init(&upkB, 0));
 
-  P_CHECKCB(msgpack_unpacker_reserve_buffer(&upkA, size_a));
-  P_CHECKCB(msgpack_unpacker_reserve_buffer(&upkB, size_b));
+  PT_CHECKCB(msgpack_unpacker_reserve_buffer(&upkA, size_a));
+  PT_CHECKCB(msgpack_unpacker_reserve_buffer(&upkB, size_b));
 
   memcpy(msgpack_unpacker_buffer(&upkA), sbufA.data, size_a);
   memcpy(msgpack_unpacker_buffer(&upkB), sbufB.data, size_b);
@@ -155,9 +156,9 @@ test_verify1(int bad)
   PrioPacketVerify1 v2 = NULL;
   PrioConfig cfg = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(1));
-  P_CHECKA(v1 = PrioPacketVerify1_new());
-  P_CHECKA(v2 = PrioPacketVerify1_new());
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
+  PT_CHECKA(v1 = PrioPacketVerify1_new());
+  PT_CHECKA(v2 = PrioPacketVerify1_new());
   mp_set(&v1->share_d, 4);
   mp_set(&v1->share_e, 10);
 
@@ -168,14 +169,14 @@ test_verify1(int bad)
   msgpack_sbuffer_init(&sbuf);
   msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
 
-  P_CHECKC(PrioPacketVerify1_write(v1, &pk));
+  PT_CHECKC(PrioPacketVerify1_write(v1, &pk));
 
   if (bad == 1) {
     mp_set(&cfg->modulus, 6);
   }
 
-  P_CHECKCB(msgpack_unpacker_init(&upk, 0));
-  P_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
+  PT_CHECKCB(msgpack_unpacker_init(&upk, 0));
+  PT_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
   memcpy(msgpack_unpacker_buffer(&upk), sbuf.data, sbuf.size);
   msgpack_unpacker_buffer_consumed(&upk, sbuf.size);
 
@@ -215,9 +216,9 @@ test_verify2(int bad)
   PrioPacketVerify2 v2 = NULL;
   PrioConfig cfg = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(1));
-  P_CHECKA(v1 = PrioPacketVerify2_new());
-  P_CHECKA(v2 = PrioPacketVerify2_new());
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
+  PT_CHECKA(v1 = PrioPacketVerify2_new());
+  PT_CHECKA(v2 = PrioPacketVerify2_new());
   mp_set(&v1->share_out, 4);
 
   msgpack_sbuffer sbuf;
@@ -227,14 +228,14 @@ test_verify2(int bad)
   msgpack_sbuffer_init(&sbuf);
   msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
 
-  P_CHECKC(PrioPacketVerify2_write(v1, &pk));
+  PT_CHECKC(PrioPacketVerify2_write(v1, &pk));
 
   if (bad == 1) {
     mp_set(&cfg->modulus, 4);
   }
 
-  P_CHECKCB(msgpack_unpacker_init(&upk, 0));
-  P_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
+  PT_CHECKCB(msgpack_unpacker_init(&upk, 0));
+  PT_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
   memcpy(msgpack_unpacker_buffer(&upk), sbuf.data, sbuf.size);
   msgpack_unpacker_buffer_consumed(&upk, sbuf.size);
 
@@ -272,12 +273,12 @@ test_total_share(int bad)
   PrioTotalShare t2 = NULL;
   PrioConfig cfg = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest((bad == 2 ? 4 : 3)));
-  P_CHECKA(t1 = PrioTotalShare_new());
-  P_CHECKA(t2 = PrioTotalShare_new());
+  PT_CHECKA(cfg = PrioConfig_newTest((bad == 2 ? 4 : 3)));
+  PT_CHECKA(t1 = PrioTotalShare_new());
+  PT_CHECKA(t2 = PrioTotalShare_new());
 
   t1->idx = PRIO_SERVER_A;
-  P_CHECKC(MPArray_resize(t1->data_shares, 3));
+  PT_CHECKC(MPArray_resize(t1->data_shares, 3));
 
   mp_set(&t1->data_shares->data[0], 10);
   mp_set(&t1->data_shares->data[1], 20);
@@ -290,14 +291,14 @@ test_total_share(int bad)
   msgpack_sbuffer_init(&sbuf);
   msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
 
-  P_CHECKC(PrioTotalShare_write(t1, &pk));
+  PT_CHECKC(PrioTotalShare_write(t1, &pk));
 
   if (bad == 1) {
     mp_set(&cfg->modulus, 4);
   }
 
-  P_CHECKCB(msgpack_unpacker_init(&upk, 0));
-  P_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
+  PT_CHECKCB(msgpack_unpacker_init(&upk, 0));
+  PT_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
   memcpy(msgpack_unpacker_buffer(&upk), sbuf.data, sbuf.size);
   msgpack_unpacker_buffer_consumed(&upk, sbuf.size);
 

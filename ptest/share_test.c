@@ -10,6 +10,7 @@
 #include <mprio.h>
 
 #include "mutest.h"
+#include "test_util.h"
 #include "prio/client.h"
 #include "prio/config.h"
 #include "prio/mparray.h"
@@ -28,15 +29,15 @@ mu_test_share(void)
   MP_DIGITS(&b) = NULL;
   MP_DIGITS(&c) = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(93));
-  P_CHECKA(t1 = BeaverTriple_new());
-  P_CHECKA(t2 = BeaverTriple_new());
+  PT_CHECKA(cfg = PrioConfig_newTest(93));
+  PT_CHECKA(t1 = BeaverTriple_new());
+  PT_CHECKA(t2 = BeaverTriple_new());
 
   mu_check(BeaverTriple_set_rand(cfg, t1, t2) == SECSuccess);
 
-  MP_CHECKC(mp_init(&a));
-  MP_CHECKC(mp_init(&b));
-  MP_CHECKC(mp_init(&c));
+  MPT_CHECKC(mp_init(&a));
+  MPT_CHECKC(mp_init(&b));
+  MPT_CHECKC(mp_init(&c));
 
   mu_check(mp_addmod(&t1->a, &t2->a, &cfg->modulus, &a) == MP_OKAY);
   mu_check(mp_addmod(&t1->b, &t2->b, &cfg->modulus, &b) == MP_OKAY);
@@ -61,25 +62,25 @@ mu_test_arr(void)
   SECStatus rv = SECSuccess;
   MPArray arr = NULL;
   MPArray arr2 = NULL;
-  P_CHECKA(arr = MPArray_new(10));
-  P_CHECKA(arr2 = MPArray_new(7));
+  PT_CHECKA(arr = MPArray_new(10));
+  PT_CHECKA(arr2 = MPArray_new(7));
 
   for (int i = 0; i < 10; i++) {
     mp_set(&arr->data[i], i);
   }
 
-  P_CHECKC(MPArray_resize(arr, 15));
+  PT_CHECKC(MPArray_resize(arr, 15));
   for (int i = 10; i < 15; i++) {
     mu_check(mp_cmp_d(&arr->data[i], 0) == 0);
     mp_set(&arr->data[i], i);
   }
 
-  P_CHECKC(MPArray_resize(arr, 7));
+  PT_CHECKC(MPArray_resize(arr, 7));
   for (int i = 10; i < 7; i++) {
     mu_check(mp_cmp_d(&arr->data[i], i) == 0);
   }
 
-  P_CHECKC(MPArray_copy(arr2, arr));
+  PT_CHECKC(MPArray_copy(arr2, arr));
   for (int i = 10; i < 7; i++) {
     mu_check(mp_cmp(&arr->data[i], &arr2->data[i]) == 0);
   }

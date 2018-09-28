@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "mutest.h"
+#include "test_util.h"
 #include "prio/config.h"
 #include "prio/mparray.h"
 #include "prio/poly.h"
@@ -24,9 +25,9 @@ mu_test__fft_one(void)
   MPArray points_in = NULL;
   MPArray points_out = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(123));
-  P_CHECKA(points_in = MPArray_new(1));
-  P_CHECKA(points_out = MPArray_new(1));
+  PT_CHECKA(cfg = PrioConfig_newTest(123));
+  PT_CHECKA(points_in = MPArray_new(1));
+  PT_CHECKA(points_out = MPArray_new(1));
 
   mp_set(&points_in->data[0], 3);
   mu_check(poly_fft(points_out, points_in, cfg, false) == SECSuccess);
@@ -50,8 +51,8 @@ mu_test__fft_roots(void)
   mp_int tmp;
   MP_DIGITS(&tmp) = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(90));
-  MP_CHECKC(mp_init(&tmp));
+  PT_CHECKA(cfg = PrioConfig_newTest(90));
+  MPT_CHECKC(mp_init(&tmp));
 
   mp_int roots[4];
   poly_fft_get_roots(roots, 4, cfg, false);
@@ -82,13 +83,13 @@ mu_test__fft_simple(void)
   MP_DIGITS(&should_be) = NULL;
   MP_DIGITS(&tmp) = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(140));
-  P_CHECKA(points_in = MPArray_new(nPoints));
-  P_CHECKA(points_out = MPArray_new(nPoints));
-  P_CHECKA(roots = calloc(nPoints, sizeof(mp_int)));
+  PT_CHECKA(cfg = PrioConfig_newTest(140));
+  PT_CHECKA(points_in = MPArray_new(nPoints));
+  PT_CHECKA(points_out = MPArray_new(nPoints));
+  PT_CHECKA(roots = calloc(nPoints, sizeof(mp_int)));
 
-  MP_CHECKC(mp_init(&should_be));
-  MP_CHECKC(mp_init(&tmp));
+  MPT_CHECKC(mp_init(&should_be));
+  MPT_CHECKC(mp_init(&tmp));
 
   poly_fft_get_roots(roots, nPoints, cfg, false);
 
@@ -141,11 +142,11 @@ mu_test__fft_invert(void)
   MPArray points_out2 = NULL;
   mp_int* roots = NULL;
 
-  P_CHECKA(cfg = PrioConfig_newTest(91));
-  P_CHECKA(points_in = MPArray_new(nPoints));
-  P_CHECKA(points_out = MPArray_new(nPoints));
-  P_CHECKA(points_out2 = MPArray_new(nPoints));
-  P_CHECKA(roots = calloc(nPoints, sizeof(mp_int)));
+  PT_CHECKA(cfg = PrioConfig_newTest(91));
+  PT_CHECKA(points_in = MPArray_new(nPoints));
+  PT_CHECKA(points_out = MPArray_new(nPoints));
+  PT_CHECKA(points_out2 = MPArray_new(nPoints));
+  PT_CHECKA(roots = calloc(nPoints, sizeof(mp_int)));
 
   poly_fft_get_roots(roots, nPoints, cfg, false);
 

@@ -14,6 +14,7 @@
 #include <secoidt.h>
 
 #include "mutest.h"
+#include "test_util.h"
 #include "prio/encrypt.h"
 #include "prio/rand.h"
 #include "prio/util.h"
@@ -25,7 +26,7 @@ mu_test_keygen(void)
   PublicKey pubkey = NULL;
   PrivateKey pvtkey = NULL;
 
-  P_CHECKC(Keypair_new(&pvtkey, &pubkey));
+  PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
   mu_check(SECKEY_PublicKeyStrength(pubkey) == 32);
 
 cleanup:
@@ -49,20 +50,20 @@ test_encrypt_once(int bad, unsigned int inlen)
   unsigned char* bytes_dec = NULL;
 
   unsigned int enclen;
-  P_CHECKC(PublicKey_encryptSize(inlen, &enclen));
+  PT_CHECKC(PublicKey_encryptSize(inlen, &enclen));
   unsigned int declen = enclen;
 
   P_CHECKA(bytes_in = malloc(inlen));
   P_CHECKA(bytes_enc = malloc(enclen));
   P_CHECKA(bytes_dec = malloc(enclen));
-  P_CHECKC(rand_bytes(bytes_in, inlen));
+  PT_CHECKC(rand_bytes(bytes_in, inlen));
 
   memset(bytes_dec, 0, declen);
 
   unsigned int encryptedBytes;
-  P_CHECKC(Keypair_new(&pvtkey, &pubkey));
-  P_CHECKC(Keypair_new(&pvtkey2, &pubkey2));
-  P_CHECKC(PublicKey_encrypt(pubkey, bytes_enc, &encryptedBytes, enclen,
+  PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
+  PT_CHECKC(Keypair_new(&pvtkey2, &pubkey2));
+  PT_CHECKC(PublicKey_encrypt(pubkey, bytes_enc, &encryptedBytes, enclen,
                              bytes_in, inlen));
   mu_check(encryptedBytes == enclen);
 
@@ -150,8 +151,8 @@ mu_test_export_pubkey(void)
     raw_bytes[i] = (3 * i + 7) % 0xFF;
   }
 
-  P_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
-  P_CHECKC(PublicKey_export(pubkey, raw_bytes2));
+  PT_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes2));
 
   for (int i = 0; i < CURVE25519_KEY_LEN; i++) {
     mu_check(raw_bytes[i] == raw_bytes2[i]);
@@ -179,8 +180,8 @@ mu_test_export_pubkey_zeros(void)
     raw_bytes[i] = 0;
   }
 
-  P_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
-  P_CHECKC(PublicKey_export(pubkey, raw_bytes2));
+  PT_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes2));
 
   for (int i = 0; i < CURVE25519_KEY_LEN; i++) {
     mu_check(raw_bytes[i] == raw_bytes2[i]);
@@ -210,29 +211,29 @@ test_export_privkey(int zeros)
     input[i] = i;
   }
 
-  P_CHECKC(Keypair_new(&pvtkey, &pubkey));
-  P_CHECKC(PrivateKey_export(pvtkey, privData));
-  P_CHECKC(PublicKey_export(pubkey, pubData));
+  PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
+  PT_CHECKC(PrivateKey_export(pvtkey, privData));
+  PT_CHECKC(PublicKey_export(pubkey, pubData));
 
   if (zeros) {
     // Zero out leading bytes of private key
     memset(privData, 0, 5);
   }
 
-  P_CHECKC(PrivateKey_import(&pvtkey_imp, privData, CURVE25519_KEY_LEN, pubData,
+  PT_CHECKC(PrivateKey_import(&pvtkey_imp, privData, CURVE25519_KEY_LEN, pubData,
                              CURVE25519_KEY_LEN));
-  P_CHECKC(PrivateKey_export(pvtkey_imp, privData2));
+  PT_CHECKC(PrivateKey_export(pvtkey_imp, privData2));
 
   mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
 
   if (!zeros) {
     unsigned int outputLen;
-    P_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
+    PT_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
                                input, sizeof(input)));
 
     // Check that can decrypt with imported private key.
     unsigned int plainLen;
-    P_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
+    PT_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
                                 output, outputLen));
 
     mu_check(plainLen == sizeof(input));
@@ -277,29 +278,29 @@ test_export_hex_privkey(int zeros)
     input[i] = i;
   }
 
-  P_CHECKC(Keypair_new(&pvtkey, &pubkey));
-  P_CHECKC(PrivateKey_export_hex(pvtkey, privData));
-  P_CHECKC(PublicKey_export_hex(pubkey, pubData));
+  PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
+  PT_CHECKC(PrivateKey_export_hex(pvtkey, privData));
+  PT_CHECKC(PublicKey_export_hex(pubkey, pubData));
 
   if (zeros) {
     // Zero out leading bytes of private key with ASCII zero
     memset(privData, '0', 5);
   }
 
-  P_CHECKC(PrivateKey_import_hex(&pvtkey_imp, privData, CURVE25519_KEY_LEN_HEX,
+  PT_CHECKC(PrivateKey_import_hex(&pvtkey_imp, privData, CURVE25519_KEY_LEN_HEX,
                                  pubData, CURVE25519_KEY_LEN_HEX));
-  P_CHECKC(PrivateKey_export_hex(pvtkey_imp, privData2));
+  PT_CHECKC(PrivateKey_export_hex(pvtkey_imp, privData2));
 
   mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
 
   if (!zeros) {
     unsigned int outputLen;
-    P_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
+    PT_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
                                input, sizeof(input)));
 
     // Check that can decrypt with imported private key.
     unsigned int plainLen;
-    P_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
+    PT_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
                                 output, outputLen));
 
     mu_check(plainLen == sizeof(input));
@@ -371,8 +372,8 @@ mu_test_export_hex(void)
                                 2 * CURVE25519_KEY_LEN + 1) == SECFailure);
 
   // Import a key in upper-case hex
-  P_CHECKC(PublicKey_import_hex(&pubkey, hex_bytes, 2 * CURVE25519_KEY_LEN));
-  P_CHECKC(PublicKey_export(pubkey, raw_bytes));
+  PT_CHECKC(PublicKey_import_hex(&pubkey, hex_bytes, 2 * CURVE25519_KEY_LEN));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes));
   PublicKey_clear(pubkey);
   pubkey = NULL;
 
@@ -381,8 +382,8 @@ mu_test_export_hex(void)
   }
 
   // Import a key in mixed-case hex
-  P_CHECKC(PublicKey_import_hex(&pubkey, hex_bytesl, 2 * CURVE25519_KEY_LEN));
-  P_CHECKC(PublicKey_export(pubkey, raw_bytes));
+  PT_CHECKC(PublicKey_import_hex(&pubkey, hex_bytesl, 2 * CURVE25519_KEY_LEN));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes));
   PublicKey_clear(pubkey);
   pubkey = NULL;
 
@@ -396,8 +397,8 @@ mu_test_export_hex(void)
                             CURVE25519_KEY_LEN + 1) == SECFailure);
 
   // Import a raw key and export as hex
-  P_CHECKC(PublicKey_import(&pubkey, raw_bytes_should, CURVE25519_KEY_LEN));
-  P_CHECKC(PublicKey_export_hex(pubkey, hex_bytes2));
+  PT_CHECKC(PublicKey_import(&pubkey, raw_bytes_should, CURVE25519_KEY_LEN));
+  PT_CHECKC(PublicKey_export_hex(pubkey, hex_bytes2));
 
   for (int i = 0; i < 2 * CURVE25519_KEY_LEN; i++) {
     mu_check(hex_bytes[i] == hex_bytes2[i]);
