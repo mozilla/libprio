@@ -11,12 +11,12 @@
 #include <string.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/client.h"
 #include "prio/config.h"
 #include "prio/serial.h"
 #include "prio/server.h"
 #include "prio/util.h"
+#include "test_util.h"
 
 SECStatus
 gen_client_packets(const_PrioConfig cfg, PrioPacketClient pA,

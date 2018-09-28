@@ -9,9 +9,9 @@
 #include <mpi.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/prg.h"
 #include "prio/util.h"
+#include "test_util.h"
 
 void
 mu_test__prg_simple(void)
@@ -340,7 +340,7 @@ mu_test__prg_share_arr(void)
 
   for (int i = 0; i < 10; i++) {
     MPT_CHECKC(mp_addmod(&arr->data[i], &arr_share->data[i], &cfg->modulus,
-                        &arr->data[i]));
+                         &arr->data[i]));
     mu_check(mp_cmp_d(&arr->data[i], i) == 0);
   }
 

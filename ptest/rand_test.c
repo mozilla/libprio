@@ -9,10 +9,10 @@
 #include <mpi.h>
 
 #include "mutest.h"
-#include "test_util.h"
-#include "test_util.h"
 #include "prio/rand.h"
 #include "prio/util.h"
+#include "test_util.h"
+#include "test_util.h"
 
 void
 mu_test__util_msb_mast(void)

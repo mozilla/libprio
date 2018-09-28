@@ -11,11 +11,11 @@
 #include <stdio.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/config.h"
 #include "prio/mparray.h"
 #include "prio/poly.h"
 #include "prio/util.h"
+#include "test_util.h"
 
 void
 mu_test__fft_one(void)

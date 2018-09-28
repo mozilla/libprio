@@ -10,12 +10,12 @@
 #include <mprio.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/client.h"
 #include "prio/config.h"
 #include "prio/mparray.h"
 #include "prio/share.h"
 #include "prio/util.h"
+#include "test_util.h"
 
 void
 mu_test_share(void)

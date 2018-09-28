@@ -14,10 +14,10 @@
 #include <secoidt.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/encrypt.h"
 #include "prio/rand.h"
 #include "prio/util.h"
+#include "test_util.h"
 
 void
 mu_test_keygen(void)
@@ -64,7 +64,7 @@ test_encrypt_once(int bad, unsigned int inlen)
   PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
   PT_CHECKC(Keypair_new(&pvtkey2, &pubkey2));
   PT_CHECKC(PublicKey_encrypt(pubkey, bytes_enc, &encryptedBytes, enclen,
-                             bytes_in, inlen));
+                              bytes_in, inlen));
   mu_check(encryptedBytes == enclen);
 
   if (bad == 1)
@@ -220,8 +220,8 @@ test_export_privkey(int zeros)
     memset(privData, 0, 5);
   }
 
-  PT_CHECKC(PrivateKey_import(&pvtkey_imp, privData, CURVE25519_KEY_LEN, pubData,
-                             CURVE25519_KEY_LEN));
+  PT_CHECKC(PrivateKey_import(&pvtkey_imp, privData, CURVE25519_KEY_LEN,
+                              pubData, CURVE25519_KEY_LEN));
   PT_CHECKC(PrivateKey_export(pvtkey_imp, privData2));
 
   mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
@@ -229,12 +229,12 @@ test_export_privkey(int zeros)
   if (!zeros) {
     unsigned int outputLen;
     PT_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
-                               input, sizeof(input)));
+                                input, sizeof(input)));
 
     // Check that can decrypt with imported private key.
     unsigned int plainLen;
-    PT_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
-                                output, outputLen));
+    PT_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen,
+                                 sizeof(decrypt), output, outputLen));
 
     mu_check(plainLen == sizeof(input));
     mu_check(!memcmp(input, decrypt, sizeof(input)));
@@ -288,7 +288,7 @@ test_export_hex_privkey(int zeros)
   }
 
   PT_CHECKC(PrivateKey_import_hex(&pvtkey_imp, privData, CURVE25519_KEY_LEN_HEX,
-                                 pubData, CURVE25519_KEY_LEN_HEX));
+                                  pubData, CURVE25519_KEY_LEN_HEX));
   PT_CHECKC(PrivateKey_export_hex(pvtkey_imp, privData2));
 
   mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
@@ -296,12 +296,12 @@ test_export_hex_privkey(int zeros)
   if (!zeros) {
     unsigned int outputLen;
     PT_CHECKC(PublicKey_encrypt(pubkey, output, &outputLen, sizeof(output),
-                               input, sizeof(input)));
+                                input, sizeof(input)));
 
     // Check that can decrypt with imported private key.
     unsigned int plainLen;
-    PT_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen, sizeof(decrypt),
-                                output, outputLen));
+    PT_CHECKC(PrivateKey_decrypt(pvtkey_imp, decrypt, &plainLen,
+                                 sizeof(decrypt), output, outputLen));
 
     mu_check(plainLen == sizeof(input));
     mu_check(!memcmp(input, decrypt, sizeof(input)));

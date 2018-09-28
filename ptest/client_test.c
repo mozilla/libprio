@@ -9,10 +9,10 @@
 #include <mprio.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/client.h"
 #include "prio/server.h"
 #include "prio/util.h"
+#include "test_util.h"
 
 void
 mu_test_client__new(void)

@@ -10,10 +10,10 @@
 #include <mprio.h>
 
 #include "mutest.h"
-#include "test_util.h"
 #include "prio/client.h"
 #include "prio/server.c"
 #include "prio/server.h"
+#include "test_util.h"
 
 void
 mu_test__eval_poly(void)
@@ -76,7 +76,8 @@ mu_test__verify_new(void)
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  PT_CHECKA(cfg = PrioConfig_new(214, pkA, pkB, (unsigned char*)"testbatch", 9));
+  PT_CHECKA(cfg =
+              PrioConfig_new(214, pkA, pkB, (unsigned char*)"testbatch", 9));
 
   const int ndata = PrioConfig_numDataFields(cfg);
   PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
