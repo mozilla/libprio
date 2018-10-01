@@ -26,8 +26,8 @@
 #define PRIO_TAG "PrioPacket"
 #define AAD_LEN (strlen(PRIO_TAG) + CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES)
 
-// For an example import/export code, see:
-// https://searchfox.org/nss/source/gtests/pk11_gtest/pk11_curve25519_unittest.cc#66
+// For an example of NSS curve25519 import/export code, see:
+// https://searchfox.org/nss/rev/cfd5fcba7efbfe116e2c08848075240ec3a92718/gtests/pk11_gtest/pk11_curve25519_unittest.cc#66
 
 // The all-zeros curve25519 public key, as DER-encoded SPKI blob.
 static const uint8_t curve25519_spki_zeros[] = {
@@ -253,10 +253,11 @@ PrivateKey_import_hex(PrivateKey* sk, const unsigned char* privHexData,
 }
 
 SECStatus
-PublicKey_export(const_PublicKey pk, unsigned char data[CURVE25519_KEY_LEN])
+PublicKey_export(const_PublicKey pk, unsigned char* data, unsigned int dataLen)
 {
-  if (pk == NULL)
+  if (pk == NULL || dataLen != CURVE25519_KEY_LEN) {
     return SECFailure;
+  }
 
   const SECItem* key = &pk->u.ec.publicValue;
   if (key->len != CURVE25519_KEY_LEN) {
@@ -268,9 +269,9 @@ PublicKey_export(const_PublicKey pk, unsigned char data[CURVE25519_KEY_LEN])
 }
 
 SECStatus
-PrivateKey_export(PrivateKey sk, unsigned char data[CURVE25519_KEY_LEN])
+PrivateKey_export(PrivateKey sk, unsigned char* data, unsigned int dataLen)
 {
-  if (sk == NULL) {
+  if (sk == NULL || dataLen != CURVE25519_KEY_LEN) {
     return SECFailure;
   }
 
@@ -333,24 +334,33 @@ key_from_hex(unsigned char key_out[CURVE25519_KEY_LEN],
 }
 
 SECStatus
-PublicKey_export_hex(const_PublicKey pk,
-                     unsigned char data[(2 * CURVE25519_KEY_LEN) + 1])
+PublicKey_export_hex(const_PublicKey pk, unsigned char* data,
+                     unsigned int dataLen)
 {
-  unsigned char raw_data[CURVE25519_KEY_LEN];
-  if (PublicKey_export(pk, raw_data) != SECSuccess)
+  if (dataLen != CURVE25519_KEY_LEN_HEX + 1) {
     return SECFailure;
+  }
+
+  unsigned char raw_data[CURVE25519_KEY_LEN];
+  if (PublicKey_export(pk, raw_data, sizeof(raw_data)) != SECSuccess) {
+    return SECFailure;
+  }
 
   key_to_hex(raw_data, data);
   return SECSuccess;
 }
 
 SECStatus
-PrivateKey_export_hex(PrivateKey sk,
-                      unsigned char data[(2 * CURVE25519_KEY_LEN) + 1])
+PrivateKey_export_hex(PrivateKey sk, unsigned char* data, unsigned int dataLen)
 {
-  unsigned char raw_data[CURVE25519_KEY_LEN];
-  if (PrivateKey_export(sk, raw_data) != SECSuccess)
+  if (dataLen != CURVE25519_KEY_LEN_HEX + 1) {
     return SECFailure;
+  }
+
+  unsigned char raw_data[CURVE25519_KEY_LEN];
+  if (PrivateKey_export(sk, raw_data, sizeof(raw_data)) != SECSuccess) {
+    return SECFailure;
+  }
 
   key_to_hex(raw_data, data);
   return SECSuccess;

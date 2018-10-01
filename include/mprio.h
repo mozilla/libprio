@@ -109,7 +109,7 @@ SECStatus Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey);
 
 /*
  * Import a new curve25519 public/private key from the raw bytes given.  When
- * inporting a private key, you must pass in the corresponding public key as
+ * importing a private key, you must pass in the corresponding public key as
  * well. The byte arrays given as input should be of length
  * `CURVE25519_KEY_LEN`.
  *
@@ -127,7 +127,7 @@ SECStatus PrivateKey_import(PrivateKey* sk, const unsigned char* privData,
  * Import a new curve25519 public/private key from a hex string that contains
  * only the characters 0-9a-fA-F.
  *
- * The hex strings passed in should each be of length `CURVE25519_KEY_LEN_HEX`.
+ * The hex strings passed in must each be of length `CURVE25519_KEY_LEN_HEX`.
  * These functions will allocate a new `PublicKey`/`PrivateKey` object, which
  * the caller must free using `PublicKey_clear`/`PrivateKey_clear`.
  */
@@ -141,19 +141,24 @@ SECStatus PrivateKey_import_hex(PrivateKey* sk,
 
 /*
  * Export a curve25519 key as a raw byte-array.
+ *
+ * The output buffer `data` must have length exactly `CURVE25519_KEY_LEN`.
  */
-SECStatus PublicKey_export(const_PublicKey pk,
-                           unsigned char data[CURVE25519_KEY_LEN]);
-SECStatus PrivateKey_export(PrivateKey sk,
-                            unsigned char data[CURVE25519_KEY_LEN]);
+SECStatus PublicKey_export(const_PublicKey pk, unsigned char* data,
+                           unsigned int dataLen);
+SECStatus PrivateKey_export(PrivateKey sk, unsigned char* data,
+                            unsigned int dataLen);
 
 /*
  * Export a curve25519 key as a NULL-terminated hex string.
+ *
+ * The output buffer `data` must have length exactly `CURVE25519_KEY_LEN_HEX +
+ * 1`.
  */
-SECStatus PublicKey_export_hex(const_PublicKey pk,
-                               unsigned char data[CURVE25519_KEY_LEN_HEX + 1]);
-SECStatus PrivateKey_export_hex(PrivateKey sk,
-                                unsigned char data[CURVE25519_KEY_LEN_HEX + 1]);
+SECStatus PublicKey_export_hex(const_PublicKey pk, unsigned char* data,
+                               unsigned int dataLen);
+SECStatus PrivateKey_export_hex(PrivateKey sk, unsigned char* data,
+                                unsigned int dataLen);
 
 void PublicKey_clear(PublicKey pubkey);
 void PrivateKey_clear(PrivateKey pvtkey);

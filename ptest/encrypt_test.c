@@ -152,7 +152,7 @@ mu_test_export_pubkey(void)
   }
 
   PT_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
-  PT_CHECKC(PublicKey_export(pubkey, raw_bytes2));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes2, CURVE25519_KEY_LEN));
 
   for (int i = 0; i < CURVE25519_KEY_LEN; i++) {
     mu_check(raw_bytes[i] == raw_bytes2[i]);
@@ -181,7 +181,7 @@ mu_test_export_pubkey_zeros(void)
   }
 
   PT_CHECKC(PublicKey_import(&pubkey, raw_bytes, CURVE25519_KEY_LEN));
-  PT_CHECKC(PublicKey_export(pubkey, raw_bytes2));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes2, CURVE25519_KEY_LEN));
 
   for (int i = 0; i < CURVE25519_KEY_LEN; i++) {
     mu_check(raw_bytes[i] == raw_bytes2[i]);
@@ -212,8 +212,8 @@ test_export_privkey(int zeros)
   }
 
   PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
-  PT_CHECKC(PrivateKey_export(pvtkey, privData));
-  PT_CHECKC(PublicKey_export(pubkey, pubData));
+  PT_CHECKC(PrivateKey_export(pvtkey, privData, CURVE25519_KEY_LEN));
+  PT_CHECKC(PublicKey_export(pubkey, pubData, CURVE25519_KEY_LEN));
 
   if (zeros) {
     // Zero out leading bytes of private key
@@ -222,7 +222,7 @@ test_export_privkey(int zeros)
 
   PT_CHECKC(PrivateKey_import(&pvtkey_imp, privData, CURVE25519_KEY_LEN,
                               pubData, CURVE25519_KEY_LEN));
-  PT_CHECKC(PrivateKey_export(pvtkey_imp, privData2));
+  PT_CHECKC(PrivateKey_export(pvtkey_imp, privData2, CURVE25519_KEY_LEN));
 
   mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
 
@@ -279,8 +279,9 @@ test_export_hex_privkey(int zeros)
   }
 
   PT_CHECKC(Keypair_new(&pvtkey, &pubkey));
-  PT_CHECKC(PrivateKey_export_hex(pvtkey, privData));
-  PT_CHECKC(PublicKey_export_hex(pubkey, pubData));
+  PT_CHECKC(
+    PrivateKey_export_hex(pvtkey, privData, CURVE25519_KEY_LEN_HEX + 1));
+  PT_CHECKC(PublicKey_export_hex(pubkey, pubData, CURVE25519_KEY_LEN_HEX + 1));
 
   if (zeros) {
     // Zero out leading bytes of private key with ASCII zero
@@ -289,7 +290,8 @@ test_export_hex_privkey(int zeros)
 
   PT_CHECKC(PrivateKey_import_hex(&pvtkey_imp, privData, CURVE25519_KEY_LEN_HEX,
                                   pubData, CURVE25519_KEY_LEN_HEX));
-  PT_CHECKC(PrivateKey_export_hex(pvtkey_imp, privData2));
+  PT_CHECKC(
+    PrivateKey_export_hex(pvtkey_imp, privData2, CURVE25519_KEY_LEN_HEX + 1));
 
   mu_check(!memcmp(privData, privData2, CURVE25519_KEY_LEN));
 
@@ -373,7 +375,7 @@ mu_test_export_hex(void)
 
   // Import a key in upper-case hex
   PT_CHECKC(PublicKey_import_hex(&pubkey, hex_bytes, 2 * CURVE25519_KEY_LEN));
-  PT_CHECKC(PublicKey_export(pubkey, raw_bytes));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes, CURVE25519_KEY_LEN));
   PublicKey_clear(pubkey);
   pubkey = NULL;
 
@@ -383,7 +385,7 @@ mu_test_export_hex(void)
 
   // Import a key in mixed-case hex
   PT_CHECKC(PublicKey_import_hex(&pubkey, hex_bytesl, 2 * CURVE25519_KEY_LEN));
-  PT_CHECKC(PublicKey_export(pubkey, raw_bytes));
+  PT_CHECKC(PublicKey_export(pubkey, raw_bytes, CURVE25519_KEY_LEN));
   PublicKey_clear(pubkey);
   pubkey = NULL;
 
@@ -398,7 +400,8 @@ mu_test_export_hex(void)
 
   // Import a raw key and export as hex
   PT_CHECKC(PublicKey_import(&pubkey, raw_bytes_should, CURVE25519_KEY_LEN));
-  PT_CHECKC(PublicKey_export_hex(pubkey, hex_bytes2));
+  PT_CHECKC(
+    PublicKey_export_hex(pubkey, hex_bytes2, CURVE25519_KEY_LEN_HEX + 1));
 
   for (int i = 0; i < 2 * CURVE25519_KEY_LEN; i++) {
     mu_check(hex_bytes[i] == hex_bytes2[i]);
