@@ -5,11 +5,10 @@ We do our best to write bug-free code, but I have no doubt
 that there are scary bugs, side-channel attacks, and memory leaks 
 lurking herein. 
 
-**Important:**
-We have not yet implemented the items
-described in the "Security-Critical TODOs" section below.
-Without these features, do not use the code in a production environment.
-
+**Security bugs:**
+If you find a security-critical bug in libprio, please report it to Mozilla
+using the contact information on 
+[this page](https://www.mozilla.org/security/#For_Developers).
 
 ## Overview
 
