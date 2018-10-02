@@ -70,10 +70,12 @@ the dominant costs of the system are:
 ## Running the code
 
 You must first install 
-[NSS/NSPR](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS), 
+[NSS/NSPR](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS)
+with NSPR version 4.13.1 (or newer?) and NSS version 3.35 (or newer?), 
 [SCons](http://scons.org/) version 3.0.1 (or newer?), and
 [msgpack-c](https://github.com/msgpack/msgpack-c) version 2.1.5 (or newer?).
-On Ubuntu, you can install NSS and scons with:
+
+On Ubuntu Bionic (18.04LTS), you can install NSS and scons with:
 
     $ sudo apt install scons libnspr4-dev libnss3-dev 
 

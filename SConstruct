@@ -8,6 +8,7 @@ import SCons
 opts = Variables()
 opts.AddVariables(
     BoolVariable("DEBUG", "Make debug build", 0),
+    BoolVariable("SANITIZE", "Use AddressSanitizer and UBSanitizer", 0),
     BoolVariable("VERBOSE", "Show full build information", 0))
 
 env = Environment(options = opts,
@@ -22,10 +23,12 @@ for flag in ["CCFLAGS", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LINKFLAGS"]:
 
 if env["DEBUG"]: 
     print("DEBUG MODE!")
+    env.Append(CCFLAGS = ["-g", "-DDEBUG"])
+
+if env["SANITIZE"]:
     sanitizers = ['-fsanitize=address,undefined', \
                   '-fno-sanitize-recover=undefined,integer,nullability']
-    env.Append(CCFLAGS = ["-g", "-DDEBUG"] + sanitizers,
-               LINKFLAGS = sanitizers)
+    env.Append(CCFLAGS = sanitizers, LINKFLAGS = sanitizers)
 
 env.Append(
   LIBS = ["mprio", "mpi", "nss3", "nspr4"],
