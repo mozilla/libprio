@@ -1,16 +1,27 @@
 language: c
 
+os:
+  - linux
+  - osx
+
 before_install:
-  - source ~/virtualenv/python2.7/bin/activate
-  - pip install --upgrade pip setuptools wheel SCons==3.0.1
-  - wget https://github.com/msgpack/msgpack-c/releases/download/cpp-3.1.0/msgpack-3.1.0.tar.gz
-  - tar xf msgpack-3.1.0.tar.gz
-  - cd msgpack-3.1.0 && cmake . && make && sudo make install && cd ../
-  - sudo apt-get install -y dpkg
-  - wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3_3.39-1_amd64.deb
-  - sudo dpkg -i libnss3_3.39-1_amd64.deb
-  - wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3-dev_3.39-1_amd64.deb
-  - sudo dpkg -i libnss3-dev_3.39-1_amd64.deb
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      source ~/virtualenv/python2.7/bin/activate;
+      pip install --upgrade pip setuptools wheel SCons==3.0.1;
+      wget https://github.com/msgpack/msgpack-c/releases/download/cpp-3.1.0/msgpack-3.1.0.tar.gz;
+      tar xf msgpack-3.1.0.tar.gz;
+      cd msgpack-3.1.0 && cmake . && make && sudo make install && cd ../;
+      sudo apt-get install -y dpkg;
+      wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3_3.39-1_amd64.deb;
+      sudo dpkg -i libnss3_3.39-1_amd64.deb;
+      wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3-dev_3.39-1_amd64.deb;
+      sudo dpkg -i libnss3-dev_3.39-1_amd64.deb;
+    else
+      brew update;
+      brew install nss nspr scons msgpack clang-format;
+      export LINKFLAGS="-L/usr/local/opt/nss/lib";
+      export CPPFLAGS="-I/usr/local/opt/nss/include/nss -I/usr/local/opt/nspr/include/nspr";
+    fi
 
 addons:
   apt:
