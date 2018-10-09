@@ -18,6 +18,13 @@
 #include "server.h"
 #include "util.h"
 
+/* In `PrioTotalShare_final`, we need to be able to store
+ * an `mp_digit` in an `unsigned long`.
+ */
+#if (MP_DIGIT_MAX > ULONG_MAX)
+#error "Unsigned long is not long enough to hold an MP digit"
+#endif
+
 PrioServer
 PrioServer_new(const_PrioConfig cfg, PrioServerId server_idx,
                PrivateKey server_priv, const PrioPRGSeed seed)
@@ -132,7 +139,10 @@ PrioTotalShare_final(const_PrioConfig cfg, unsigned long* output,
     MP_CHECKC(mp_addmod(&tA->data_shares->data[i], &tB->data_shares->data[i],
                         &cfg->modulus, &tmp));
 
-    output[i] = tmp.dp[0];
+    if (MP_USED(&tmp) > 1) {
+      P_CHECKCB(false);
+    }
+    output[i] = MP_DIGIT(&tmp, 0);
   }
 
 cleanup:
