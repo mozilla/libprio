@@ -278,9 +278,12 @@ SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
 
 /*
  * Read the output data into an array of unsigned longs. You should
- * be sure that each data value can fit into a single long and that
- * the pointer `output` points to a buffer large enough to store
- * one long per data field.
+ * be sure that each data value can fit into a single `unsigned long`
+ * and that the pointer `output` points to a buffer large enough to
+ * store one long per data field.
+ *
+ * This function returns failure if some final data value is too
+ * long to fit in an `unsigned long`.
  */
 SECStatus PrioTotalShare_final(const_PrioConfig cfg, unsigned long* output,
                                const_PrioTotalShare tA,
