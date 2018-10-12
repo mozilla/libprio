@@ -16,9 +16,10 @@ before_install:
       sudo dpkg -i libnss3_3.39-1_amd64.deb;
       wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3-dev_3.39-1_amd64.deb;
       sudo dpkg -i libnss3-dev_3.39-1_amd64.deb;
+      ./scripts/clang-format.sh;
     else
       brew update;
-      brew install nss nspr scons msgpack clang-format;
+      brew install nss nspr scons msgpack;
       export LINKFLAGS="-L/usr/local/opt/nss/lib";
       export CPPFLAGS="-I/usr/local/opt/nss/include/nss -I/usr/local/opt/nspr/include/nspr";
     fi
@@ -30,7 +31,6 @@ addons:
     - clang-format-3.9
 
 script:
-  - ./scripts/clang-format.sh
   - scons DEBUG=1 SANITIZE=1
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./build/ptest/ptest -v
