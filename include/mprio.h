@@ -77,6 +77,9 @@ void Prio_clear();
  *    (2) the modulus we use for modular arithmetic.
  * The default configuration uses an 87-bit modulus.
  *
+ * The value `nFields` must be in the range `0 < nFields <= max`, where `max`
+ * is the value returned by the function `PrioConfig_maxDataFields()` below.
+ *
  * The `batch_id` field specifies which "batch" of aggregate statistics we are
  * computing. For example, if the aggregate statistics are computed every 24
  * hours, the `batch_id` might be set to an encoding of the date. The clients
@@ -92,6 +95,11 @@ PrioConfig PrioConfig_new(int nFields, PublicKey serverA, PublicKey serverB,
                           unsigned int batchIdLen);
 void PrioConfig_clear(PrioConfig cfg);
 int PrioConfig_numDataFields(const_PrioConfig cfg);
+
+/* 
+ * Return the maximum number of data fields that the implementation supports.
+ */
+int PrioConfig_maxDataFields(void);
 
 /*
  * Create a PrioConfig object with no encryption keys.  This routine is
