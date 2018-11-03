@@ -96,7 +96,7 @@ PrioConfig PrioConfig_new(int nFields, PublicKey serverA, PublicKey serverB,
 void PrioConfig_clear(PrioConfig cfg);
 int PrioConfig_numDataFields(const_PrioConfig cfg);
 
-/* 
+/*
  * Return the maximum number of data fields that the implementation supports.
  */
 int PrioConfig_maxDataFields(void);

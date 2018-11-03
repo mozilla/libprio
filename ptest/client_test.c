@@ -77,7 +77,8 @@ test_client_agg(int nclients, int nfields, bool config_is_okay)
   printf("fields: %d\n", nfields);
   P_CHECKA(cfg = PrioConfig_new(nfields, pkA, pkB, batch_id, batch_id_len));
   if (!config_is_okay) {
-    PT_CHECKCB((PrioConfig_new(nfields, pkA, pkB, batch_id, batch_id_len) == NULL));
+    PT_CHECKCB(
+      (PrioConfig_new(nfields, pkA, pkB, batch_id, batch_id_len) == NULL));
   }
   PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
   PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
@@ -181,6 +182,5 @@ void
 mu_test_client__agg_max_bad(void)
 {
   int max = PrioConfig_maxDataFields();
-  test_client_agg(10, max+1, false);
+  test_client_agg(10, max + 1, false);
 }
-

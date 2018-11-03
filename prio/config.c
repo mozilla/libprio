@@ -52,7 +52,8 @@ initialize_roots(MPArray arr, const char values[], bool inverted)
 }
 
 int
-PrioConfig_maxDataFields(void) {
+PrioConfig_maxDataFields(void)
+{
   const int n_roots = 1 << Generator2Order;
   return (n_roots >> 1) - 1;
 }
