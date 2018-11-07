@@ -48,7 +48,7 @@ cleanup:
 }
 
 void
-test_client_agg(int nclients)
+test_client_agg(int nclients, int nfields, bool config_is_okay)
 {
   SECStatus rv = SECSuccess;
   PublicKey pkA = NULL;
@@ -74,7 +74,12 @@ test_client_agg(int nclients)
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  PT_CHECKA(cfg = PrioConfig_new(133, pkA, pkB, batch_id, batch_id_len));
+  printf("fields: %d\n", nfields);
+  P_CHECKA(cfg = PrioConfig_new(nfields, pkA, pkB, batch_id, batch_id_len));
+  if (!config_is_okay) {
+    PT_CHECKCB(
+      (PrioConfig_new(nfields, pkA, pkB, batch_id, batch_id_len) == NULL));
+  }
   PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
   PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
   PT_CHECKA(tA = PrioTotalShare_new());
@@ -118,7 +123,11 @@ test_client_agg(int nclients)
   }
 
 cleanup:
-  mu_check(rv == SECSuccess);
+  if (config_is_okay) {
+    mu_check(rv == SECSuccess);
+  } else {
+    mu_check(rv == SECFailure);
+  }
   if (data_items)
     free(data_items);
   if (output)
@@ -147,17 +156,31 @@ cleanup:
 void
 mu_test_client__agg_1(void)
 {
-  test_client_agg(1);
+  test_client_agg(1, 133, true);
 }
 
 void
 mu_test_client__agg_2(void)
 {
-  test_client_agg(2);
+  test_client_agg(2, 133, true);
 }
 
 void
 mu_test_client__agg_10(void)
 {
-  test_client_agg(10);
+  test_client_agg(10, 133, true);
+}
+
+void
+mu_test_client__agg_max(void)
+{
+  int max = PrioConfig_maxDataFields();
+  test_client_agg(10, max, true);
+}
+
+void
+mu_test_client__agg_max_bad(void)
+{
+  int max = PrioConfig_maxDataFields();
+  test_client_agg(10, max + 1, false);
 }
