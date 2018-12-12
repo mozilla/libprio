@@ -29,8 +29,21 @@ addons:
     packages:
     - libnspr4-dev
     - clang-format-3.9
+    - doxygen
+    - graphviz
 
 script:
-  - scons DEBUG=1 SANITIZE=1
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  - scons DEBUG=1 SANITIZE=1
   - ./build/ptest/ptest -v
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd docs && doxygen Doxyfile && cd ..; fi
+
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: build/docs/html
+  github_token: $GH_REPO_TOKEN
+  on:
+    branch: doxygen
+    condition: $TRAVIS_OS_NAME == "linux"
