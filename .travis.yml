@@ -45,5 +45,5 @@ deploy:
   local_dir: build/docs/html
   github_token: $GH_REPO_TOKEN
   on:
-    branch: doxygen
+    branch: master
     condition: $TRAVIS_OS_NAME == "linux"
