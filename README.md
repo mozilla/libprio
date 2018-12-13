@@ -110,7 +110,7 @@ To clean up the object and binary files, run:
     $ scons -c
 
 The files in this directory are:
-````
+```
 /build      - Binaries, object files, etc.
 /include    - Exported header files
               (Note: The public header is <mprio.h> since
@@ -119,7 +119,15 @@ The files in this directory are:
 /pclient    - Example code that uses the Prio library
 /prio       - Prio library core code
 /ptest      - Tests and test runner
-````
+```
+
+## Documentation
+
+Documentation is generated using doxygen. To generate, run:
+
+    $ cd docs && doxygen Doxyfile
+
+Online documentation is available at https://mozilla.github.io/libprio
 
 ## Optimizations and features not yet implemented
 * **Server compute.**
