@@ -205,7 +205,7 @@ compute_shares(PrioVerifier v, const_PrioPacketClient p)
   // Use PRG to generate random point. Per Appendix D.2 of full version of
   // Prio paper, this value must be in the range
   //      [n+1, modulus).
-  mp_set(&lower, n+1);
+  mp_set(&lower, n + 1);
   P_CHECKC(PRG_get_int_range(v->s->prg, &eval_at, &lower, &v->s->cfg->modulus));
 
   // Reduce value into the field we're using. This

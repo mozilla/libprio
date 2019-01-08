@@ -39,8 +39,8 @@ SECStatus PRG_get_int(PRG prg, mp_int* out, const mp_int* max);
  * Use the PRG output to sample a big integer x in the range
  *    lower <= x < max.
  */
-SECStatus PRG_get_int_range(PRG prg, mp_int* out, 
-    const mp_int* lower, const mp_int* max);
+SECStatus PRG_get_int_range(PRG prg, mp_int* out, const mp_int* lower,
+                            const mp_int* max);
 
 /*
  * Use secret sharing to split the int src into two shares.

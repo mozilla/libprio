@@ -377,7 +377,7 @@ test_prg_range_once(int bot, int limit)
   mp_set(&lower, bot);
   mp_set(&max, limit);
 
-  for (int i=0; i< 100; i++) {
+  for (int i = 0; i < 100; i++) {
     PT_CHECKC(PRG_get_int_range(prg, &out, &lower, &max));
     mu_check(mp_cmp_d(&out, limit) == -1);
     mu_check(mp_cmp_d(&out, bot) > -1);

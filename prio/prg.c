@@ -127,14 +127,14 @@ PRG_get_int_range(PRG prg, mp_int* out, const mp_int* lower, const mp_int* max)
   MP_DIGITS(&width) = NULL;
   MP_CHECKC(mp_init(&width));
 
-  // Compute    
+  // Compute
   //    width = max - lower
   MP_CHECKC(mp_sub(max, lower, &width));
 
   // Get an integer x in the range [0, width)
   P_CHECKC(PRG_get_int(prg, out, &width));
 
-  // Set 
+  // Set
   //    out = lower + x
   // which is in the range [lower, width+lower),
   // which is              [lower, max).
