@@ -188,19 +188,25 @@ compute_shares(PrioVerifier v, const_PrioPacketClient p)
   const int n = v->s->cfg->num_data_fields + 1;
   const int N = next_power_of_two(n);
   mp_int eval_at;
+  mp_int lower;
   MP_DIGITS(&eval_at) = NULL;
+  MP_DIGITS(&lower) = NULL;
 
   MPArray points_f = NULL;
   MPArray points_g = NULL;
   MPArray points_h = NULL;
 
   MP_CHECKC(mp_init(&eval_at));
+  MP_CHECKC(mp_init(&lower));
   P_CHECKA(points_f = MPArray_new(N));
   P_CHECKA(points_g = MPArray_new(N));
   P_CHECKA(points_h = MPArray_new(2 * N));
 
-  // Use PRG to generate random point
-  MP_CHECKC(PRG_get_int(v->s->prg, &eval_at, &v->s->cfg->modulus));
+  // Use PRG to generate random point. Per Appendix D.2 of full version of
+  // Prio paper, this value must be in the range
+  //      [n+1, modulus).
+  mp_set(&lower, n + 1);
+  P_CHECKC(PRG_get_int_range(v->s->prg, &eval_at, &lower, &v->s->cfg->modulus));
 
   // Reduce value into the field we're using. This
   // doesn't yield exactly a uniformly random point,
@@ -243,6 +249,7 @@ cleanup:
   MPArray_clear(points_g);
   MPArray_clear(points_h);
   mp_clear(&eval_at);
+  mp_clear(&lower);
   return rv;
 }
 

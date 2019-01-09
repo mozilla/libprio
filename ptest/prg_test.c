@@ -352,3 +352,64 @@ cleanup:
   MPArray_clear(arr_share);
   PrioConfig_clear(cfg);
 }
+
+void
+test_prg_range_once(int bot, int limit)
+{
+  SECStatus rv = SECSuccess;
+  PrioPRGSeed key;
+  mp_int lower;
+  mp_int max;
+  mp_int out;
+  PRG prg = NULL;
+
+  MP_DIGITS(&lower) = NULL;
+  MP_DIGITS(&max) = NULL;
+  MP_DIGITS(&out) = NULL;
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg = PRG_new(key));
+
+  MPT_CHECKC(mp_init(&max));
+  MPT_CHECKC(mp_init(&out));
+  MPT_CHECKC(mp_init(&lower));
+
+  mp_set(&lower, bot);
+  mp_set(&max, limit);
+
+  for (int i = 0; i < 100; i++) {
+    PT_CHECKC(PRG_get_int_range(prg, &out, &lower, &max));
+    mu_check(mp_cmp_d(&out, limit) == -1);
+    mu_check(mp_cmp_d(&out, bot) > -1);
+    mu_check(mp_cmp_z(&out) > -1);
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  mp_clear(&lower);
+  mp_clear(&max);
+  mp_clear(&out);
+  PRG_clear(prg);
+}
+
+void
+mu_test_prg_range__multiple_of_8(void)
+{
+  test_prg_range_once(128, 256);
+  test_prg_range_once(256, 256 * 256);
+}
+
+void
+mu_test_prg_range__near_multiple_of_8(void)
+{
+  test_prg_range_once(256, 256 + 1);
+  test_prg_range_once(256 * 256, 256 * 256 + 1);
+}
+
+void
+mu_test_prg_range__odd(void)
+{
+  test_prg_range_once(23, 39);
+  test_prg_range_once(7, 123);
+  test_prg_range_once(99000, 993123);
+}

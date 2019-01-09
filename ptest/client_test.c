@@ -74,7 +74,6 @@ test_client_agg(int nclients, int nfields, bool config_is_okay)
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  printf("fields: %d\n", nfields);
   P_CHECKA(cfg = PrioConfig_new(nfields, pkA, pkB, batch_id, batch_id_len));
   if (!config_is_okay) {
     PT_CHECKCB(
