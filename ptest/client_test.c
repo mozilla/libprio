@@ -67,7 +67,7 @@ test_client_agg(int nclients, int nfields, bool config_is_okay)
   const unsigned char* batch_id = (unsigned char*)"test_batch";
   unsigned int batch_id_len = strlen((char*)batch_id);
   bool* data_items = NULL;
-  unsigned long* output = NULL;
+  unsigned long long* output = NULL;
 
   PrioPRGSeed seed;
   PT_CHECKC(PrioPRGSeed_randomize(&seed));

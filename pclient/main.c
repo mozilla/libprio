@@ -40,7 +40,7 @@ verify_full(void)
   const unsigned char* batch_id = (unsigned char*)"prio_batch_2018-04-17";
   const unsigned int batch_id_len = strlen((char*)batch_id);
 
-  unsigned long* output = NULL;
+  unsigned long long* output = NULL;
   bool* data_items = NULL;
 
   // Initialize NSS random number generator.
@@ -52,7 +52,7 @@ verify_full(void)
   // Number of clients to simulate.
   const int nclients = 10;
 
-  P_CHECKA(output = calloc(ndata, sizeof(unsigned long)));
+  P_CHECKA(output = calloc(ndata, sizeof(unsigned long long)));
   P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
 
   // Generate keypairs for servers
@@ -180,7 +180,7 @@ verify_full(void)
     // Now the output[i] contains a counter that indicates how many clients
     // submitted TRUE for data value i.  We print out this data.
     for (int i = 0; i < ndata; i++)
-      printf("output[%d] = %lu\n", i, output[i]);
+      printf("output[%d] = %llu\n", i, output[i]);
   }
 
 cleanup:
