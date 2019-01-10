@@ -293,7 +293,7 @@ SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
  * This function returns failure if some final data value is too
  * long to fit in an `unsigned long`.
  */
-SECStatus PrioTotalShare_final(const_PrioConfig cfg, unsigned long* output,
+SECStatus PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
                                const_PrioTotalShare tA,
                                const_PrioTotalShare tB);
 

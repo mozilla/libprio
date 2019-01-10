@@ -19,10 +19,10 @@
 #include "util.h"
 
 /* In `PrioTotalShare_final`, we need to be able to store
- * an `mp_digit` in an `unsigned long`.
+ * an `mp_digit` in an `unsigned long long`.
  */
-#if (MP_DIGIT_MAX > ULONG_MAX)
-#error "Unsigned long is not long enough to hold an MP digit"
+#if (MP_DIGIT_MAX > ULLONG_MAX)
+#error "Unsigned long long is not long enough to hold an MP digit"
 #endif
 
 PrioServer
@@ -119,7 +119,7 @@ PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s)
 }
 
 SECStatus
-PrioTotalShare_final(const_PrioConfig cfg, unsigned long* output,
+PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
                      const_PrioTotalShare tA, const_PrioTotalShare tB)
 {
   if (tA->data_shares->len != cfg->num_data_fields)
