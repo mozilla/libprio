@@ -18,7 +18,8 @@
 #include "server.h"
 #include "util.h"
 
-/* In `PrioTotalShare_final`, we need to be able to store
+/**
+ * In `PrioTotalShare_final`, we need to be able to store
  * an `mp_digit` in an `unsigned long long`.
  */
 #if (MP_DIGIT_MAX > ULLONG_MAX)
@@ -176,7 +177,7 @@ get_h_share(const_PrioVerifier v, int i)
   return NULL;
 }
 
-/*
+/**
  * Build shares of the polynomials f, g, and h used in the Prio verification
  * routine and evalute these polynomials at a random point determined
  * by the shared secret. Store the evaluations in the verifier object.

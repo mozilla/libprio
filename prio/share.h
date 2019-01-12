@@ -23,14 +23,14 @@ struct beaver_triple
 typedef struct beaver_triple* BeaverTriple;
 typedef const struct beaver_triple* const_BeaverTriple;
 
-/*
+/**
  * Use secret sharing to split the int src into two shares.
  * The mp_ints must be initialized.
  */
 SECStatus share_int(const_PrioConfig cfg, const mp_int* src, mp_int* shareA,
                     mp_int* shareB);
 
-/*
+/**
  * Prio uses Beaver triples to implement one step of the
  * client data validation routine. A Beaver triple is just
  * a sharing of random values a, b, c such that

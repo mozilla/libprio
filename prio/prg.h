@@ -18,31 +18,31 @@
 typedef struct prg* PRG;
 typedef const struct prg* const_PRG;
 
-/*
+/**
  * Initialize or destroy a pseudo-random generator.
  */
 PRG PRG_new(const PrioPRGSeed key);
 void PRG_clear(PRG prg);
 
-/*
+/**
  * Produce the next bytes of output from the PRG.
  */
 SECStatus PRG_get_bytes(PRG prg, unsigned char* bytes, size_t len);
 
-/*
+/**
  * Use the PRG output to sample a big integer x in the range
  *    0 <= x < max.
  */
 SECStatus PRG_get_int(PRG prg, mp_int* out, const mp_int* max);
 
-/*
+/**
  * Use the PRG output to sample a big integer x in the range
  *    lower <= x < max.
  */
 SECStatus PRG_get_int_range(PRG prg, mp_int* out, const mp_int* lower,
                             const mp_int* max);
 
-/*
+/**
  * Use secret sharing to split the int src into two shares.
  * Use PRG to generate the value `shareB`.
  * The mp_ints must be initialized.
@@ -50,13 +50,13 @@ SECStatus PRG_get_int_range(PRG prg, mp_int* out, const mp_int* lower,
 SECStatus PRG_share_int(PRG prg, mp_int* shareA, const mp_int* src,
                         const_PrioConfig cfg);
 
-/*
+/**
  * Set each item in the array to a pseudorandom value in the range
  * [0, mod), where the values are generated using the PRG.
  */
 SECStatus PRG_get_array(PRG prg, MPArray arr, const mp_int* mod);
 
-/*
+/**
  * Secret shares the array in `src` into `arrA` using randomness
  * provided by `prgB`. The arrays `src` and `arrA` must be the same
  * length.

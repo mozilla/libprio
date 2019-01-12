@@ -13,7 +13,7 @@
 #include "prg.h"
 #include "share.h"
 
-/*
+/**
  * The PrioPacketClient object holds the encoded client data.
  * The client sends one packet to server A and one packet to
  * server B. The `for_server` parameter determines which server
@@ -39,7 +39,7 @@ struct server_b_data
   PrioPRGSeed seed;
 };
 
-/*
+/**
  * The data that a Prio client sends to each server.
  */
 struct prio_packet_client

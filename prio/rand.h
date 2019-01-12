@@ -13,34 +13,34 @@
 #include <seccomon.h>
 #include <stdlib.h>
 
-/*
+/**
  * Typedef for function pointer. A function pointer of type RandBytesFunc
  * points to a function that fills the buffer `out` of with `len` random bytes.
  */
 typedef SECStatus (*RandBytesFunc)(void* user_data, unsigned char* out,
                                    size_t len);
 
-/*
+/**
  * Initialize or cleanup the global random number generator
  * state that NSS uses.
  */
 SECStatus rand_init(void);
 void rand_clear(void);
 
-/*
+/**
  * Generate the specified number of random bytes using the
  * NSS random number generator.
  */
 SECStatus rand_bytes(unsigned char* out, size_t n_bytes);
 
-/*
+/**
  * Generate a random number x such that
  *    0 <= x < max
  * using the NSS random number generator.
  */
 SECStatus rand_int(mp_int* out, const mp_int* max);
 
-/*
+/**
  * Generate a random number x such that
  *    0 <= x < max
  * using the specified randomness generator.

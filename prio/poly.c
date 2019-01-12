@@ -12,7 +12,7 @@
 #include "poly.h"
 #include "util.h"
 
-/*
+/**
  * A nice exposition of the recursive FFT/DFT algorithm we implement
  * is in the book:
  *
@@ -96,7 +96,7 @@ cleanup:
   return rv;
 }
 
-/*
+/**
  * The PrioConfig object has a list of N-th roots of unity for large N.
  * This routine returns the n-th roots of unity for n < N, where n is
  * a power of two. If the `invert` flag is set, it returns the inverses

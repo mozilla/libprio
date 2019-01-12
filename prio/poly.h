@@ -15,7 +15,7 @@
 
 #include "mparray.h"
 
-/*
+/**
  * Compute the FFT or inverse FFT of the array in `points_in`.
  * The length of the input and output arrays must be a multiple
  * of two and must be no longer than the number of precomputed
@@ -24,7 +24,7 @@
 SECStatus poly_fft(MPArray points_out, const_MPArray points_in,
                    const_PrioConfig cfg, bool invert);
 
-/*
+/**
  * Get an array
  *    (r^0, r^1, r^2, ... )
  * where r is an n-th root of unity, for n a power of two
@@ -36,14 +36,14 @@ SECStatus poly_fft(MPArray points_out, const_MPArray points_in,
 SECStatus poly_fft_get_roots(mp_int* roots_out, int n_points,
                              const_PrioConfig cfg, bool invert);
 
-/*
+/**
  * Evaluate the polynomial specified by the coefficients
  * at the point `eval_at` and return the result as `value`.
  */
 SECStatus poly_eval(mp_int* value, const_MPArray coeffs, const mp_int* eval_at,
                     const_PrioConfig cfg);
 
-/*
+/**
  * Interpolate the polynomial through the points
  *    (x_1, y_1), ..., (x_N, y_N),
  * where x_i is an N-th root of unity and the y_i values are

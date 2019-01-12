@@ -12,18 +12,24 @@
 #include <mpi.h>
 #include <mprio.h>
 
-// Minimum of two values
+/**
+ * Minimum of two values
+ */
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-// Check a Prio error code and return failure if the call fails.
+/**
+ * Check a Prio error code and return failure if the call fails.
+ */
 #define P_CHECK(s)                                                             \
   do {                                                                         \
     if ((rv = (s)) != SECSuccess)                                              \
       return rv;                                                               \
   } while (0);
 
-// Check an allocation that should not return NULL. If the allocation returns
-// NULL, set the return value and jump to the cleanup label to free memory.
+/**
+ * Check an allocation that should not return NULL. If the allocation returns
+ * NULL, set the return value and jump to the cleanup label to free memory.
+ */
 #define P_CHECKA(s)                                                            \
   do {                                                                         \
     if ((s) == NULL) {                                                         \
@@ -32,8 +38,10 @@
     }                                                                          \
   } while (0);
 
-// Check a Prio library call that should return SECSuccess. If it doesn't,
-// jump to the cleanup label.
+/**
+ * Check a Prio library call that should return SECSuccess. If it doesn't,
+ * jump to the cleanup label.
+ */
 #define P_CHECKC(s)                                                            \
   do {                                                                         \
     if ((rv = (s)) != SECSuccess) {                                            \
@@ -41,8 +49,9 @@
     }                                                                          \
   } while (0);
 
-// Check a boolean that should be true. If it not,
-// jump to the cleanup label.
+/**
+ * Check a boolean that should be true. If it not, jump to the cleanup label.
+*/
 #define P_CHECKCB(s)                                                           \
   do {                                                                         \
     if (!(s)) {                                                                \
@@ -51,14 +60,18 @@
     }                                                                          \
   } while (0);
 
-// Check an MPI library call and return failure if it fails.
+/**
+ * Check an MPI library call and return failure if it fails.
+ */
 #define MP_CHECK(s)                                                            \
   do {                                                                         \
     if ((s) != MP_OKAY)                                                        \
       return SECFailure;                                                       \
   } while (0);
 
-// Check a msgpack object unpacked correctly
+/**
+ * Check a msgpack object unpacked correctly
+ */
 #define UP_CHECK(s)                                                            \
   do {                                                                         \
     int r = (s);                                                               \
@@ -66,8 +79,10 @@
       return SECFailure;                                                       \
   } while (0);
 
-// Check an MPI library call. If it fails, set the return code and jump
-// to the cleanup label.
+/**
+ * Check an MPI library call. If it fails, set the return code and jump
+ * to the cleanup label.
+ */
 #define MP_CHECKC(s)                                                           \
   do {                                                                         \
     if ((s) != MP_OKAY) {                                                      \
@@ -89,7 +104,7 @@ next_power_of_two(int val)
   return (pow > 1 && pow / 2 == val) ? val : pow;
 }
 
-/*
+/**
  * Return a mask that masks out all of the zero bits
  */
 static inline unsigned char
@@ -101,7 +116,7 @@ msb_mask(unsigned char val)
   return mask;
 }
 
-/*
+/**
  * Specify that a parameter should be unused.
  */
 #define UNUSED(x) (void)(x)
