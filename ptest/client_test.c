@@ -173,7 +173,7 @@ mu_test_client__agg_10(void)
 void
 mu_test_client__agg_max(void)
 {
-  int max = PrioConfig_maxDataFields();
+  int max = MIN(PrioConfig_maxDataFields(), 4000);
   test_client_agg(10, max, true);
 }
 
