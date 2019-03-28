@@ -48,23 +48,25 @@ mu_test__fft_roots(void)
 {
   SECStatus rv = SECSuccess;
   PrioConfig cfg = NULL;
+  MPArray roots = NULL;
   mp_int tmp;
   MP_DIGITS(&tmp) = NULL;
 
   PT_CHECKA(cfg = PrioConfig_newTest(90));
+  PT_CHECKA(roots = MPArray_new(4));
   MPT_CHECKC(mp_init(&tmp));
 
-  mp_int roots[4];
   poly_fft_get_roots(roots, 4, cfg, false);
 
   for (int i = 0; i < 4; i++) {
-    mp_exptmod_d(&roots[i], 4, &cfg->modulus, &tmp);
+    mp_exptmod_d(&roots->data[i], 4, &cfg->modulus, &tmp);
     mu_check(mp_cmp_d(&tmp, 1) == 0);
   }
 
 cleanup:
   mu_check(rv == SECSuccess);
   mp_clear(&tmp);
+  MPArray_clear(roots);
   PrioConfig_clear(cfg);
 }
 
@@ -77,7 +79,7 @@ mu_test__fft_simple(void)
   PrioConfig cfg = NULL;
   MPArray points_in = NULL;
   MPArray points_out = NULL;
-  mp_int* roots = NULL;
+  MPArray roots = NULL;
 
   mp_int should_be, tmp;
   MP_DIGITS(&should_be) = NULL;
@@ -86,7 +88,7 @@ mu_test__fft_simple(void)
   PT_CHECKA(cfg = PrioConfig_newTest(140));
   PT_CHECKA(points_in = MPArray_new(nPoints));
   PT_CHECKA(points_out = MPArray_new(nPoints));
-  PT_CHECKA(roots = calloc(nPoints, sizeof(mp_int)));
+  PT_CHECKA(roots = MPArray_new(nPoints));
 
   MPT_CHECKC(mp_init(&should_be));
   MPT_CHECKC(mp_init(&tmp));
@@ -102,7 +104,8 @@ mu_test__fft_simple(void)
   for (int i = 0; i < nPoints; i++) {
     mp_set(&should_be, 0);
     for (int j = 0; j < nPoints; j++) {
-      mu_check(mp_exptmod_d(&roots[i], j, &cfg->modulus, &tmp) == MP_OKAY);
+      mu_check(mp_exptmod_d(&roots->data[i], j, &cfg->modulus, &tmp) ==
+               MP_OKAY);
       mu_check(mp_mulmod(&tmp, &points_in->data[j], &cfg->modulus, &tmp) ==
                MP_OKAY);
       mu_check(mp_addmod(&should_be, &tmp, &cfg->modulus, &should_be) ==
@@ -121,8 +124,7 @@ mu_test__fft_simple(void)
 
 cleanup:
   mu_check(rv == SECSuccess);
-  if (roots)
-    free(roots);
+  MPArray_clear(roots);
   mp_clear(&tmp);
   mp_clear(&should_be);
   MPArray_clear(points_in);
@@ -140,13 +142,13 @@ mu_test__fft_invert(void)
   MPArray points_in = NULL;
   MPArray points_out = NULL;
   MPArray points_out2 = NULL;
-  mp_int* roots = NULL;
+  MPArray roots = NULL;
 
   PT_CHECKA(cfg = PrioConfig_newTest(91));
   PT_CHECKA(points_in = MPArray_new(nPoints));
   PT_CHECKA(points_out = MPArray_new(nPoints));
   PT_CHECKA(points_out2 = MPArray_new(nPoints));
-  PT_CHECKA(roots = calloc(nPoints, sizeof(mp_int)));
+  PT_CHECKA(roots = MPArray_new(nPoints));
 
   poly_fft_get_roots(roots, nPoints, cfg, false);
 
@@ -168,8 +170,7 @@ mu_test__fft_invert(void)
 cleanup:
   mu_check(rv == SECSuccess);
 
-  if (roots)
-    free(roots);
+  MPArray_clear(roots);
   MPArray_clear(points_in);
   MPArray_clear(points_out);
   MPArray_clear(points_out2);
