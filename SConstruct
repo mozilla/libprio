@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+import sys
 import SCons
 
 opts = Variables()
@@ -32,6 +33,12 @@ if env["SANITIZE"]:
     ]
     env.Append(CCFLAGS=sanitizers, LINKFLAGS=sanitizers)
 
+if sys.platform == "darwin":
+    env.Append(LINKFLAGS=["-L/usr/local/opt/nss/lib"])
+    include_pattern = "-I/usr/local/opt/{0}/include/{0}"
+else:
+    include_pattern = "-I/usr/include/{0}"
+
 env.Append(
     LIBS=["mprio", "mpi", "nss3", "nspr4"],
     LIBPATH=["#build/prio", "#build/mpi"],
@@ -42,8 +49,8 @@ env.Append(
         "-O3",
         "-std=c99",
         "-Wvla",
-        "-I/usr/include/nspr",
-        "-I/usr/include/nss",
+        include_pattern.format("nss"),
+        include_pattern.format("nspr"),
         "-Impi",
         "-DDO_PR_CLEANUP",
     ],
