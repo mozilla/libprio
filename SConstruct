@@ -9,38 +9,50 @@ opts = Variables()
 opts.AddVariables(
     BoolVariable("DEBUG", "Make debug build", 0),
     BoolVariable("SANITIZE", "Use AddressSanitizer and UBSanitizer", 0),
-    BoolVariable("VERBOSE", "Show full build information", 0))
+    BoolVariable("VERBOSE", "Show full build information", 0),
+)
 
-env = Environment(options = opts,
-                  ENV = os.environ)
+env = Environment(options=opts, ENV=os.environ)
 
-env.Tool('clang')
+env.Tool("clang")
 
 # Add extra compiler flags from the environment
 for flag in ["CCFLAGS", "CFLAGS", "CPPFLAGS", "CXXFLAGS", "LINKFLAGS"]:
-  if flag in os.environ:
-    env.Append(**{flag: SCons.Util.CLVar(os.getenv(flag))})
+    if flag in os.environ:
+        env.Append(**{flag: SCons.Util.CLVar(os.getenv(flag))})
 
-if env["DEBUG"]: 
+if env["DEBUG"]:
     print("DEBUG MODE!")
-    env.Append(CCFLAGS = ["-g", "-DDEBUG"])
+    env.Append(CCFLAGS=["-g", "-DDEBUG"])
 
 if env["SANITIZE"]:
-    sanitizers = ['-fsanitize=address,undefined', \
-                  '-fno-sanitize-recover=undefined,integer,nullability']
-    env.Append(CCFLAGS = sanitizers, LINKFLAGS = sanitizers)
+    sanitizers = [
+        "-fsanitize=address,undefined",
+        "-fno-sanitize-recover=undefined,integer,nullability",
+    ]
+    env.Append(CCFLAGS=sanitizers, LINKFLAGS=sanitizers)
 
 env.Append(
-  LIBS = ["mprio", "mpi", "nss3", "nspr4"],
-  LIBPATH = ['#build/prio', "#build/mpi"],
-  CFLAGS = [ "-Wall", "-Werror", "-Wextra", "-O3", "-std=c99", "-Wvla",
-    "-I/usr/include/nspr", "-I/usr/include/nss", "-Impi", "-DDO_PR_CLEANUP"])
+    LIBS=["mprio", "mpi", "nss3", "nspr4"],
+    LIBPATH=["#build/prio", "#build/mpi"],
+    CFLAGS=[
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-O3",
+        "-std=c99",
+        "-Wvla",
+        "-I/usr/include/nspr",
+        "-I/usr/include/nss",
+        "-Impi",
+        "-DDO_PR_CLEANUP",
+    ],
+)
 
-env.Append(CPPPATH = ["#include", "#."])
-Export('env')
+env.Append(CPPPATH=["#include", "#."])
+Export("env")
 
-SConscript('mpi/SConscript', variant_dir='build/mpi')
-SConscript('pclient/SConscript', variant_dir='build/pclient')
-SConscript('prio/SConscript', variant_dir='build/prio')
-SConscript('ptest/SConscript', variant_dir='build/ptest')
-
+SConscript("mpi/SConscript", variant_dir="build/mpi")
+SConscript("pclient/SConscript", variant_dir="build/pclient")
+SConscript("prio/SConscript", variant_dir="build/prio")
+SConscript("ptest/SConscript", variant_dir="build/ptest")
