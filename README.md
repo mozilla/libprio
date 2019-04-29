@@ -86,9 +86,6 @@ For macOS using Homebrew:
 
     $ brew install nss nspr scons msgpack
 
-    $ export LINKFLAGS="-L/usr/local/opt/nss/lib"
-    $ export CPPFLAGS="-I/usr/local/opt/nss/include/nss -I/usr/local/opt/nspr/include/nspr"
-
 To compile the code, run:
 
     $ scons
