@@ -108,9 +108,9 @@ serial_write_mp_array(msgpack_packer* pk, const_MPArray arr)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(arr != NULL);
 
-  P_CHECK(msgpack_pack_array(pk, arr->len));
+  P_CHECKC(msgpack_pack_array(pk, arr->len));
   for (int i = 0; i < arr->len; i++) {
-    P_CHECK(serial_write_mp_int(pk, &arr->data[i]));
+    P_CHECKC(serial_write_mp_int(pk, &arr->data[i]));
   }
 
 cleanup:
@@ -156,9 +156,9 @@ serial_write_beaver_triple(msgpack_packer* pk, const_BeaverTriple t)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(t != NULL);
 
-  P_CHECK(serial_write_mp_int(pk, &t->a));
-  P_CHECK(serial_write_mp_int(pk, &t->b));
-  P_CHECK(serial_write_mp_int(pk, &t->c));
+  P_CHECKC(serial_write_mp_int(pk, &t->a));
+  P_CHECKC(serial_write_mp_int(pk, &t->b));
+  P_CHECKC(serial_write_mp_int(pk, &t->c));
 
 cleanup:
   return rv;
@@ -173,9 +173,9 @@ serial_read_beaver_triple(msgpack_unpacker* pk, BeaverTriple t,
   P_CHECKCB(t != NULL);
   P_CHECKCB(max != NULL);
 
-  P_CHECK(serial_read_mp_int(pk, &t->a, max));
-  P_CHECK(serial_read_mp_int(pk, &t->b, max));
-  P_CHECK(serial_read_mp_int(pk, &t->c, max));
+  P_CHECKC(serial_read_mp_int(pk, &t->a, max));
+  P_CHECKC(serial_read_mp_int(pk, &t->b, max));
+  P_CHECKC(serial_read_mp_int(pk, &t->c, max));
 
 cleanup:
   return rv;
@@ -188,8 +188,8 @@ serial_write_server_a_data(msgpack_packer* pk, const struct server_a_data* A)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(A != NULL);
 
-  P_CHECK(serial_write_mp_array(pk, A->data_shares));
-  P_CHECK(serial_write_mp_array(pk, A->h_points));
+  P_CHECKC(serial_write_mp_array(pk, A->data_shares));
+  P_CHECKC(serial_write_mp_array(pk, A->h_points));
 cleanup:
   return rv;
 }
@@ -202,9 +202,9 @@ serial_read_server_a_data(msgpack_unpacker* upk, struct server_a_data* A,
   P_CHECKCB(upk != NULL);
   P_CHECKCB(A != NULL);
 
-  P_CHECK(serial_read_mp_array(upk, A->data_shares, cfg->num_data_fields,
+  P_CHECKC(serial_read_mp_array(upk, A->data_shares, cfg->num_data_fields,
                                &cfg->modulus));
-  P_CHECK(serial_read_mp_array(upk, A->h_points, PrioConfig_hPoints(cfg),
+  P_CHECKC(serial_read_mp_array(upk, A->h_points, PrioConfig_hPoints(cfg),
                                &cfg->modulus));
 
 cleanup:
@@ -218,8 +218,8 @@ serial_write_prg_seed(msgpack_packer* pk, const PrioPRGSeed* seed)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(seed != NULL);
 
-  P_CHECK(msgpack_pack_str(pk, PRG_SEED_LENGTH));
-  P_CHECK(msgpack_pack_str_body(pk, seed, PRG_SEED_LENGTH));
+  P_CHECKC(msgpack_pack_str(pk, PRG_SEED_LENGTH));
+  P_CHECKC(msgpack_pack_str_body(pk, seed, PRG_SEED_LENGTH));
 
 cleanup:
   return rv;
@@ -283,23 +283,23 @@ serial_write_packet_client(msgpack_packer* pk, const_PrioPacketClient p,
   P_CHECKCB(pk != NULL);
   P_CHECKCB(p != NULL);
 
-  P_CHECK(msgpack_pack_str(pk, cfg->batch_id_len));
-  P_CHECK(msgpack_pack_str_body(pk, cfg->batch_id, cfg->batch_id_len));
+  P_CHECKC(msgpack_pack_str(pk, cfg->batch_id_len));
+  P_CHECKC(msgpack_pack_str_body(pk, cfg->batch_id, cfg->batch_id_len));
 
-  P_CHECK(serial_write_beaver_triple(pk, p->triple));
+  P_CHECKC(serial_write_beaver_triple(pk, p->triple));
 
-  P_CHECK(serial_write_mp_int(pk, &p->f0_share));
-  P_CHECK(serial_write_mp_int(pk, &p->g0_share));
-  P_CHECK(serial_write_mp_int(pk, &p->h0_share));
+  P_CHECKC(serial_write_mp_int(pk, &p->f0_share));
+  P_CHECKC(serial_write_mp_int(pk, &p->g0_share));
+  P_CHECKC(serial_write_mp_int(pk, &p->h0_share));
 
-  P_CHECK(msgpack_pack_int(pk, p->for_server));
+  P_CHECKC(msgpack_pack_int(pk, p->for_server));
 
   switch (p->for_server) {
     case PRIO_SERVER_A:
-      P_CHECK(serial_write_server_a_data(pk, &p->shares.A));
+      P_CHECKC(serial_write_server_a_data(pk, &p->shares.A));
       break;
     case PRIO_SERVER_B:
-      P_CHECK(serial_write_server_b_data(pk, &p->shares.B));
+      P_CHECKC(serial_write_server_b_data(pk, &p->shares.B));
       break;
     default:
       return SECFailure;
@@ -317,7 +317,7 @@ serial_read_server_id(msgpack_unpacker* upk, PrioServerId* s)
   P_CHECKCB(s != NULL);
 
   int serv;
-  P_CHECK(serial_read_int(upk, &serv));
+  P_CHECKC(serial_read_int(upk, &serv));
   P_CHECKCB(serv == PRIO_SERVER_A || serv == PRIO_SERVER_B);
   *s = serv;
 
@@ -378,8 +378,8 @@ PrioPacketVerify1_write(const_PrioPacketVerify1 p, msgpack_packer* pk)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(p != NULL);
 
-  P_CHECK(serial_write_mp_int(pk, &p->share_d));
-  P_CHECK(serial_write_mp_int(pk, &p->share_e));
+  P_CHECKC(serial_write_mp_int(pk, &p->share_d));
+  P_CHECKC(serial_write_mp_int(pk, &p->share_e));
 
 cleanup:
   return rv;
@@ -393,8 +393,8 @@ PrioPacketVerify1_read(PrioPacketVerify1 p, msgpack_unpacker* upk,
   P_CHECKCB(upk != NULL);
   P_CHECKCB(p != NULL);
 
-  P_CHECK(serial_read_mp_int(upk, &p->share_d, &cfg->modulus));
-  P_CHECK(serial_read_mp_int(upk, &p->share_e, &cfg->modulus));
+  P_CHECKC(serial_read_mp_int(upk, &p->share_d, &cfg->modulus));
+  P_CHECKC(serial_read_mp_int(upk, &p->share_e, &cfg->modulus));
 
 cleanup:
   return rv;
@@ -407,7 +407,7 @@ PrioPacketVerify2_write(const_PrioPacketVerify2 p, msgpack_packer* pk)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(p != NULL);
 
-  P_CHECK(serial_write_mp_int(pk, &p->share_out));
+  P_CHECKC(serial_write_mp_int(pk, &p->share_out));
 
 cleanup:
   return rv;
@@ -421,7 +421,7 @@ PrioPacketVerify2_read(PrioPacketVerify2 p, msgpack_unpacker* upk,
   P_CHECKCB(upk != NULL);
   P_CHECKCB(p != NULL);
 
-  P_CHECK(serial_read_mp_int(upk, &p->share_out, &cfg->modulus));
+  P_CHECKC(serial_read_mp_int(upk, &p->share_out, &cfg->modulus));
 
 cleanup:
   return rv;
@@ -433,8 +433,8 @@ PrioTotalShare_write(const_PrioTotalShare t, msgpack_packer* pk)
   SECStatus rv = SECSuccess;
   P_CHECKCB(t != NULL);
   P_CHECKCB(pk != NULL);
-  P_CHECK(msgpack_pack_int(pk, t->idx));
-  P_CHECK(serial_write_mp_array(pk, t->data_shares));
+  P_CHECKC(msgpack_pack_int(pk, t->idx));
+  P_CHECKC(serial_write_mp_array(pk, t->data_shares));
 
 cleanup:
   return rv;
@@ -447,8 +447,8 @@ PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
   SECStatus rv = SECSuccess;
   P_CHECKCB(t != NULL);
   P_CHECKCB(upk != NULL);
-  P_CHECK(serial_read_server_id(upk, &t->idx));
-  P_CHECK(serial_read_mp_array(upk, t->data_shares, cfg->num_data_fields,
+  P_CHECKC(serial_read_server_id(upk, &t->idx));
+  P_CHECKC(serial_read_mp_array(upk, t->data_shares, cfg->num_data_fields,
                                &cfg->modulus));
 
 cleanup:
