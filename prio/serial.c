@@ -346,23 +346,24 @@ serial_read_packet_client(msgpack_unpacker* upk, PrioPacketClient p,
   P_CHECKCB(s.size == cfg->batch_id_len);
   P_CHECKCB(!memcmp(s.ptr, (char*)cfg->batch_id, cfg->batch_id_len));
 
-  P_CHECK(serial_read_beaver_triple(upk, p->triple, &cfg->modulus));
+  P_CHECKC(serial_read_beaver_triple(upk, p->triple, &cfg->modulus));
 
-  P_CHECK(serial_read_mp_int(upk, &p->f0_share, &cfg->modulus));
-  P_CHECK(serial_read_mp_int(upk, &p->g0_share, &cfg->modulus));
-  P_CHECK(serial_read_mp_int(upk, &p->h0_share, &cfg->modulus));
+  P_CHECKC(serial_read_mp_int(upk, &p->f0_share, &cfg->modulus));
+  P_CHECKC(serial_read_mp_int(upk, &p->g0_share, &cfg->modulus));
+  P_CHECKC(serial_read_mp_int(upk, &p->h0_share, &cfg->modulus));
 
-  P_CHECK(serial_read_server_id(upk, &p->for_server));
+  P_CHECKC(serial_read_server_id(upk, &p->for_server));
 
   switch (p->for_server) {
     case PRIO_SERVER_A:
-      P_CHECK(serial_read_server_a_data(upk, &p->shares.A, cfg));
+      P_CHECKC(serial_read_server_a_data(upk, &p->shares.A, cfg));
       break;
     case PRIO_SERVER_B:
-      P_CHECK(serial_read_server_b_data(upk, &p->shares.B));
+      P_CHECKC(serial_read_server_b_data(upk, &p->shares.B));
       break;
     default:
-      return SECFailure;
+      rv = SECFailure;
+      goto cleanup;
   }
 
 cleanup:
