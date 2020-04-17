@@ -66,7 +66,7 @@ serial_read_mp_int(msgpack_unpacker* upk, mp_int* n, const mp_int* max)
   P_CHECKCB(n != NULL);
   P_CHECKCB(max != NULL);
 
-  UP_CHECK(msgpack_unpacker_next(upk, &res))
+  UP_CHECKC(msgpack_unpacker_next(upk, &res));
 
   msgpack_object obj = res.data;
   P_CHECKC(object_to_mp_int(&obj, n, max));
@@ -88,7 +88,7 @@ serial_read_int(msgpack_unpacker* upk, int* n)
   P_CHECKCB(upk != NULL);
   P_CHECKCB(n != NULL);
 
-  UP_CHECK(msgpack_unpacker_next(upk, &res))
+  UP_CHECKC(msgpack_unpacker_next(upk, &res));
 
   msgpack_object obj = res.data;
   P_CHECKCB(obj.type == MSGPACK_OBJECT_POSITIVE_INTEGER);
@@ -130,7 +130,7 @@ serial_read_mp_array(msgpack_unpacker* upk, MPArray arr, size_t len,
   P_CHECKCB(arr != NULL);
   P_CHECKCB(max != NULL);
 
-  UP_CHECK(msgpack_unpacker_next(upk, &res))
+  UP_CHECKC(msgpack_unpacker_next(upk, &res));
 
   msgpack_object obj = res.data;
   P_CHECKCB(obj.type == MSGPACK_OBJECT_ARRAY);
@@ -236,7 +236,7 @@ serial_read_prg_seed(msgpack_unpacker* upk, PrioPRGSeed* seed)
   P_CHECKCB(upk != NULL);
   P_CHECKCB(seed != NULL);
 
-  UP_CHECK(msgpack_unpacker_next(upk, &res))
+  UP_CHECKC(msgpack_unpacker_next(upk, &res));
 
   msgpack_object obj = res.data;
   P_CHECKCB(obj.type == MSGPACK_OBJECT_STR);
@@ -337,7 +337,7 @@ serial_read_packet_client(msgpack_unpacker* upk, PrioPacketClient p,
   P_CHECKCB(upk != NULL);
   P_CHECKCB(p != NULL);
 
-  UP_CHECK(msgpack_unpacker_next(upk, &res))
+  UP_CHECKC(msgpack_unpacker_next(upk, &res));
 
   msgpack_object obj = res.data;
   P_CHECKCB(obj.type == MSGPACK_OBJECT_STR);
