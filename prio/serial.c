@@ -352,7 +352,9 @@ serial_read_packet_client(msgpack_unpacker* upk, PrioPacketClient p,
   P_CHECK(serial_read_mp_int(upk, &p->g0_share, &cfg->modulus));
   P_CHECK(serial_read_mp_int(upk, &p->h0_share, &cfg->modulus));
 
-  P_CHECK(serial_read_server_id(upk, &p->for_server));
+  PrioServerId remote_id;
+  P_CHECKC(serial_read_server_id(upk, &remote_id));
+  P_CHECKCB(remote_id == p->for_server);
 
   switch (p->for_server) {
     case PRIO_SERVER_A:
