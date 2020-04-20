@@ -2,8 +2,9 @@
 
 **Warning:**
 We do our best to write bug-free code, but I have no doubt
-that there are scary bugs, side-channel attacks, and memory leaks 
-lurking herein. 
+that there are scary bugs, side-channel attacks, and memory leaks
+lurking herein.
+
 
 **Security bugs:**
 If you find a security-critical bug in libprio, please report it to Mozilla
