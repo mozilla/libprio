@@ -5,6 +5,7 @@ Import('env')
 penv = env.Clone()
 
 src = [
+    "callbk.c",
     "client.c",
     "config.c",
     "encrypt.c",

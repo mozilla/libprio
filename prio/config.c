@@ -15,6 +15,10 @@
 #include "rand.h"
 #include "util.h"
 
+#include "callbk.h"
+
+static nss_struct nss_pointer; 
+
 int
 PrioConfig_maxDataFields(void)
 {
@@ -95,13 +99,14 @@ PrioConfig_numDataFields(const_PrioConfig cfg)
 SECStatus
 Prio_init(void)
 {
-  return rand_init();
+  nss_callbk_init(&nss_pointer);
+  return rand_init(&nss_pointer);
 }
 
 void
 Prio_clear(void)
 {
-  rand_clear();
+  rand_clear(&nss_pointer);
 }
 
 int
