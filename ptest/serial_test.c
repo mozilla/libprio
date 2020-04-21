@@ -50,6 +50,7 @@ serial_client(int bad)
   PrioPacketClient pB = NULL;
   PrioPacketClient qA = NULL;
   PrioPacketClient qB = NULL;
+  PrioPacketClient tmp = NULL;
 
   const unsigned char* batch_id1 = (unsigned char*)"my_test_prio_batch1";
   const unsigned char* batch_id2 = (unsigned char*)"my_test_prio_batch2";
@@ -100,6 +101,14 @@ serial_client(int bad)
   msgpack_unpacker_buffer_consumed(&upkA, size_a);
   msgpack_unpacker_buffer_consumed(&upkB, size_b);
 
+  if (bad == 4) {
+    // Swap qA and aB
+    tmp = qA;
+    qA = qB;
+    qB = tmp;
+    tmp = NULL;
+  }
+
   P_CHECKC(serial_read_packet_client(&upkA, qA, cfg));
   P_CHECKC(serial_read_packet_client(&upkB, qB, (bad == 3) ? cfg2 : cfg));
 
@@ -146,6 +155,12 @@ void
 mu_test__serial_client_bad3(void)
 {
   serial_client(3);
+}
+
+void
+mu_test__serial_client_bad4(void)
+{
+  serial_client(4);
 }
 
 void
