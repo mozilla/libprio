@@ -31,6 +31,8 @@ if env["SANITIZE"]:
         "-fsanitize=address,undefined",
         "-fno-sanitize-recover=undefined,integer,nullability",
     ]
+    if not env["DEBUG"]:
+        sanitizers += ["-gline-tables-only"]
     env.Append(CCFLAGS=sanitizers, LINKFLAGS=sanitizers)
 
 if sys.platform == "darwin":
