@@ -1,0 +1,21 @@
+import sys
+
+Import('env')
+
+prio_env = env.Clone()
+
+libs = [
+  "nss3",
+  "mpi",
+  "mprio",
+  "msgpackc"
+]
+
+prio_env.Append(LIBS = libs)
+
+# Add fuzzing linker flag so the libFuzzer runtime is linked
+prio_env.Append(LINKFLAGS = ['-fsanitize=fuzzer'])
+
+# Each .c file is built as its own target
+for src in Glob('*.c'):
+    prio_env.Program(str(src).rsplit(".", 1)[0], src)

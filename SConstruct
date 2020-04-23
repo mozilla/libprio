@@ -10,6 +10,7 @@ opts = Variables()
 opts.AddVariables(
     BoolVariable("DEBUG", "Make debug build", 0),
     BoolVariable("SANITIZE", "Use AddressSanitizer and UBSanitizer", 0),
+    BoolVariable("FUZZING", "Build with libFuzzer instrumentation and targets", 0),
     BoolVariable("VERBOSE", "Show full build information", 0),
 )
 
@@ -34,6 +35,14 @@ if env["SANITIZE"]:
     if not env["DEBUG"]:
         sanitizers += ["-gline-tables-only"]
     env.Append(CCFLAGS=sanitizers, LINKFLAGS=sanitizers)
+
+if env["FUZZING"]:
+    fuzzing = [
+        "-fsanitize=fuzzer-no-link",
+    ]
+    if not env["DEBUG"]:
+        fuzzing += ["-gline-tables-only"]
+    env.Append(CCFLAGS=fuzzing, LINKFLAGS=fuzzing)
 
 if sys.platform == "darwin":
     env.Append(LINKFLAGS=["-L/usr/local/opt/nss/lib"])
@@ -72,3 +81,6 @@ SConscript("mpi/SConscript", variant_dir="build/mpi")
 SConscript("pclient/SConscript", variant_dir="build/pclient")
 SConscript("prio/SConscript", variant_dir="build/prio")
 SConscript("ptest/SConscript", variant_dir="build/ptest")
+
+if env["FUZZING"]:
+    SConscript("pfuzz/SConscript", variant_dir="build/pfuzz")
