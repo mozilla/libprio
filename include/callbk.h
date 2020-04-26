@@ -31,6 +31,7 @@ nssisint = NSS_IsInitialized;
 nssshutdown = NSS_ShutdownContext;
 */
 
+// Function for assigning the nss callbacks
 void nss_callbk_init(nss_struct *nss_pointer);
 
 #endif /* __CALLBK_H_ */
