@@ -4,18 +4,10 @@ os:
   - linux
   - osx
 
+dist: bionic
+
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      source ~/virtualenv/python2.7/bin/activate;
-      pip install --upgrade pip setuptools wheel SCons==3.0.1;
-      wget https://github.com/msgpack/msgpack-c/releases/download/cpp-3.1.0/msgpack-3.1.0.tar.gz;
-      tar xf msgpack-3.1.0.tar.gz;
-      cd msgpack-3.1.0 && cmake . && make && sudo make install && cd ../;
-      sudo apt-get install -y dpkg;
-      wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3_3.42.1-1_amd64.deb || exit 1;
-      sudo dpkg -i libnss3_3.42.1-1_amd64.deb;
-      wget http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3-dev_3.42.1-1_amd64.deb || exit 1;
-      sudo dpkg -i libnss3-dev_3.42.1-1_amd64.deb;
       ./scripts/clang-format.sh;
     else
       brew update;
@@ -27,7 +19,9 @@ before_install:
 addons:
   apt:
     packages:
-    - libnspr4-dev
+    - scons
+    - libmsgpack-dev
+    - libnss3-dev
     - clang-format-3.9
 
 script:
