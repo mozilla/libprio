@@ -11,9 +11,7 @@
 
 #include <nss.h>
 
-typedef struct nss_data nss_struct;
-
-struct nss_data
+typedef struct
 {
     /* data */
     NSSInitContext* (*nssinit)(const char *configdir,
@@ -23,7 +21,7 @@ struct nss_data
     PRBool (*nssisinit)();
 
     SECStatus (*nssshutdown)(NSSInitContext *context);
-};
+} nss_struct;
 
 /*
 nssinit = NSS_InitContext;
