@@ -12,6 +12,8 @@
 
 #include "prio/util.h"
 
+#include "callbk.h"
+
 int
 verify_full(void)
 {
@@ -43,8 +45,12 @@ verify_full(void)
   unsigned long long* output = NULL;
   bool* data_items = NULL;
 
+  // Initialize nss pointer for prio
+  static nss_struct nss_pointer;
+  nss_callbk_init(&nss_pointer);
+
   // Initialize NSS random number generator.
-  P_CHECKC(Prio_init());
+  P_CHECKC(Prio_init(&nss_pointer));
 
   // Number of different boolean data fields we collect.
   const int ndata = 100;
@@ -219,7 +225,7 @@ cleanup:
   PrivateKey_clear(skA);
   PrivateKey_clear(skB);
 
-  Prio_clear();
+  Prio_clear(&nss_pointer);
 
   return !(rv == SECSuccess);
 }

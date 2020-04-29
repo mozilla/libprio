@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <callbk.h>
+#include "callbk.h"
 #include <nss.h>
 
 void nss_callbk_init(nss_struct *nss_pointer){

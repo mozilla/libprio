@@ -17,8 +17,6 @@
 
 #include "callbk.h"
 
-static nss_struct nss_pointer; 
-
 int
 PrioConfig_maxDataFields(void)
 {
@@ -96,18 +94,9 @@ PrioConfig_numDataFields(const_PrioConfig cfg)
   return cfg->num_data_fields;
 }
 
-SECStatus
-Prio_init(void)
-{
-  nss_callbk_init(&nss_pointer);
-  return rand_init(&nss_pointer);
-}
+SECStatus Prio_init(nss_struct *nss_pointer) { return rand_init(nss_pointer); }
 
-void
-Prio_clear(void)
-{
-  rand_clear(&nss_pointer);
-}
+void Prio_clear(nss_struct *nss_pointer) { rand_clear(nss_pointer); }
 
 int
 PrioConfig_hPoints(const_PrioConfig cfg)

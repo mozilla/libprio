@@ -20,6 +20,8 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "callbk.h"
+
 /* Seed for a pseudo-random generator (PRG). */
 #define PRG_SEED_LENGTH AES_128_KEY_LENGTH
 typedef unsigned char PrioPRGSeed[PRG_SEED_LENGTH];

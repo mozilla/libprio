@@ -19,6 +19,8 @@
 
 #include "mutest.h" /* MU_* constants, mu_print() */
 
+#include "callbk.h"
+
 /*
  * note that all global variables are public because they need to be accessed
  * from other modules, like the test suites or the module implementing
@@ -69,12 +71,15 @@ int
 main(int argc, char* argv[])
 {
 
-  Prio_init();
+  static nss_struct nss_pointer;
+  nss_callbk_init(&nss_pointer);
+  Prio_init(&nss_pointer);
+
   parse_args(argc, argv);
 
   mu_run_suites();
 
-  Prio_clear();
+  Prio_clear(&nss_pointer);
 
   mu_print(MU_SUMMARY, "\n"
                        "Tests done:\n"
