@@ -25,8 +25,11 @@ PrioConfig_maxDataFields(void)
 }
 
 PrioConfig
-PrioConfig_new(int n_fields, PublicKey server_a, PublicKey server_b,
-               const unsigned char* batch_id, unsigned int batch_id_len)
+PrioConfig_new(int n_fields,
+               PublicKey server_a,
+               PublicKey server_b,
+               const unsigned char* batch_id,
+               unsigned int batch_id_len)
 {
   SECStatus rv = SECSuccess;
   PrioConfig cfg = malloc(sizeof(*cfg));
@@ -94,9 +97,17 @@ PrioConfig_numDataFields(const_PrioConfig cfg)
   return cfg->num_data_fields;
 }
 
-SECStatus Prio_init(nss_struct *nss_pointer) { return rand_init(nss_pointer); }
+SECStatus
+Prio_init(nss_struct* nss_pointer)
+{
+  return rand_init(nss_pointer);
+}
 
-void Prio_clear(nss_struct *nss_pointer) { rand_clear(nss_pointer); }
+void
+Prio_clear(nss_struct* nss_pointer)
+{
+  rand_clear(nss_pointer);
+}
 
 int
 PrioConfig_hPoints(const_PrioConfig cfg)

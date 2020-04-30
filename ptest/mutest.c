@@ -20,6 +20,7 @@
 #include "mutest.h" /* MU_* constants, mu_print() */
 
 #include "callbk.h"
+#include <nss.h>
 
 /*
  * note that all global variables are public because they need to be accessed
@@ -67,6 +68,15 @@ parse_args(__attribute__((unused)) int argc, char* argv[])
   }
 }
 
+void
+nss_callbk_init(nss_struct* nss_pointer)
+{
+
+  (nss_pointer)->nssinit = NSS_InitContext;
+  (nss_pointer)->nssisinit = NSS_IsInitialized;
+  (nss_pointer)->nssshutdown = NSS_ShutdownContext;
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -81,14 +91,19 @@ main(int argc, char* argv[])
 
   Prio_clear(&nss_pointer);
 
-  mu_print(MU_SUMMARY, "\n"
-                       "Tests done:\n"
-                       "\t%d test suite(s) passed, %d failed, %d skipped.\n"
-                       "\t%d test case(s) passed, %d failed.\n"
-                       "\t%d check(s) passed, %d failed.\n"
-                       "\n",
-           mutest_passed_suites, mutest_failed_suites, mutest_skipped_suites,
-           mutest_passed_cases, mutest_failed_cases, mutest_passed_checks,
+  mu_print(MU_SUMMARY,
+           "\n"
+           "Tests done:\n"
+           "\t%d test suite(s) passed, %d failed, %d skipped.\n"
+           "\t%d test case(s) passed, %d failed.\n"
+           "\t%d check(s) passed, %d failed.\n"
+           "\n",
+           mutest_passed_suites,
+           mutest_failed_suites,
+           mutest_skipped_suites,
+           mutest_passed_cases,
+           mutest_failed_cases,
+           mutest_passed_checks,
            mutest_failed_checks);
 
   return (mutest_failed_suites + mutest_skipped_suites) ? 1 : 0;

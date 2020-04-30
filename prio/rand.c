@@ -23,17 +23,22 @@
 static NSSInitContext* prioGlobalContext = NULL;
 
 SECStatus
-rand_init(nss_struct *nss_pointer)
+rand_init(nss_struct* nss_pointer)
 {
   if (prioGlobalContext)
     return SECSuccess;
 
-  if(nss_pointer == NULL)
+  if (nss_pointer == NULL)
     return SECFailure;
 
-  prioGlobalContext = nss_pointer->nssinit("", "", "", "", NULL,
-                    NSS_INIT_READONLY | NSS_INIT_NOCERTDB | NSS_INIT_NOMODDB |
-                      NSS_INIT_FORCEOPEN | NSS_INIT_NOROOTINIT);
+  prioGlobalContext = nss_pointer->nssinit(
+    "",
+    "",
+    "",
+    "",
+    NULL,
+    NSS_INIT_READONLY | NSS_INIT_NOCERTDB | NSS_INIT_NOMODDB |
+      NSS_INIT_FORCEOPEN | NSS_INIT_NOROOTINIT);
 
   return (prioGlobalContext != NULL) ? SECSuccess : SECFailure;
 }
@@ -80,7 +85,9 @@ rand_int(mp_int* out, const mp_int* max)
 }
 
 SECStatus
-rand_int_rng(mp_int* out, const mp_int* max, RandBytesFunc rng_func,
+rand_int_rng(mp_int* out,
+             const mp_int* max,
+             RandBytesFunc rng_func,
              void* user_data)
 {
   SECStatus rv = SECSuccess;
@@ -128,7 +135,7 @@ cleanup:
 }
 
 void
-rand_clear(nss_struct *nss_pointer)
+rand_clear(nss_struct* nss_pointer)
 {
   if (prioGlobalContext) {
     nss_pointer->nssshutdown(prioGlobalContext);

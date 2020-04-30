@@ -13,6 +13,16 @@
 #include "prio/util.h"
 
 #include "callbk.h"
+#include <nss.h>
+
+void
+nss_callbk_init(nss_struct* nss_pointer)
+{
+
+  (nss_pointer)->nssinit = NSS_InitContext;
+  (nss_pointer)->nssisinit = NSS_IsInitialized;
+  (nss_pointer)->nssshutdown = NSS_ShutdownContext;
+}
 
 int
 verify_full(void)
@@ -108,8 +118,8 @@ verify_full(void)
     //
     // Construct the client data packets.
     unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode(cfg, data_items, &for_server_a, &aLen,
-                               &for_server_b, &bLen));
+    P_CHECKC(PrioClient_encode(
+      cfg, data_items, &for_server_a, &aLen, &for_server_b, &bLen));
 
     // The Prio servers A and B can come online later (e.g., at the end of
     // each day) to download the encrypted telemetry packets from the

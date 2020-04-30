@@ -13,14 +13,17 @@
 
 typedef struct
 {
-    /* data */
-    NSSInitContext* (*nssinit)(const char *configdir,
-                                       const char *certPrefix, const char *keyPrefix,
-                                       const char *secmodName, NSSInitParameters *initParams, PRUint32 flags);
+  /* data */
+  NSSInitContext* (*nssinit)(const char* configdir,
+                             const char* certPrefix,
+                             const char* keyPrefix,
+                             const char* secmodName,
+                             NSSInitParameters* initParams,
+                             PRUint32 flags);
 
-    PRBool (*nssisinit)();
+  PRBool (*nssisinit)();
 
-    SECStatus (*nssshutdown)(NSSInitContext *context);
+  SECStatus (*nssshutdown)(NSSInitContext* context);
 } nss_struct;
 
 /*
@@ -30,6 +33,7 @@ nssshutdown = NSS_ShutdownContext;
 */
 
 // Function for assigning the nss callbacks
-void nss_callbk_init(nss_struct *nss_pointer);
+void
+nss_callbk_init(nss_struct* nss_pointer);
 
 #endif /* __CALLBK_H_ */
