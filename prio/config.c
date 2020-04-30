@@ -17,20 +17,14 @@
 
 #include "callbk.h"
 
-int
-PrioConfig_maxDataFields(void)
-{
+int PrioConfig_maxDataFields(void) {
   const int n_roots = 1 << Generator2Order;
   return (n_roots >> 1) - 1;
 }
 
-PrioConfig
-PrioConfig_new(int n_fields,
-               PublicKey server_a,
-               PublicKey server_b,
-               const unsigned char* batch_id,
-               unsigned int batch_id_len)
-{
+PrioConfig PrioConfig_new(int n_fields, PublicKey server_a, PublicKey server_b,
+                          const unsigned char *batch_id,
+                          unsigned int batch_id_len) {
   SECStatus rv = SECSuccess;
   PrioConfig cfg = malloc(sizeof(*cfg));
   if (!cfg)
@@ -50,7 +44,7 @@ PrioConfig_new(int n_fields,
   P_CHECKCB(cfg->num_data_fields <= PrioConfig_maxDataFields());
 
   P_CHECKA(cfg->batch_id = malloc(batch_id_len));
-  strncpy((char*)cfg->batch_id, (char*)batch_id, batch_id_len);
+  strncpy((char *)cfg->batch_id, (char *)batch_id, batch_id_len);
 
   MP_CHECKC(mp_init(&cfg->modulus));
   MP_CHECKC(mp_read_radix(&cfg->modulus, Modulus, 16));
@@ -72,15 +66,11 @@ cleanup:
   return cfg;
 }
 
-PrioConfig
-PrioConfig_newTest(int nFields)
-{
-  return PrioConfig_new(nFields, NULL, NULL, (unsigned char*)"testBatch", 9);
+PrioConfig PrioConfig_newTest(int nFields) {
+  return PrioConfig_new(nFields, NULL, NULL, (unsigned char *)"testBatch", 9);
 }
 
-void
-PrioConfig_clear(PrioConfig cfg)
-{
+void PrioConfig_clear(PrioConfig cfg) {
   if (!cfg)
     return;
   if (cfg->batch_id)
@@ -91,27 +81,15 @@ PrioConfig_clear(PrioConfig cfg)
   free(cfg);
 }
 
-int
-PrioConfig_numDataFields(const_PrioConfig cfg)
-{
+int PrioConfig_numDataFields(const_PrioConfig cfg) {
   return cfg->num_data_fields;
 }
 
-SECStatus
-Prio_init(nss_struct* nss_pointer)
-{
-  return rand_init(nss_pointer);
-}
+SECStatus Prio_init(nss_struct *nss_pointer) { return rand_init(nss_pointer); }
 
-void
-Prio_clear(nss_struct* nss_pointer)
-{
-  rand_clear(nss_pointer);
-}
+void Prio_clear(nss_struct *nss_pointer) { rand_clear(nss_pointer); }
 
-int
-PrioConfig_hPoints(const_PrioConfig cfg)
-{
+int PrioConfig_hPoints(const_PrioConfig cfg) {
   const int mul_gates = cfg->num_data_fields + 1;
   const int N = next_power_of_two(mul_gates);
   return N;

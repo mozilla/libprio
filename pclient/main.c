@@ -15,18 +15,14 @@
 #include "callbk.h"
 #include <nss.h>
 
-void
-nss_callbk_init(nss_struct* nss_pointer)
-{
+void nss_callbk_init(nss_struct *nss_pointer) {
 
   (nss_pointer)->nssinit = NSS_InitContext;
   (nss_pointer)->nssisinit = NSS_IsInitialized;
   (nss_pointer)->nssshutdown = NSS_ShutdownContext;
 }
 
-int
-verify_full(void)
-{
+int verify_full(void) {
   SECStatus rv = SECSuccess;
 
   PublicKey pkA = NULL;
@@ -46,14 +42,14 @@ verify_full(void)
   PrioTotalShare tA = NULL;
   PrioTotalShare tB = NULL;
 
-  unsigned char* for_server_a = NULL;
-  unsigned char* for_server_b = NULL;
+  unsigned char *for_server_a = NULL;
+  unsigned char *for_server_b = NULL;
 
-  const unsigned char* batch_id = (unsigned char*)"prio_batch_2018-04-17";
-  const unsigned int batch_id_len = strlen((char*)batch_id);
+  const unsigned char *batch_id = (unsigned char *)"prio_batch_2018-04-17";
+  const unsigned int batch_id_len = strlen((char *)batch_id);
 
-  unsigned long long* output = NULL;
-  bool* data_items = NULL;
+  unsigned long long *output = NULL;
+  bool *data_items = NULL;
 
   // Initialize nss pointer for prio
   static nss_struct nss_pointer;
@@ -118,8 +114,8 @@ verify_full(void)
     //
     // Construct the client data packets.
     unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode(
-      cfg, data_items, &for_server_a, &aLen, &for_server_b, &bLen));
+    P_CHECKC(PrioClient_encode(cfg, data_items, &for_server_a, &aLen,
+                               &for_server_b, &bLen));
 
     // The Prio servers A and B can come online later (e.g., at the end of
     // each day) to download the encrypted telemetry packets from the
@@ -240,9 +236,7 @@ cleanup:
   return !(rv == SECSuccess);
 }
 
-int
-main(void)
-{
+int main(void) {
   puts("This utility demonstrates how to invoke the Prio API.");
   return verify_full();
 }
