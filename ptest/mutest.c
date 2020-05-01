@@ -29,14 +29,14 @@
  */
 
 /* globals for managing test suites */
-const char *mutest_suite_name;
+const char* mutest_suite_name;
 int mutest_failed_suites;
 int mutest_passed_suites;
 int mutest_skipped_suites;
 int mutest_suite_failed;
 
 /* globals for managing test cases */
-const char *mutest_case_name;
+const char* mutest_case_name;
 int mutest_failed_cases;
 int mutest_passed_cases;
 int mutest_case_failed;
@@ -52,11 +52,13 @@ int mutest_verbose_level = 1; /* exported for use in test suites */
  * only -v is supported right now, both "-v -v" and "-vv" are accepted for
  * increasing the verbosity by 2.
  */
-void parse_args(__attribute__((unused)) int argc, char *argv[]) {
+void
+parse_args(__attribute__((unused)) int argc, char* argv[])
+{
   while (*++argv) {
     if (strncmp(*argv, "-v", 2) == 0) {
       ++mutest_verbose_level;
-      char *c = (*argv) + 1;
+      char* c = (*argv) + 1;
       while (*++c) {
         if (*c != 'v')
           break;
@@ -66,14 +68,18 @@ void parse_args(__attribute__((unused)) int argc, char *argv[]) {
   }
 }
 
-void nss_callbk_init(nss_struct *nss_pointer) {
+void
+nss_callbk_init(nss_struct* nss_pointer)
+{
 
   (nss_pointer)->nssinit = NSS_InitContext;
   (nss_pointer)->nssisinit = NSS_IsInitialized;
   (nss_pointer)->nssshutdown = NSS_ShutdownContext;
 }
 
-int main(int argc, char *argv[]) {
+int
+main(int argc, char* argv[])
+{
 
   static nss_struct nss_pointer;
   nss_callbk_init(&nss_pointer);
@@ -85,13 +91,12 @@ int main(int argc, char *argv[]) {
 
   Prio_clear(&nss_pointer);
 
-  mu_print(MU_SUMMARY,
-           "\n"
-           "Tests done:\n"
-           "\t%d test suite(s) passed, %d failed, %d skipped.\n"
-           "\t%d test case(s) passed, %d failed.\n"
-           "\t%d check(s) passed, %d failed.\n"
-           "\n",
+  mu_print(MU_SUMMARY, "\n"
+                       "Tests done:\n"
+                       "\t%d test suite(s) passed, %d failed, %d skipped.\n"
+                       "\t%d test case(s) passed, %d failed.\n"
+                       "\t%d check(s) passed, %d failed.\n"
+                       "\n",
            mutest_passed_suites, mutest_failed_suites, mutest_skipped_suites,
            mutest_passed_cases, mutest_failed_cases, mutest_passed_checks,
            mutest_failed_checks);

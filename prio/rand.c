@@ -20,9 +20,11 @@
 
 #define CHUNK_SIZE 8192
 
-static NSSInitContext *prioGlobalContext = NULL;
+static NSSInitContext* prioGlobalContext = NULL;
 
-SECStatus rand_init(nss_struct *nss_pointer) {
+SECStatus
+rand_init(nss_struct* nss_pointer)
+{
   if (prioGlobalContext)
     return SECSuccess;
 
@@ -30,15 +32,16 @@ SECStatus rand_init(nss_struct *nss_pointer) {
     return SECFailure;
 
   prioGlobalContext = nss_pointer->nssinit(
-      "", "", "", "", NULL,
-      NSS_INIT_READONLY | NSS_INIT_NOCERTDB | NSS_INIT_NOMODDB |
-          NSS_INIT_FORCEOPEN | NSS_INIT_NOROOTINIT);
+    "", "", "", "", NULL, NSS_INIT_READONLY | NSS_INIT_NOCERTDB |
+                            NSS_INIT_NOMODDB | NSS_INIT_FORCEOPEN |
+                            NSS_INIT_NOROOTINIT);
 
   return (prioGlobalContext != NULL) ? SECSuccess : SECFailure;
 }
 
-static SECStatus rand_bytes_internal(void *user_data, unsigned char *out,
-                                     size_t n_bytes) {
+static SECStatus
+rand_bytes_internal(void* user_data, unsigned char* out, size_t n_bytes)
+{
   // No pointer should ever be passed in.
   if (user_data != NULL)
     return SECFailure;
@@ -50,7 +53,7 @@ static SECStatus rand_bytes_internal(void *user_data, unsigned char *out,
   SECStatus rv = SECFailure;
 
   int to_go = n_bytes;
-  unsigned char *cp = out;
+  unsigned char* cp = out;
   while (to_go) {
     int to_gen = MIN(CHUNK_SIZE, to_go);
     if ((rv = PK11_GenerateRandom(cp, to_gen)) != SECSuccess) {
@@ -65,19 +68,25 @@ static SECStatus rand_bytes_internal(void *user_data, unsigned char *out,
   return rv;
 }
 
-SECStatus rand_bytes(unsigned char *out, size_t n_bytes) {
+SECStatus
+rand_bytes(unsigned char* out, size_t n_bytes)
+{
   return rand_bytes_internal(NULL, out, n_bytes);
 }
 
-SECStatus rand_int(mp_int *out, const mp_int *max) {
+SECStatus
+rand_int(mp_int* out, const mp_int* max)
+{
   return rand_int_rng(out, max, &rand_bytes_internal, NULL);
 }
 
-SECStatus rand_int_rng(mp_int *out, const mp_int *max, RandBytesFunc rng_func,
-                       void *user_data) {
+SECStatus
+rand_int_rng(mp_int* out, const mp_int* max, RandBytesFunc rng_func,
+             void* user_data)
+{
   SECStatus rv = SECSuccess;
-  unsigned char *max_bytes = NULL;
-  unsigned char *buf = NULL;
+  unsigned char* max_bytes = NULL;
+  unsigned char* buf = NULL;
 
   // Ensure max value is > 0
   if (mp_cmp_z(max) == 0)
@@ -119,7 +128,9 @@ cleanup:
   return rv;
 }
 
-void rand_clear(nss_struct *nss_pointer) {
+void
+rand_clear(nss_struct* nss_pointer)
+{
   if (prioGlobalContext) {
     nss_pointer->nssshutdown(prioGlobalContext);
 #ifdef DO_PR_CLEANUP

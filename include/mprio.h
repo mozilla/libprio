@@ -40,29 +40,29 @@ typedef enum { PRIO_SERVER_A, PRIO_SERVER_B } PrioServerId;
 /*
  * Opaque types
  */
-typedef struct prio_config *PrioConfig;
-typedef const struct prio_config *const_PrioConfig;
+typedef struct prio_config* PrioConfig;
+typedef const struct prio_config* const_PrioConfig;
 
-typedef struct prio_server *PrioServer;
-typedef const struct prio_server *const_PrioServer;
+typedef struct prio_server* PrioServer;
+typedef const struct prio_server* const_PrioServer;
 
-typedef struct prio_verifier *PrioVerifier;
-typedef const struct prio_verifier *const_PrioVerifier;
+typedef struct prio_verifier* PrioVerifier;
+typedef const struct prio_verifier* const_PrioVerifier;
 
-typedef struct prio_packet_verify1 *PrioPacketVerify1;
-typedef const struct prio_packet_verify1 *const_PrioPacketVerify1;
+typedef struct prio_packet_verify1* PrioPacketVerify1;
+typedef const struct prio_packet_verify1* const_PrioPacketVerify1;
 
-typedef struct prio_packet_verify2 *PrioPacketVerify2;
-typedef const struct prio_packet_verify2 *const_PrioPacketVerify2;
+typedef struct prio_packet_verify2* PrioPacketVerify2;
+typedef const struct prio_packet_verify2* const_PrioPacketVerify2;
 
-typedef struct prio_total_share *PrioTotalShare;
-typedef const struct prio_total_share *const_PrioTotalShare;
+typedef struct prio_total_share* PrioTotalShare;
+typedef const struct prio_total_share* const_PrioTotalShare;
 
-typedef SECKEYPublicKey *PublicKey;
-typedef const SECKEYPublicKey *const_PublicKey;
+typedef SECKEYPublicKey* PublicKey;
+typedef const SECKEYPublicKey* const_PublicKey;
 
-typedef SECKEYPrivateKey *PrivateKey;
-typedef const SECKEYPrivateKey *const_PrivateKey;
+typedef SECKEYPrivateKey* PrivateKey;
+typedef const SECKEYPrivateKey* const_PrivateKey;
 
 /*
  * Initialize and clear random number generator state.
@@ -93,7 +93,7 @@ void Prio_clear();
  * `PrioConfig_new` returns.
  */
 PrioConfig PrioConfig_new(int nFields, PublicKey serverA, PublicKey serverB,
-                          const unsigned char *batchId,
+                          const unsigned char* batchId,
                           unsigned int batchIdLen);
 void PrioConfig_clear(PrioConfig cfg);
 int PrioConfig_numDataFields(const_PrioConfig cfg);
@@ -115,7 +115,7 @@ PrioConfig PrioConfig_newTest(int nFields);
  * Prio server has an associated public key, and the clients use these keys to
  * encrypt messages to the servers.
  */
-SECStatus Keypair_new(PrivateKey *pvtkey, PublicKey *pubkey);
+SECStatus Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey);
 
 /*
  * Import a new curve25519 public/private key from the raw bytes given.  When
@@ -126,11 +126,11 @@ SECStatus Keypair_new(PrivateKey *pvtkey, PublicKey *pubkey);
  * These functions will allocate a new `PublicKey`/`PrivateKey` object, which
  * the caller must free using `PublicKey_clear`/`PrivateKey_clear`.
  */
-SECStatus PublicKey_import(PublicKey *pk, const unsigned char *data,
+SECStatus PublicKey_import(PublicKey* pk, const unsigned char* data,
                            unsigned int dataLen);
-SECStatus PrivateKey_import(PrivateKey *sk, const unsigned char *privData,
+SECStatus PrivateKey_import(PrivateKey* sk, const unsigned char* privData,
                             unsigned int privDataLen,
-                            const unsigned char *pubData,
+                            const unsigned char* pubData,
                             unsigned int pubDataLen);
 
 /*
@@ -141,12 +141,12 @@ SECStatus PrivateKey_import(PrivateKey *sk, const unsigned char *privData,
  * These functions will allocate a new `PublicKey`/`PrivateKey` object, which
  * the caller must free using `PublicKey_clear`/`PrivateKey_clear`.
  */
-SECStatus PublicKey_import_hex(PublicKey *pk, const unsigned char *hexData,
+SECStatus PublicKey_import_hex(PublicKey* pk, const unsigned char* hexData,
                                unsigned int dataLen);
-SECStatus PrivateKey_import_hex(PrivateKey *sk,
-                                const unsigned char *privHexData,
+SECStatus PrivateKey_import_hex(PrivateKey* sk,
+                                const unsigned char* privHexData,
                                 unsigned int privDataLen,
-                                const unsigned char *pubHexData,
+                                const unsigned char* pubHexData,
                                 unsigned int pubDataLen);
 
 /*
@@ -154,9 +154,9 @@ SECStatus PrivateKey_import_hex(PrivateKey *sk,
  *
  * The output buffer `data` must have length exactly `CURVE25519_KEY_LEN`.
  */
-SECStatus PublicKey_export(const_PublicKey pk, unsigned char *data,
+SECStatus PublicKey_export(const_PublicKey pk, unsigned char* data,
                            unsigned int dataLen);
-SECStatus PrivateKey_export(PrivateKey sk, unsigned char *data,
+SECStatus PrivateKey_export(PrivateKey sk, unsigned char* data,
                             unsigned int dataLen);
 
 /*
@@ -165,9 +165,9 @@ SECStatus PrivateKey_export(PrivateKey sk, unsigned char *data,
  * The output buffer `data` must have length exactly `CURVE25519_KEY_LEN_HEX +
  * 1`.
  */
-SECStatus PublicKey_export_hex(const_PublicKey pk, unsigned char *data,
+SECStatus PublicKey_export_hex(const_PublicKey pk, unsigned char* data,
                                unsigned int dataLen);
-SECStatus PrivateKey_export_hex(PrivateKey sk, unsigned char *data,
+SECStatus PrivateKey_export_hex(PrivateKey sk, unsigned char* data,
                                 unsigned int dataLen);
 
 void PublicKey_clear(PublicKey pubkey);
@@ -184,16 +184,16 @@ void PrivateKey_clear(PrivateKey pvtkey);
  * NOTE: The caller must free() the strings `for_server_a` and
  * `for_server_b` to avoid memory leaks.
  */
-SECStatus PrioClient_encode(const_PrioConfig cfg, const bool *data_in,
-                            unsigned char **forServerA, unsigned int *aLen,
-                            unsigned char **forServerB, unsigned int *bLen);
+SECStatus PrioClient_encode(const_PrioConfig cfg, const bool* data_in,
+                            unsigned char** forServerA, unsigned int* aLen,
+                            unsigned char** forServerB, unsigned int* bLen);
 
 /*
  * Generate a new PRG seed using the NSS global randomness source.
  * Use this routine to initialize the secret that the two Prio servers
  * share.
  */
-SECStatus PrioPRGSeed_randomize(PrioPRGSeed *seed);
+SECStatus PrioPRGSeed_randomize(PrioPRGSeed* seed);
 
 /*
  * The PrioServer object holds the state of the Prio servers.
@@ -217,7 +217,7 @@ void PrioVerifier_clear(PrioVerifier v);
  * Read in encrypted data from the client, decrypt it, and prepare to check
  * the request for validity.
  */
-SECStatus PrioVerifier_set_data(PrioVerifier v, unsigned char *data,
+SECStatus PrioVerifier_set_data(PrioVerifier v, unsigned char* data,
                                 unsigned int dataLen);
 
 /*
@@ -232,8 +232,8 @@ SECStatus PrioPacketVerify1_set_data(PrioPacketVerify1 p1,
                                      const_PrioVerifier v);
 
 SECStatus PrioPacketVerify1_write(const_PrioPacketVerify1 p,
-                                  msgpack_packer *pk);
-SECStatus PrioPacketVerify1_read(PrioPacketVerify1 p, msgpack_unpacker *upk,
+                                  msgpack_packer* pk);
+SECStatus PrioPacketVerify1_read(PrioPacketVerify1 p, msgpack_unpacker* upk,
                                  const_PrioConfig cfg);
 
 /*
@@ -251,8 +251,8 @@ SECStatus PrioPacketVerify2_set_data(PrioPacketVerify2 p2, const_PrioVerifier v,
                                      const_PrioPacketVerify1 p1B);
 
 SECStatus PrioPacketVerify2_write(const_PrioPacketVerify2 p,
-                                  msgpack_packer *pk);
-SECStatus PrioPacketVerify2_read(PrioPacketVerify2 p, msgpack_unpacker *upk,
+                                  msgpack_packer* pk);
+SECStatus PrioPacketVerify2_read(PrioPacketVerify2 p, msgpack_unpacker* upk,
                                  const_PrioConfig cfg);
 
 /*
@@ -282,8 +282,8 @@ void PrioTotalShare_clear(PrioTotalShare t);
 
 SECStatus PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s);
 
-SECStatus PrioTotalShare_write(const_PrioTotalShare t, msgpack_packer *pk);
-SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker *upk,
+SECStatus PrioTotalShare_write(const_PrioTotalShare t, msgpack_packer* pk);
+SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
                               const_PrioConfig cfg);
 
 /*
@@ -295,7 +295,7 @@ SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker *upk,
  * This function returns failure if some final data value is too
  * long to fit in an `unsigned long`.
  */
-SECStatus PrioTotalShare_final(const_PrioConfig cfg, unsigned long long *output,
+SECStatus PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
                                const_PrioTotalShare tA,
                                const_PrioTotalShare tB);
 
