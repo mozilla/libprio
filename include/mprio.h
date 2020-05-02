@@ -20,7 +20,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "callbk.h"
+#include "NssCtx.h"
 
 /* Seed for a pseudo-random generator (PRG). */
 #define PRG_SEED_LENGTH AES_128_KEY_LENGTH
@@ -214,8 +214,8 @@ PrioVerifier PrioVerifier_new(PrioServer s);
 void PrioVerifier_clear(PrioVerifier v);
 
 /*
- * Read in encrypted data from the client, decrypt it, and prepare to check
- * the request for validity.
+ * Read in encrypted data from the client, decrypt it, and prepare to check the
+ * request for validity.
  */
 SECStatus PrioVerifier_set_data(PrioVerifier v, unsigned char* data,
                                 unsigned int dataLen);

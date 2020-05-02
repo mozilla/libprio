@@ -12,16 +12,15 @@
 
 #include "prio/util.h"
 
-#include "callbk.h"
+#include "NssCtx.h"
 #include <nss.h>
 
 void
 nss_callbk_init(nss_struct* nss_pointer)
 {
-
-  (nss_pointer)->nssinit = NSS_InitContext;
-  (nss_pointer)->nssisinit = NSS_IsInitialized;
-  (nss_pointer)->nssshutdown = NSS_ShutdownContext;
+  (nss_pointer)->Nss_InitContext = NSS_InitContext;
+  (nss_pointer)->Nss_Isinit = NSS_IsInitialized;
+  (nss_pointer)->Nss_Shutdown = NSS_ShutdownContext;
 }
 
 int
@@ -56,7 +55,7 @@ verify_full(void)
   bool* data_items = NULL;
 
   // Initialize nss pointer for prio
-  static nss_struct nss_pointer;
+  nss_struct nss_pointer;
   nss_callbk_init(&nss_pointer);
 
   // Initialize NSS random number generator.

@@ -13,7 +13,7 @@
 #include <seccomon.h>
 #include <stdlib.h>
 
-#include "callbk.h"
+#include "NssCtx.h"
 
 /*
  * Typedef for function pointer. A function pointer of type RandBytesFunc

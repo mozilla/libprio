@@ -15,7 +15,7 @@
 #include "rand.h"
 #include "util.h"
 
-#include "callbk.h"
+#include "NssCtx.h"
 
 int
 PrioConfig_maxDataFields(void)

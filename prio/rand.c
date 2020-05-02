@@ -16,7 +16,7 @@
 #include "rand.h"
 #include "util.h"
 
-#include "callbk.h"
+#include "NssCtx.h"
 
 #define CHUNK_SIZE 8192
 
@@ -31,7 +31,7 @@ rand_init(nss_struct* nss_pointer)
   if (nss_pointer == NULL)
     return SECFailure;
 
-  prioGlobalContext = nss_pointer->nssinit(
+  prioGlobalContext = nss_pointer->Nss_InitContext(
     "", "", "", "", NULL, NSS_INIT_READONLY | NSS_INIT_NOCERTDB |
                             NSS_INIT_NOMODDB | NSS_INIT_FORCEOPEN |
                             NSS_INIT_NOROOTINIT);
@@ -132,7 +132,7 @@ void
 rand_clear(nss_struct* nss_pointer)
 {
   if (prioGlobalContext) {
-    nss_pointer->nssshutdown(prioGlobalContext);
+    nss_pointer->Nss_Shutdown(prioGlobalContext);
 #ifdef DO_PR_CLEANUP
     PR_Cleanup();
 #endif

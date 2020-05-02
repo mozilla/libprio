@@ -19,7 +19,7 @@
 
 #include "mutest.h" /* MU_* constants, mu_print() */
 
-#include "callbk.h"
+#include "NssCtx.h"
 #include <nss.h>
 
 /*
@@ -71,17 +71,15 @@ parse_args(__attribute__((unused)) int argc, char* argv[])
 void
 nss_callbk_init(nss_struct* nss_pointer)
 {
-
-  (nss_pointer)->nssinit = NSS_InitContext;
-  (nss_pointer)->nssisinit = NSS_IsInitialized;
-  (nss_pointer)->nssshutdown = NSS_ShutdownContext;
+  (nss_pointer)->Nss_InitContext = NSS_InitContext;
+  (nss_pointer)->Nss_Isinit = NSS_IsInitialized;
+  (nss_pointer)->Nss_Shutdown = NSS_ShutdownContext;
 }
 
 int
 main(int argc, char* argv[])
 {
-
-  static nss_struct nss_pointer;
+  nss_struct nss_pointer;
   nss_callbk_init(&nss_pointer);
   Prio_init(&nss_pointer);
 
