@@ -14,9 +14,9 @@
 typedef struct
 {
   // Function Pointer to initiate Nss struct contexts.
-  NSSInitContext* (*Nss_InitContext)(const char* configdir, const char* certPrefix,
-                             const char* keyPrefix, const char* secmodName,
-                             NSSInitParameters* initParams, PRUint32 flags);
+  NSSInitContext* (*Nss_InitContext)(
+    const char* configdir, const char* certPrefix, const char* keyPrefix,
+    const char* secmodName, NSSInitParameters* initParams, PRUint32 flags);
 
   // Function Pointer to check initialization of Nss struct.
   PRBool (*Nss_Isinit)();
