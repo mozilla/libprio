@@ -19,7 +19,8 @@
 #include "test_util.h"
 
 SECStatus
-gen_client_packets(const_PrioConfig cfg, PrioPacketClient pA,
+gen_client_packets(const_PrioConfig cfg,
+                   PrioPacketClient pA,
                    PrioPacketClient pB)
 {
   SECStatus rv = SECSuccess;

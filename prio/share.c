@@ -13,7 +13,9 @@
 #include "util.h"
 
 SECStatus
-share_int(const struct prio_config* cfg, const mp_int* src, mp_int* shareA,
+share_int(const struct prio_config* cfg,
+          const mp_int* src,
+          mp_int* shareA,
           mp_int* shareB)
 {
   SECStatus rv;

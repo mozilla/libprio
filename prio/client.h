@@ -59,19 +59,24 @@ struct prio_packet_client
   } shares;
 };
 
-PrioPacketClient PrioPacketClient_new(const_PrioConfig cfg,
-                                      PrioServerId for_server);
-void PrioPacketClient_clear(PrioPacketClient p);
-SECStatus PrioPacketClient_set_data(const_PrioConfig cfg, const bool* data_in,
-                                    PrioPacketClient for_server_a,
-                                    PrioPacketClient for_server_b);
+PrioPacketClient
+PrioPacketClient_new(const_PrioConfig cfg, PrioServerId for_server);
+void
+PrioPacketClient_clear(PrioPacketClient p);
+SECStatus
+PrioPacketClient_set_data(const_PrioConfig cfg,
+                          const bool* data_in,
+                          PrioPacketClient for_server_a,
+                          PrioPacketClient for_server_b);
 
-SECStatus PrioPacketClient_decrypt(PrioPacketClient p, const_PrioConfig cfg,
-                                   PrivateKey server_priv,
-                                   const unsigned char* data_in,
-                                   unsigned int data_len);
+SECStatus
+PrioPacketClient_decrypt(PrioPacketClient p,
+                         const_PrioConfig cfg,
+                         PrivateKey server_priv,
+                         const unsigned char* data_in,
+                         unsigned int data_len);
 
-bool PrioPacketClient_areEqual(const_PrioPacketClient p1,
-                               const_PrioPacketClient p2);
+bool
+PrioPacketClient_areEqual(const_PrioPacketClient p1, const_PrioPacketClient p2);
 
 #endif /* __CLIENT_H__ */

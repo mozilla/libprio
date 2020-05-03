@@ -26,8 +26,10 @@
 #endif
 
 PrioServer
-PrioServer_new(const_PrioConfig cfg, PrioServerId server_idx,
-               PrivateKey server_priv, const PrioPRGSeed seed)
+PrioServer_new(const_PrioConfig cfg,
+               PrioServerId server_idx,
+               PrivateKey server_priv,
+               const PrioPRGSeed seed)
 {
   SECStatus rv = SECSuccess;
   PrioServer s = malloc(sizeof(*s));
@@ -119,8 +121,10 @@ PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s)
 }
 
 SECStatus
-PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
-                     const_PrioTotalShare tA, const_PrioTotalShare tB)
+PrioTotalShare_final(const_PrioConfig cfg,
+                     unsigned long long* output,
+                     const_PrioTotalShare tA,
+                     const_PrioTotalShare tB)
 {
   if (tA->data_shares->len != cfg->num_data_fields)
     return SECFailure;
@@ -136,8 +140,10 @@ PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
   MP_CHECKC(mp_init(&tmp));
 
   for (int i = 0; i < cfg->num_data_fields; i++) {
-    MP_CHECKC(mp_addmod(&tA->data_shares->data[i], &tB->data_shares->data[i],
-                        &cfg->modulus, &tmp));
+    MP_CHECKC(mp_addmod(&tA->data_shares->data[i],
+                        &tB->data_shares->data[i],
+                        &cfg->modulus,
+                        &tmp));
 
     if (MP_USED(&tmp) > 1) {
       P_CHECKCB(false);
@@ -292,13 +298,14 @@ cleanup:
 }
 
 SECStatus
-PrioVerifier_set_data(PrioVerifier v, unsigned char* data,
+PrioVerifier_set_data(PrioVerifier v,
+                      unsigned char* data,
                       unsigned int data_len)
 {
   SECStatus rv = SECSuccess;
   PRG prgB = NULL;
-  P_CHECKC(PrioPacketClient_decrypt(v->clientp, v->s->cfg, v->s->priv_key, data,
-                                    data_len));
+  P_CHECKC(PrioPacketClient_decrypt(
+    v->clientp, v->s->cfg, v->s->priv_key, data, data_len));
 
   PrioPacketClient p = v->clientp;
   if (p->for_server != v->s->idx)
@@ -428,7 +435,8 @@ PrioPacketVerify2_clear(PrioPacketVerify2 p)
 }
 
 SECStatus
-PrioPacketVerify2_set_data(PrioPacketVerify2 p2, const_PrioVerifier v,
+PrioPacketVerify2_set_data(PrioPacketVerify2 p2,
+                           const_PrioVerifier v,
                            const_PrioPacketVerify1 p1A,
                            const_PrioPacketVerify1 p1B)
 {
@@ -486,7 +494,8 @@ cleanup:
 }
 
 int
-PrioVerifier_isValid(const_PrioVerifier v, const_PrioPacketVerify2 pA,
+PrioVerifier_isValid(const_PrioVerifier v,
+                     const_PrioPacketVerify2 pA,
                      const_PrioPacketVerify2 pB)
 {
   SECStatus rv = SECSuccess;

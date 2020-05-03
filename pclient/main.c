@@ -102,8 +102,8 @@ verify_full(void)
     //
     // Construct the client data packets.
     unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode(cfg, data_items, &for_server_a, &aLen,
-                               &for_server_b, &bLen));
+    P_CHECKC(PrioClient_encode(
+      cfg, data_items, &for_server_a, &aLen, &for_server_b, &bLen));
 
     // The Prio servers A and B can come online later (e.g., at the end of
     // each day) to download the encrypted telemetry packets from the
