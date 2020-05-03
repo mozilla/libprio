@@ -139,7 +139,9 @@ MPArray_copy(MPArray dst, const_MPArray src)
 }
 
 SECStatus
-MPArray_set_share(MPArray arrA, MPArray arrB, const_MPArray src,
+MPArray_set_share(MPArray arrA,
+                  MPArray arrB,
+                  const_MPArray src,
                   const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;

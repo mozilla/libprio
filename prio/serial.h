@@ -11,11 +11,14 @@
 
 #include <mprio.h>
 
-SECStatus serial_write_packet_client(msgpack_packer* pk,
-                                     const_PrioPacketClient p,
-                                     const_PrioConfig cfg);
+SECStatus
+serial_write_packet_client(msgpack_packer* pk,
+                           const_PrioPacketClient p,
+                           const_PrioConfig cfg);
 
-SECStatus serial_read_packet_client(msgpack_unpacker* upk, PrioPacketClient p,
-                                    const_PrioConfig cfg);
+SECStatus
+serial_read_packet_client(msgpack_unpacker* upk,
+                          PrioPacketClient p,
+                          const_PrioConfig cfg);
 
 #endif /* __SERIAL_H__ */

@@ -339,8 +339,8 @@ mu_test__prg_share_arr(void)
   PT_CHECKC(PRG_get_array(prg, arr, &cfg->modulus));
 
   for (int i = 0; i < 10; i++) {
-    MPT_CHECKC(mp_addmod(&arr->data[i], &arr_share->data[i], &cfg->modulus,
-                         &arr->data[i]));
+    MPT_CHECKC(mp_addmod(
+      &arr->data[i], &arr_share->data[i], &cfg->modulus, &arr->data[i]));
     mu_check(mp_cmp_d(&arr->data[i], i) == 0);
   }
 

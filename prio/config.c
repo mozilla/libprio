@@ -23,8 +23,11 @@ PrioConfig_maxDataFields(void)
 }
 
 PrioConfig
-PrioConfig_new(int n_fields, PublicKey server_a, PublicKey server_b,
-               const unsigned char* batch_id, unsigned int batch_id_len)
+PrioConfig_new(int n_fields,
+               PublicKey server_a,
+               PublicKey server_b,
+               const unsigned char* batch_id,
+               unsigned int batch_id_len)
 {
   SECStatus rv = SECSuccess;
   PrioConfig cfg = malloc(sizeof(*cfg));

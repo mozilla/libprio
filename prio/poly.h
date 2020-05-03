@@ -21,8 +21,11 @@
  * of two and must be no longer than the number of precomputed
  * roots in the PrioConfig object passed in.
  */
-SECStatus poly_fft(MPArray points_out, const_MPArray points_in,
-                   const_PrioConfig cfg, bool invert);
+SECStatus
+poly_fft(MPArray points_out,
+         const_MPArray points_in,
+         const_PrioConfig cfg,
+         bool invert);
 
 /*
  * Get an array
@@ -33,15 +36,21 @@ SECStatus poly_fft(MPArray points_out, const_MPArray points_in,
  * Do NOT mp_clear() the mp_ints stored in roots_out.
  * These are owned by the PrioConfig object.
  */
-SECStatus poly_fft_get_roots(MPArray roots_out, int n_points,
-                             const_PrioConfig cfg, bool invert);
+SECStatus
+poly_fft_get_roots(MPArray roots_out,
+                   int n_points,
+                   const_PrioConfig cfg,
+                   bool invert);
 
 /*
  * Evaluate the polynomial specified by the coefficients
  * at the point `eval_at` and return the result as `value`.
  */
-SECStatus poly_eval(mp_int* value, const_MPArray coeffs, const mp_int* eval_at,
-                    const_PrioConfig cfg);
+SECStatus
+poly_eval(mp_int* value,
+          const_MPArray coeffs,
+          const mp_int* eval_at,
+          const_PrioConfig cfg);
 
 /*
  * Interpolate the polynomial through the points
@@ -50,7 +59,10 @@ SECStatus poly_eval(mp_int* value, const_MPArray coeffs, const mp_int* eval_at,
  * specified by `poly_points`. Evaluate the resulting polynomial
  * at the point `eval_at`. Return the result as `value`.
  */
-SECStatus poly_interp_evaluate(mp_int* value, const_MPArray poly_points,
-                               const mp_int* eval_at, const_PrioConfig cfg);
+SECStatus
+poly_interp_evaluate(mp_int* value,
+                     const_MPArray poly_points,
+                     const mp_int* eval_at,
+                     const_PrioConfig cfg);
 
 #endif
