@@ -10,8 +10,8 @@ die() {
 
 CLANG_FORMAT_VERSION="clang-format version 9.0"
 
-if which clang-format-9.0 > /dev/null; then
-    alias clang-format=clang-format-9.0
+if which clang-format-9 > /dev/null; then
+    alias clang-format=clang-format-9
 elif which clang-format > /dev/null; then
     case "$(clang-format --version)" in
         "$CLANG_FORMAT_VERSION"*)
