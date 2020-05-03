@@ -9,6 +9,8 @@
 #include <mpi.h>
 
 #include "mutest.h"
+#include "prio/encode.h"
+#include "prio/params.h"
 #include "prio/prg.h"
 #include "prio/util.h"
 #include "test_util.h"
@@ -319,7 +321,7 @@ mu_test__prg_share_arr(void)
   PRG prg = NULL;
   PrioPRGSeed seed;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(72));
+  PT_CHECKA(cfg = PrioConfig_newTest(72, 1));
   PT_CHECKC(PrioPRGSeed_randomize(&seed));
   PT_CHECKA(arr = MPArray_new(10));
   PT_CHECKA(arr_share = MPArray_new(10));
@@ -412,4 +414,288 @@ mu_test_prg_range__odd(void)
   test_prg_range_once(23, 39);
   test_prg_range_once(7, 123);
   test_prg_range_once(99000, 993123);
+}
+
+// TODO: Are the parameters for the EInt parts good like this?
+void
+mu_test__prg_repeat_e_int(void)
+{
+  SECStatus rv = SECSuccess;
+  const int tries = 10;
+  int precision = 32;
+  mp_int max;
+  MP_DIGITS(&max) = NULL;
+
+  EInt out1 = NULL;
+  EInt out2 = NULL;
+
+  PrioPRGSeed key;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg1 = PRG_new(key));
+  PT_CHECKA(prg2 = PRG_new(key));
+
+  MPT_CHECKC(mp_init(&max));
+  PT_CHECKA(out1 = EInt_new(precision));
+  PT_CHECKA(out2 = EInt_new(precision));
+
+  for (int i = 0; i < tries; i++) {
+    mp_set(&max, i + 1);
+    PT_CHECKC(PRG_get_e_int(prg1, out1, &max));
+    PT_CHECKC(PRG_get_e_int(prg2, out2, &max));
+    mu_check(EInt_areEqual(out1, out2) == true);
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
+  mp_clear(&max);
+  EInt_clear(out1);
+  EInt_clear(out2);
+}
+
+void
+mu_test__prg_accum_x(void)
+{
+  SECStatus rv = SECSuccess;
+  int precision = 32;
+  PrioPRGSeed key;
+  PRG prg = NULL;
+
+  mp_int max;
+  mp_int tmp;
+  mp_int accum;
+  EInt out = NULL;
+
+  MP_DIGITS(&max) = NULL;
+  MPT_CHECKC(mp_init(&max));
+  mp_read_radix(&max, Modulus, 16);
+
+  MP_DIGITS(&tmp) = NULL;
+  MPT_CHECKC(mp_init(&tmp));
+
+  MP_DIGITS(&accum) = NULL;
+  MPT_CHECKC(mp_init(&accum));
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg = PRG_new(key));
+
+  PT_CHECKA(out = EInt_new(precision));
+  PT_CHECKC(PRG_get_e_int(prg, out, &max));
+
+  for (int bit = 0; bit < precision; bit++) {
+    // multiply share of i-th bit by 2^i
+    MP_CHECKC(
+      mp_mul_d(&out->bits->data[bit], (1l << (out->prec - bit - 1)), &tmp));
+    // apply modulus
+    MP_CHECKC(mp_mod(&tmp, &max, &tmp));
+    // add result to x, to sum up to a share of x when loop is done
+    MP_CHECKC(mp_addmod(&accum, &tmp, &max, &accum));
+  }
+  mu_check(mp_cmp(&out->x, &accum) == 0);
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PRG_clear(prg);
+  mp_clear(&max);
+  mp_clear(&tmp);
+  mp_clear(&accum);
+  EInt_clear(out);
+}
+
+/*
+ * Test PRG_e_int_accum_x, PRG_get_e_int, PRG_share_e_int by encoding,
+ * sharing and reconstructing single longs
+ */
+void
+mu_test__share_e_int(void)
+{
+  SECStatus rv = SECSuccess;
+  PrioConfig cfg = NULL;
+
+  int fields = 100;
+  int precision = 32;
+  PrioPRGSeed key;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
+
+  long max = (1l << (precision)) - 1;
+  mp_int tmp;
+
+  EInt src = NULL;
+  EInt share = NULL;
+  EInt get = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(fields, precision));
+
+  MP_DIGITS(&tmp) = NULL;
+  MPT_CHECKC(mp_init(&tmp));
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg1 = PRG_new(key));
+  PT_CHECKA(prg2 = PRG_new(key));
+
+  PT_CHECKA(src = EInt_new(cfg->precision));
+  PT_CHECKA(share = EInt_new(cfg->precision));
+  PT_CHECKA(get = EInt_new(cfg->precision));
+
+  for (int i = 0; i < fields; i++) {
+    mp_zero(&tmp);
+    EInt_set(src, (max - i));
+    EInt_set(share, 0);
+    EInt_set(get, 0);
+    PT_CHECKC(PRG_share_e_int(prg1, share, src, cfg));
+    PT_CHECKC(PRG_get_e_int(prg2, get, &cfg->modulus));
+    MPT_CHECKC(mp_addmod(&share->x, &get->x, &cfg->modulus, &tmp));
+    MPT_CHECKC(mp_cmp(&src->x, &tmp));
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
+  mp_clear(&tmp);
+  EInt_clear(src);
+  EInt_clear(share);
+  EInt_clear(get);
+  PrioConfig_clear(cfg);
+}
+
+/*
+ * Test get_e_array, share_e_array by sharing and reconstructing arrays
+ */
+void
+mu_test__share_e_array(void)
+{
+  SECStatus rv = SECSuccess;
+  PrioConfig cfg = NULL;
+
+  int fields = 100;
+  int precision = 32;
+  PrioPRGSeed key;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
+
+  long max = (1l << (precision)) - 1;
+  mp_int tmp;
+
+  EIntArray src = NULL;
+  EIntArray share = NULL;
+  EIntArray get = NULL;
+
+  long* data = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(fields, precision));
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg1 = PRG_new(key));
+  PT_CHECKA(prg2 = PRG_new(key));
+
+  P_CHECKA(data = calloc(fields, sizeof(long)));
+  for (int i = 0; i < fields; i++) {
+    data[i] = max - i;
+  }
+  PT_CHECKA(src =
+              EIntArray_new_data(cfg->num_data_fields, cfg->precision, data));
+
+  PT_CHECKA(share = EIntArray_new(cfg->num_data_fields, cfg->precision));
+  PT_CHECKC(PRG_share_e_array(prg1, share, src, cfg));
+
+  PT_CHECKA(get = EIntArray_new(cfg->num_data_fields, cfg->precision));
+  PT_CHECKC(PRG_get_e_array(prg2, get, &cfg->modulus));
+
+  MP_DIGITS(&tmp) = NULL;
+  MPT_CHECKC(mp_init(&tmp));
+
+  for (int i = 0; i < fields; i++) {
+    mp_zero(&tmp);
+    MPT_CHECKC(
+      mp_addmod(&share->data[i]->x, &get->data[i]->x, &cfg->modulus, &tmp));
+    MPT_CHECKC(mp_cmp(&src->data[i]->x, &tmp));
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
+  mp_clear(&tmp);
+  EIntArray_clear(src);
+  EIntArray_clear(share);
+  EIntArray_clear(get);
+  PrioConfig_clear(cfg);
+  free(data);
+}
+
+/*
+ * Same as share_e_array but reuse arrays in multiple rounds
+ */
+void
+mu_test__share_e_arrays(void)
+{
+  SECStatus rv = SECSuccess;
+  PrioConfig cfg = NULL;
+
+  int fields = 100;
+  int precision = 32;
+  int nclients = 10;
+
+  PrioPRGSeed key;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
+
+  long max = (1l << (precision)) - 1;
+  mp_int tmp;
+
+  EIntArray src = NULL;
+  EIntArray share = NULL;
+  EIntArray get = NULL;
+
+  long* data = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(fields, precision));
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg1 = PRG_new(key));
+  PT_CHECKA(prg2 = PRG_new(key));
+
+  MP_DIGITS(&tmp) = NULL;
+  MPT_CHECKC(mp_init(&tmp));
+
+  P_CHECKA(data = calloc(fields, sizeof(long)));
+  for (int i = 0; i < fields; i++) {
+    data[i] = max - i;
+  }
+
+  PT_CHECKA(src = EIntArray_new(cfg->num_data_fields, cfg->precision));
+  PT_CHECKA(share = EIntArray_new(cfg->num_data_fields, cfg->precision));
+  PT_CHECKA(get = EIntArray_new(cfg->num_data_fields, cfg->precision));
+
+  for (int client = 0; client < nclients; client++) {
+    for (int i = 0; i < fields; i++) {
+      PT_CHECKC(EInt_set(src->data[i], data[i]));
+    }
+    PT_CHECKC(PRG_share_e_array(prg1, share, src, cfg));
+    PT_CHECKC(PRG_get_e_array(prg2, get, &cfg->modulus));
+
+    for (int i = 0; i < fields; i++) {
+      mp_zero(&tmp);
+      MPT_CHECKC(
+        mp_addmod(&share->data[i]->x, &get->data[i]->x, &cfg->modulus, &tmp));
+      MPT_CHECKC(mp_cmp(&src->data[i]->x, &tmp));
+    }
+  }
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
+  mp_clear(&tmp);
+  EIntArray_clear(src);
+  EIntArray_clear(share);
+  EIntArray_clear(get);
+  PrioConfig_clear(cfg);
+  free(data);
 }

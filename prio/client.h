@@ -25,7 +25,7 @@ typedef const struct prio_packet_client* const_PrioPacketClient;
 struct server_a_data
 {
   // These values are only set for server A.
-  MPArray data_shares;
+  EIntArray data_shares;
   MPArray h_points;
 };
 
@@ -65,7 +65,7 @@ void
 PrioPacketClient_clear(PrioPacketClient p);
 SECStatus
 PrioPacketClient_set_data(const_PrioConfig cfg,
-                          const bool* data_in,
+                          const long* data_in,
                           PrioPacketClient for_server_a,
                           PrioPacketClient for_server_b);
 

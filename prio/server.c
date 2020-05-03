@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "circuit.h"
 #include "client.h"
+#include "encode.h"
 #include "mparray.h"
 #include "poly.h"
 #include "prg.h"
@@ -67,20 +69,22 @@ PrioServer_clear(PrioServer s)
 SECStatus
 PrioServer_aggregate(PrioServer s, PrioVerifier v)
 {
-  MPArray arr = NULL;
+  SECStatus rv = SECSuccess;
   switch (s->idx) {
     case PRIO_SERVER_A:
-      arr = v->clientp->shares.A.data_shares;
+      P_CHECK(EIntArray_truncate_and_addmod(
+        s->data_shares, v->clientp->shares.A.data_shares, &s->cfg->modulus));
       break;
     case PRIO_SERVER_B:
-      arr = v->data_sharesB;
+      P_CHECK(EIntArray_truncate_and_addmod(
+        s->data_shares, v->data_sharesB, &s->cfg->modulus));
       break;
     default:
       // Should never get here
       return SECFailure;
   }
 
-  return MPArray_addmod(s->data_shares, arr, &s->cfg->modulus);
+  return rv;
 }
 
 PrioTotalShare
@@ -148,25 +152,13 @@ PrioTotalShare_final(const_PrioConfig cfg,
     if (MP_USED(&tmp) > 1) {
       P_CHECKCB(false);
     }
+
     output[i] = MP_DIGIT(&tmp, 0);
   }
 
 cleanup:
   mp_clear(&tmp);
   return rv;
-}
-
-inline static mp_int*
-get_data_share(const_PrioVerifier v, int i)
-{
-  switch (v->s->idx) {
-    case PRIO_SERVER_A:
-      return &v->clientp->shares.A.data_shares->data[i];
-    case PRIO_SERVER_B:
-      return &v->data_sharesB->data[i];
-  }
-  // Should never get here
-  return NULL;
 }
 
 inline static mp_int*
@@ -182,6 +174,19 @@ get_h_share(const_PrioVerifier v, int i)
   return NULL;
 }
 
+inline static const_EIntArray
+get_data_shares(const_PrioVerifier v)
+{
+  switch (v->s->idx) {
+    case PRIO_SERVER_A:
+      return v->clientp->shares.A.data_shares;
+    case PRIO_SERVER_B:
+      return v->data_sharesB;
+  }
+  // Should never get here
+  return NULL;
+}
+
 /*
  * Build shares of the polynomials f, g, and h used in the Prio verification
  * routine and evalute these polynomials at a random point determined
@@ -191,8 +196,9 @@ static SECStatus
 compute_shares(PrioVerifier v, const_PrioPacketClient p)
 {
   SECStatus rv;
-  const int n = v->s->cfg->num_data_fields + 1;
+  const int n = v->s->cfg->precision * v->s->cfg->num_data_fields + 1;
   const int N = next_power_of_two(n);
+
   mp_int eval_at;
   mp_int lower;
   MP_DIGITS(&eval_at) = NULL;
@@ -225,20 +231,7 @@ compute_shares(PrioVerifier v, const_PrioPacketClient p)
   MP_CHECKC(mp_copy(&p->g0_share, &points_g->data[0]));
   MP_CHECKC(mp_copy(&p->h0_share, &points_h->data[0]));
 
-  for (int i = 1; i < n; i++) {
-    // [f](i) = i-th data share
-    const mp_int* data_i_minus_1 = get_data_share(v, i - 1);
-    MP_CHECKC(mp_copy(data_i_minus_1, &points_f->data[i]));
-
-    // [g](i) = i-th data share minus 1
-    // Only need to shift the share for 0-th server
-    MP_CHECKC(mp_copy(&points_f->data[i], &points_g->data[i]));
-    if (!v->s->idx) {
-      MP_CHECKC(mp_sub_d(&points_g->data[i], 1, &points_g->data[i]));
-      MP_CHECKC(
-        mp_mod(&points_g->data[i], &v->s->cfg->modulus, &points_g->data[i]));
-    }
-  }
+  P_CHECKC(IntCircuit_set_fg_server(v, get_data_shares(v), points_f, points_g));
 
   int j = 0;
   for (int i = 1; i < 2 * N; i += 2) {
@@ -282,9 +275,11 @@ PrioVerifier_new(PrioServer s)
 
   P_CHECKA(v->clientp = PrioPacketClient_new(s->cfg, s->idx));
 
-  const int N = next_power_of_two(s->cfg->num_data_fields + 1);
+  const int N =
+    next_power_of_two(v->s->cfg->precision * v->s->cfg->num_data_fields + 1);
   if (v->s->idx == PRIO_SERVER_B) {
-    P_CHECKA(v->data_sharesB = MPArray_new(v->s->cfg->num_data_fields));
+    P_CHECKA(v->data_sharesB =
+               EIntArray_new(v->s->cfg->num_data_fields, v->s->cfg->precision));
     P_CHECKA(v->h_pointsB = MPArray_new(N));
   }
 
@@ -311,18 +306,21 @@ PrioVerifier_set_data(PrioVerifier v,
   if (p->for_server != v->s->idx)
     return SECFailure;
 
-  const int N = next_power_of_two(v->s->cfg->num_data_fields + 1);
+  const int N =
+    next_power_of_two(v->s->cfg->precision * v->s->cfg->num_data_fields + 1);
   if (v->s->idx == PRIO_SERVER_A) {
     // Check that packet has the correct number of data fields
-    if (p->shares.A.data_shares->len != v->s->cfg->num_data_fields)
+    if (p->shares.A.data_shares->len != v->s->cfg->num_data_fields) {
       return SECFailure;
-    if (p->shares.A.h_points->len != N)
+    }
+    if (p->shares.A.h_points->len != N) {
       return SECFailure;
+    }
   }
 
   if (v->s->idx == PRIO_SERVER_B) {
     P_CHECKA(prgB = PRG_new(v->clientp->shares.B.seed));
-    P_CHECKC(PRG_get_array(prgB, v->data_sharesB, &v->s->cfg->modulus));
+    P_CHECKC(PRG_get_e_array(prgB, v->data_sharesB, &v->s->cfg->modulus));
     P_CHECKC(PRG_get_array(prgB, v->h_pointsB, &v->s->cfg->modulus));
   }
 
@@ -334,7 +332,6 @@ PrioVerifier_set_data(PrioVerifier v,
   P_CHECKC(compute_shares(v, p));
 
 cleanup:
-
   PRG_clear(prgB);
   return rv;
 }
@@ -345,7 +342,7 @@ PrioVerifier_clear(PrioVerifier v)
   if (v == NULL)
     return;
   PrioPacketClient_clear(v->clientp);
-  MPArray_clear(v->data_sharesB);
+  EIntArray_clear(v->data_sharesB);
   MPArray_clear(v->h_pointsB);
   mp_clear(&v->share_fR);
   mp_clear(&v->share_gR);
@@ -511,6 +508,14 @@ PrioVerifier_isValid(const_PrioVerifier v,
     mp_addmod(&pA->share_out, &pB->share_out, &v->s->cfg->modulus, &res));
 
   rv = (mp_cmp_d(&res, 0) == 0) ? SECSuccess : SECFailure;
+
+  // Up to this point we verified, that all bits were actually bits.
+
+  // Since the following step uses only affine transformations
+  // (addition), each server can execute it individually. It checks
+  // wether the shares of the bits accumulate correctly to a b-bit
+  // integer share.
+  MP_CHECKC(IntCircuit_check_x_accum(v->s->cfg, get_data_shares(v)));
 
 cleanup:
   mp_clear(&res);

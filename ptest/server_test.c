@@ -26,7 +26,7 @@ mu_test__eval_poly(void)
   MP_DIGITS(&eval_at) = NULL;
   MP_DIGITS(&out) = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(54));
+  PT_CHECKA(cfg = PrioConfig_newTest(54, 1));
   PT_CHECKA(coeffs = MPArray_new(3));
 
   mp_set(&coeffs->data[0], 2);
@@ -64,7 +64,7 @@ mu_test__verify_new(void)
   PrioVerifier vB = NULL;
   unsigned char* for_a = NULL;
   unsigned char* for_b = NULL;
-  bool* data_items = NULL;
+  long* data_items = NULL;
 
   mp_int fR, gR, hR;
   MP_DIGITS(&fR) = NULL;
@@ -77,13 +77,16 @@ mu_test__verify_new(void)
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
   PT_CHECKA(cfg =
-              PrioConfig_new(214, pkA, pkB, (unsigned char*)"testbatch", 9));
+              PrioConfig_new(214, 1, pkA, pkB, (unsigned char*)"testbatch", 9));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  const int prec = PrioConfig_precDataFields(cfg);
+
+  PT_CHECKA(data_items = calloc(ndata, sizeof(long)));
+  long max = (1l << (prec)) - 1;
   for (int i = 0; i < ndata; i++) {
     // Arbitrary data
-    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
+    data_items[i] = max - i;
   }
 
   PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
@@ -163,7 +166,7 @@ verify_full(int tweak)
   PrioPacketVerify2 p2B = NULL;
   unsigned char* for_a = NULL;
   unsigned char* for_b = NULL;
-  bool* data_items = NULL;
+  long* data_items = NULL;
 
   mp_int fR, gR, hR;
   MP_DIGITS(&fR) = NULL;
@@ -175,13 +178,16 @@ verify_full(int tweak)
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  PT_CHECKA(cfg = PrioConfig_new(47, pkA, pkB, (unsigned char*)"test4", 5));
+  PT_CHECKA(cfg = PrioConfig_new(47, 1, pkA, pkB, (unsigned char*)"test4", 5));
 
   const int ndata = PrioConfig_numDataFields(cfg);
-  PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  const int prec = PrioConfig_precDataFields(cfg);
+
+  PT_CHECKA(data_items = calloc(ndata, sizeof(long)));
+  long max = (1l << (prec)) - 1;
   for (int i = 0; i < ndata; i++) {
     // Arbitrary data
-    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
+    data_items[i] = max - i;
   }
 
   PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));

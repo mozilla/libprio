@@ -16,14 +16,20 @@
 #include "util.h"
 
 int
-PrioConfig_maxDataFields(void)
+PrioConfig_maxDataFields(int precision)
 {
   const int n_roots = 1 << Generator2Order;
-  return (n_roots >> 1) - 1;
+  // TODO: Is it correct to just divide, since we use b fields per
+  // b-bit integer? For this case of non-negative, non-zero, integer
+  // values a and b, truncation toward zero C99 (see: ISO/IEC 9899:1999,
+  // 6.5.5) discards the fractional remainder and is equivalent to
+  // floor(a/b).
+  return ((n_roots >> 1) - 1) / precision;
 }
 
 PrioConfig
 PrioConfig_new(int n_fields,
+               int prec,
                PublicKey server_a,
                PublicKey server_b,
                const unsigned char* batch_id,
@@ -39,13 +45,18 @@ PrioConfig_new(int n_fields,
   cfg->server_a_pub = server_a;
   cfg->server_b_pub = server_b;
   cfg->num_data_fields = n_fields;
+  cfg->precision = prec;
   cfg->n_roots = 1 << Generator2Order;
   MP_DIGITS(&cfg->modulus) = NULL;
   MP_DIGITS(&cfg->inv2) = NULL;
   MP_DIGITS(&cfg->generator) = NULL;
 
   P_CHECKCB(cfg->n_roots > 1);
-  P_CHECKCB(cfg->num_data_fields <= PrioConfig_maxDataFields());
+  P_CHECKCB(cfg->num_data_fields <= PrioConfig_maxDataFields(prec));
+  // TODO: Up to which precision is reasonable (including for fixed
+  // point representation)?
+  P_CHECKCB(cfg->precision <= 32);
+  P_CHECKCB(cfg->precision >= 1);
 
   P_CHECKA(cfg->batch_id = malloc(batch_id_len));
   strncpy((char*)cfg->batch_id, (char*)batch_id, batch_id_len);
@@ -71,9 +82,10 @@ cleanup:
 }
 
 PrioConfig
-PrioConfig_newTest(int nFields)
+PrioConfig_newTest(int nFields, int precision)
 {
-  return PrioConfig_new(nFields, NULL, NULL, (unsigned char*)"testBatch", 9);
+  return PrioConfig_new(
+    nFields, precision, NULL, NULL, (unsigned char*)"testBatch", 9);
 }
 
 void
@@ -95,6 +107,12 @@ PrioConfig_numDataFields(const_PrioConfig cfg)
   return cfg->num_data_fields;
 }
 
+int
+PrioConfig_precDataFields(const_PrioConfig cfg)
+{
+  return cfg->precision;
+}
+
 SECStatus
 Prio_init(void)
 {
@@ -110,7 +128,7 @@ Prio_clear(void)
 int
 PrioConfig_hPoints(const_PrioConfig cfg)
 {
-  const int mul_gates = cfg->num_data_fields + 1;
-  const int N = next_power_of_two(mul_gates);
+  const int mul_gates = cfg->precision * cfg->num_data_fields;
+  const int N = next_power_of_two(mul_gates + 1);
   return N;
 }

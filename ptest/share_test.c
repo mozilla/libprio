@@ -29,7 +29,7 @@ mu_test_share(void)
   MP_DIGITS(&b) = NULL;
   MP_DIGITS(&c) = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(93));
+  PT_CHECKA(cfg = PrioConfig_newTest(93, 16));
   PT_CHECKA(t1 = BeaverTriple_new());
   PT_CHECKA(t2 = BeaverTriple_new());
 

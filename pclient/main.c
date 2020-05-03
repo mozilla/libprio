@@ -41,7 +41,7 @@ verify_full(void)
   const unsigned int batch_id_len = strlen((char*)batch_id);
 
   unsigned long long* output = NULL;
-  bool* data_items = NULL;
+  long* data_items = NULL;
 
   // Initialize NSS random number generator.
   P_CHECKC(Prio_init());
@@ -52,15 +52,22 @@ verify_full(void)
   // Number of clients to simulate.
   const int nclients = 10;
 
+  // Number of bits for each b-bit integerg
+  const int precision = 32;
+
+  // Maximum integer for given precision
+  const long max = (1l << (precision)) - 1;
+
   P_CHECKA(output = calloc(ndata, sizeof(unsigned long long)));
-  P_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  P_CHECKA(data_items = calloc(ndata, sizeof(long)));
 
   // Generate keypairs for servers
   P_CHECKC(Keypair_new(&skA, &pkA));
   P_CHECKC(Keypair_new(&skB, &pkB));
 
   // Use the default configuration parameters.
-  P_CHECKA(cfg = PrioConfig_new(ndata, pkA, pkB, batch_id, batch_id_len));
+  P_CHECKA(
+    cfg = PrioConfig_new(ndata, precision, pkA, pkB, batch_id, batch_id_len));
 
   PrioPRGSeed server_secret;
   P_CHECKC(PrioPRGSeed_randomize(&server_secret));
@@ -94,8 +101,8 @@ verify_full(void)
 
     // The client's data submission is an arbitrary boolean vector.
     for (int i = 0; i < ndata; i++) {
-      // Arbitrary data
-      data_items[i] = (i % 3 == 1) || (c % 5 == 3);
+      data_items[i] = max - i;
+      printf("data %d: %ld\n", i, data_items[i]);
     }
 
     // I. CLIENT DATA SUBMISSION.

@@ -16,6 +16,7 @@
 struct prio_config
 {
   int num_data_fields;
+  int precision;
   unsigned char* batch_id;
   unsigned int batch_id_len;
 

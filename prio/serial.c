@@ -152,6 +152,73 @@ cleanup:
 }
 
 static SECStatus
+serial_write_e_int(msgpack_packer* pk, const EInt n)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(pk != NULL);
+  P_CHECKCB(n != NULL);
+
+  P_CHECKC(serial_write_mp_int(pk, &n->x));
+  P_CHECKC(serial_write_mp_array(pk, n->bits));
+
+cleanup:
+  return rv;
+}
+
+static SECStatus
+serial_read_e_int(msgpack_unpacker* upk,
+                  EInt n,
+                  const mp_int* max,
+                  const int prec)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(upk != NULL);
+  P_CHECKCB(n != NULL);
+  P_CHECKCB(max != NULL);
+
+  P_CHECKC(serial_read_mp_int(upk, &n->x, max));
+  P_CHECKC(serial_read_mp_array(upk, n->bits, prec, max));
+
+cleanup:
+  return rv;
+}
+
+static SECStatus
+serial_write_e_array(msgpack_packer* pk, const_EIntArray arr)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(pk != NULL);
+  P_CHECKCB(arr != NULL);
+
+  // TODO: Do we need to use msgpacks array routines?
+  for (int i = 0; i < arr->len; i++) {
+    P_CHECKC(serial_write_e_int(pk, arr->data[i]));
+  }
+
+cleanup:
+  return rv;
+}
+
+static SECStatus
+serial_read_e_array(msgpack_unpacker* upk, EIntArray arr, const_PrioConfig cfg)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(upk != NULL);
+  P_CHECKCB(arr != NULL);
+  P_CHECKCB(cfg != NULL);
+
+  // TODO: Can we loop instead of using msgpack_object_array and
+  // object_to_e_int?
+  for (int i = 0; i < cfg->num_data_fields; i++) {
+    P_CHECKC(
+      serial_read_e_int(upk, arr->data[i], &cfg->modulus, cfg->precision));
+  }
+
+cleanup:
+  return rv;
+}
+
+static SECStatus
 serial_write_beaver_triple(msgpack_packer* pk, const_BeaverTriple t)
 {
   SECStatus rv = SECSuccess;
@@ -191,7 +258,7 @@ serial_write_server_a_data(msgpack_packer* pk, const struct server_a_data* A)
   P_CHECKCB(pk != NULL);
   P_CHECKCB(A != NULL);
 
-  P_CHECKC(serial_write_mp_array(pk, A->data_shares));
+  P_CHECKC(serial_write_e_array(pk, A->data_shares));
   P_CHECKC(serial_write_mp_array(pk, A->h_points));
 cleanup:
   return rv;
@@ -206,9 +273,8 @@ serial_read_server_a_data(msgpack_unpacker* upk,
   P_CHECKCB(upk != NULL);
   P_CHECKCB(A != NULL);
 
-  P_CHECKC(serial_read_mp_array(
-    upk, A->data_shares, cfg->num_data_fields, &cfg->modulus));
-  P_CHECKC(serial_read_mp_array(
+  P_CHECKC(serial_read_e_array(upk, A->data_shares, cfg));
+  P_CHECK(serial_read_mp_array(
     upk, A->h_points, PrioConfig_hPoints(cfg), &cfg->modulus));
 
 cleanup:

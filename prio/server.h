@@ -9,6 +9,7 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
+#include "client.h"
 #include "mparray.h"
 #include "prg.h"
 #include "share.h"
@@ -41,7 +42,7 @@ struct prio_verifier
   PrioServer s;
 
   PrioPacketClient clientp;
-  MPArray data_sharesB;
+  EIntArray data_sharesB;
   MPArray h_pointsB;
 
   mp_int share_fR;

@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "circuit.h"
 #include "client.h"
 #include "config.h"
 #include "encrypt.h"
@@ -40,7 +41,7 @@ data_polynomial_evals(const_PrioConfig cfg,
   MPArray poly_f = NULL;
 
   // Number of multiplication gates in the Valid() circuit.
-  const int mul_gates = cfg->num_data_fields;
+  const int mul_gates = cfg->precision * cfg->num_data_fields;
 
   // Little n is the number of points on the polynomials.
   // The constant term is randomized, so it's (mul_gates + 1).
@@ -82,36 +83,32 @@ cleanup:
 
 static SECStatus
 share_polynomials(const_PrioConfig cfg,
-                  const_MPArray data_in,
+                  const_EIntArray data_in,
                   PrioPacketClient pA,
                   PrioPacketClient pB,
                   PRG prgB)
 {
   SECStatus rv = SECSuccess;
   const mp_int* mod = &cfg->modulus;
-  const_MPArray points_f = data_in;
+  int num_poly_points = cfg->precision * cfg->num_data_fields;
 
   mp_int f0, g0;
   MP_DIGITS(&f0) = NULL;
   MP_DIGITS(&g0) = NULL;
 
+  MPArray points_f = NULL;
   MPArray points_g = NULL;
   MPArray evals_f_2N = NULL;
   MPArray evals_g_2N = NULL;
 
+  P_CHECKA(points_f = MPArray_new(num_poly_points));
   P_CHECKA(points_g = MPArray_dup(points_f));
   P_CHECKA(evals_f_2N = MPArray_new(0));
   P_CHECKA(evals_g_2N = MPArray_new(0));
   MP_CHECKC(mp_init(&f0));
   MP_CHECKC(mp_init(&g0));
 
-  for (int i = 0; i < points_f->len; i++) {
-    // For each input value x_i, we compute x_i * (x_i-1).
-    //    f(i) = x_i
-    //    g(i) = x_i - 1
-    MP_CHECKC(mp_sub_d(&points_g->data[i], 1, &points_g->data[i]));
-    MP_CHECKC(mp_mod(&points_g->data[i], mod, &points_g->data[i]));
-  }
+  P_CHECKC(IntCircuit_set_fg_client(cfg, data_in, points_f, points_g));
 
   P_CHECKC(data_polynomial_evals(cfg, points_f, evals_f_2N, &f0));
   P_CHECKC(data_polynomial_evals(cfg, points_g, evals_g_2N, &g0));
@@ -147,6 +144,7 @@ share_polynomials(const_PrioConfig cfg,
 cleanup:
   MPArray_clear(evals_f_2N);
   MPArray_clear(evals_g_2N);
+  MPArray_clear(points_f);
   MPArray_clear(points_g);
   mp_clear(&f0);
   mp_clear(&g0);
@@ -158,6 +156,7 @@ PrioPacketClient_new(const_PrioConfig cfg, PrioServerId for_server)
 {
   SECStatus rv = SECSuccess;
   const int data_len = cfg->num_data_fields;
+  const int data_prec = cfg->precision;
   PrioPacketClient p = NULL;
   p = malloc(sizeof(*p));
   if (!p)
@@ -190,7 +189,7 @@ PrioPacketClient_new(const_PrioConfig cfg, PrioServerId for_server)
 
   if (p->for_server == PRIO_SERVER_A) {
     const int num_h_points = PrioConfig_hPoints(cfg);
-    P_CHECKA(p->shares.A.data_shares = MPArray_new(data_len));
+    P_CHECKA(p->shares.A.data_shares = EIntArray_new(data_len, data_prec));
     P_CHECKA(p->shares.A.h_points = MPArray_new(num_h_points));
   }
 
@@ -205,14 +204,15 @@ cleanup:
 
 SECStatus
 PrioPacketClient_set_data(const_PrioConfig cfg,
-                          const bool* data_in,
+                          const long* data_in,
                           PrioPacketClient pA,
                           PrioPacketClient pB)
 {
-  MPArray client_data = NULL;
+  EIntArray client_data = NULL;
   PRG prgB = NULL;
   SECStatus rv = SECSuccess;
   const int data_len = cfg->num_data_fields;
+  const int data_prec = cfg->precision;
 
   if (!data_in)
     return SECFailure;
@@ -221,12 +221,12 @@ PrioPacketClient_set_data(const_PrioConfig cfg,
   P_CHECKA(prgB = PRG_new(pB->shares.B.seed));
 
   P_CHECKC(BeaverTriple_set_rand(cfg, pA->triple, pB->triple));
-  P_CHECKA(client_data = MPArray_new_bool(data_len, data_in));
-  P_CHECKC(PRG_share_array(prgB, pA->shares.A.data_shares, client_data, cfg));
+  P_CHECKA(client_data = EIntArray_new_data(data_len, data_prec, data_in));
+  P_CHECKC(PRG_share_e_array(prgB, pA->shares.A.data_shares, client_data, cfg));
   P_CHECKC(share_polynomials(cfg, client_data, pA, pB, prgB));
 
 cleanup:
-  MPArray_clear(client_data);
+  EIntArray_clear(client_data);
   PRG_clear(prgB);
 
   return rv;
@@ -240,7 +240,7 @@ PrioPacketClient_clear(PrioPacketClient p)
 
   if (p->for_server == PRIO_SERVER_A) {
     MPArray_clear(p->shares.A.h_points);
-    MPArray_clear(p->shares.A.data_shares);
+    EIntArray_clear(p->shares.A.data_shares);
   }
 
   BeaverTriple_clear(p->triple);
@@ -266,7 +266,8 @@ PrioPacketClient_areEqual(const_PrioPacketClient p1, const_PrioPacketClient p2)
 
   switch (p1->for_server) {
     case PRIO_SERVER_A:
-      if (!MPArray_areEqual(p1->shares.A.data_shares, p2->shares.A.data_shares))
+      if (!EIntArray_areEqual(p1->shares.A.data_shares,
+                              p2->shares.A.data_shares))
         return false;
       if (!MPArray_areEqual(p1->shares.A.h_points, p2->shares.A.h_points))
         return false;
@@ -285,7 +286,7 @@ PrioPacketClient_areEqual(const_PrioPacketClient p1, const_PrioPacketClient p2)
 
 SECStatus
 PrioClient_encode(const_PrioConfig cfg,
-                  const bool* data_in,
+                  const long* data_in,
                   unsigned char** for_server_a,
                   unsigned int* aLen,
                   unsigned char** for_server_b,

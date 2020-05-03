@@ -26,11 +26,14 @@ gen_client_packets(const_PrioConfig cfg,
   SECStatus rv = SECSuccess;
 
   const int ndata = cfg->num_data_fields;
-  bool* data_items = NULL;
-  PT_CHECKA(data_items = calloc(ndata, sizeof(bool)));
+  const int prec = cfg->precision;
+  long max = (1l << (prec)) - 1;
+
+  long* data_items = NULL;
+  PT_CHECKA(data_items = calloc(ndata, sizeof(long)));
 
   for (int i = 0; i < ndata; i++) {
-    data_items[i] = (i % 3 == 1) || (i % 5 == 3);
+    data_items[i] = max - i;
   }
 
   PT_CHECKC(PrioPacketClient_set_data(cfg, data_items, pA, pB));
@@ -67,8 +70,9 @@ serial_client(int bad)
   msgpack_sbuffer_init(&sbufB);
   msgpack_packer_init(&pkB, &sbufB, msgpack_sbuffer_write);
 
-  PT_CHECKA(cfg = PrioConfig_new(100, NULL, NULL, batch_id1, batch_id_len));
-  PT_CHECKA(cfg2 = PrioConfig_new(100, NULL, NULL, batch_id2, batch_id_len));
+  PT_CHECKA(cfg = PrioConfig_new(100, 16, NULL, NULL, batch_id1, batch_id_len));
+  PT_CHECKA(cfg2 =
+              PrioConfig_new(100, 16, NULL, NULL, batch_id2, batch_id_len));
   PT_CHECKA(pA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
   PT_CHECKA(pB = PrioPacketClient_new(cfg, PRIO_SERVER_B));
   PT_CHECKA(qA = PrioPacketClient_new(cfg, PRIO_SERVER_A));
@@ -172,7 +176,7 @@ test_verify1(int bad)
   PrioPacketVerify1 v2 = NULL;
   PrioConfig cfg = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(1));
+  PT_CHECKA(cfg = PrioConfig_newTest(1, 16));
   PT_CHECKA(v1 = PrioPacketVerify1_new());
   PT_CHECKA(v2 = PrioPacketVerify1_new());
   mp_set(&v1->share_d, 4);
@@ -232,7 +236,7 @@ test_verify2(int bad)
   PrioPacketVerify2 v2 = NULL;
   PrioConfig cfg = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(1));
+  PT_CHECKA(cfg = PrioConfig_newTest(1, 16));
   PT_CHECKA(v1 = PrioPacketVerify2_new());
   PT_CHECKA(v2 = PrioPacketVerify2_new());
   mp_set(&v1->share_out, 4);
@@ -289,7 +293,7 @@ test_total_share(int bad)
   PrioTotalShare t2 = NULL;
   PrioConfig cfg = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest((bad == 2 ? 4 : 3)));
+  PT_CHECKA(cfg = PrioConfig_newTest((bad == 2 ? 4 : 3), 16));
   PT_CHECKA(t1 = PrioTotalShare_new());
   PT_CHECKA(t2 = PrioTotalShare_new());
 

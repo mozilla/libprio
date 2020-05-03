@@ -11,6 +11,7 @@
 #include <pk11pub.h>
 #include <string.h>
 
+#include "encode.h"
 #include "prg.h"
 #include "rand.h"
 #include "share.h"
@@ -119,6 +120,44 @@ PRG_get_int(PRG prg, mp_int* out, const mp_int* max)
   return rand_int_rng(out, max, &PRG_get_bytes_internal, (void*)prg);
 }
 
+// TODO: Move tmp into EInt_x_accum -> more allocations but cleaner code
+SECStatus
+PRG_e_int_accum_x(EInt dst, int bit, mp_int* tmp, const mp_int* mod)
+{
+  SECStatus rv = SECSuccess;
+
+  // multiply share of i-th bit by 2^(prec-bit-1) (2^i reversed)
+  MP_CHECKC(
+    mp_mul_d(&dst->bits->data[bit], (1l << (dst->prec - bit - 1)), tmp));
+  // add result to x, to sum up to a share of x when loop is done
+  MP_CHECKC(mp_addmod(&dst->x, tmp, mod, &dst->x));
+
+cleanup:
+  return rv;
+}
+
+SECStatus
+PRG_get_e_int(PRG prg, EInt out, const mp_int* max)
+{
+  SECStatus rv = SECSuccess;
+
+  mp_int tmp;
+  MP_DIGITS(&tmp) = NULL;
+  MP_CHECKC(mp_init(&tmp));
+
+  // set x to zero for accumulation to reuse memory correctly
+  mp_zero(&out->x);
+  for (int bit = 0; bit < out->prec; bit++) {
+    // get the i-th bit
+    P_CHECKC(PRG_get_int(prg, &out->bits->data[bit], max));
+    P_CHECKC(PRG_e_int_accum_x(out, bit, &tmp, max));
+  }
+
+cleanup:
+  mp_clear(&tmp);
+  return rv;
+}
+
 SECStatus
 PRG_get_int_range(PRG prg, mp_int* out, const mp_int* lower, const mp_int* max)
 {
@@ -157,6 +196,17 @@ PRG_get_array(PRG prg, MPArray dst, const mp_int* mod)
 }
 
 SECStatus
+PRG_get_e_array(PRG prg, EIntArray dst, const mp_int* mod)
+{
+  SECStatus rv;
+  for (int i = 0; i < dst->len; i++) {
+    P_CHECK(PRG_get_e_int(prg, dst->data[i], mod));
+  }
+
+  return SECSuccess;
+}
+
+SECStatus
 PRG_share_int(PRG prgB, mp_int* shareA, const mp_int* src, const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
@@ -166,6 +216,30 @@ PRG_share_int(PRG prgB, mp_int* shareA, const mp_int* src, const_PrioConfig cfg)
   MP_CHECKC(mp_init(&tmp));
   P_CHECKC(PRG_get_int(prgB, &tmp, &cfg->modulus));
   MP_CHECKC(mp_submod(src, &tmp, &cfg->modulus, shareA));
+
+cleanup:
+  mp_clear(&tmp);
+  return rv;
+}
+
+SECStatus
+PRG_share_e_int(PRG prgB, EInt shareA, EInt src, const_PrioConfig cfg)
+{
+  SECStatus rv = SECSuccess;
+  const int prec = cfg->precision;
+  const mp_int* mod = &cfg->modulus;
+
+  mp_int tmp;
+  MP_DIGITS(&tmp) = NULL;
+  MP_CHECKC(mp_init(&tmp));
+
+  // set x to zero for accumulation to reuse memory correctly
+  mp_zero(&shareA->x);
+  for (int bit = 0; bit < prec; bit++) {
+    P_CHECKC(PRG_share_int(
+      prgB, &shareA->bits->data[bit], &src->bits->data[bit], cfg));
+    P_CHECKC(PRG_e_int_accum_x(shareA, bit, &tmp, mod));
+  }
 
 cleanup:
   mp_clear(&tmp);
@@ -183,6 +257,25 @@ PRG_share_array(PRG prgB, MPArray arrA, const_MPArray src, const_PrioConfig cfg)
 
   for (int i = 0; i < len; i++) {
     P_CHECK(PRG_share_int(prgB, &arrA->data[i], &src->data[i], cfg));
+  }
+
+  return rv;
+}
+
+SECStatus
+PRG_share_e_array(PRG prgB,
+                  EIntArray arrA,
+                  const_EIntArray src,
+                  const_PrioConfig cfg)
+{
+  SECStatus rv = SECSuccess;
+  if (arrA->len != src->len)
+    return SECFailure;
+
+  const int len = src->len;
+
+  for (int i = 0; i < len; i++) {
+    P_CHECK(PRG_share_e_int(prgB, arrA->data[i], src->data[i], cfg));
   }
 
   return rv;

@@ -96,24 +96,26 @@ extern "C"
    * `PrioConfig_new` returns.
    */
   PrioConfig PrioConfig_new(int nFields,
+                            int precision,
                             PublicKey serverA,
                             PublicKey serverB,
                             const unsigned char* batchId,
                             unsigned int batchIdLen);
   void PrioConfig_clear(PrioConfig cfg);
   int PrioConfig_numDataFields(const_PrioConfig cfg);
+  int PrioConfig_precDataFields(const_PrioConfig cfg);
 
   /*
    * Return the maximum number of data fields that the implementation supports.
    */
-  int PrioConfig_maxDataFields(void);
+  int PrioConfig_maxDataFields(int precision);
 
   /*
    * Create a PrioConfig object with no encryption keys.  This routine is
    * useful for testing, but PrioClient_encode() will always fail when used with
    * this config.
    */
-  PrioConfig PrioConfig_newTest(int nFields);
+  PrioConfig PrioConfig_newTest(int nFields, int precision);
 
   /*
    * We use the PublicKey and PrivateKey objects for public-key encryption. Each
@@ -188,16 +190,17 @@ extern "C"
   /*
    *  PrioPacketClient_encode
    *
-   * Takes as input a pointer to an array (`data_in`) of boolean values
-   * whose length is equal to the number of data fields specified in
-   * the config. It then encodes the data for servers A and B into a
-   * string.
+   * Takes as input a pointer to an array (`data_in`) of long values,
+   * representable with at most b-bits, whose length is equal to the
+   * number of data fields specified in the config. It then encodes the
+   * data for servers A and B into a string.
    *
    * NOTE: The caller must free() the strings `for_server_a` and
    * `for_server_b` to avoid memory leaks.
+   * b is set in the config as "precision".
    */
   SECStatus PrioClient_encode(const_PrioConfig cfg,
-                              const bool* data_in,
+                              const long* data_in,
                               unsigned char** forServerA,
                               unsigned int* aLen,
                               unsigned char** forServerB,

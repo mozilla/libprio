@@ -25,7 +25,7 @@ mu_test__fft_one(void)
   MPArray points_in = NULL;
   MPArray points_out = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(123));
+  PT_CHECKA(cfg = PrioConfig_newTest(123, 16));
   PT_CHECKA(points_in = MPArray_new(1));
   PT_CHECKA(points_out = MPArray_new(1));
 
@@ -52,7 +52,7 @@ mu_test__fft_roots(void)
   mp_int tmp;
   MP_DIGITS(&tmp) = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(90));
+  PT_CHECKA(cfg = PrioConfig_newTest(90, 16));
   PT_CHECKA(roots = MPArray_new(4));
   MPT_CHECKC(mp_init(&tmp));
 
@@ -85,7 +85,7 @@ mu_test__fft_simple(void)
   MP_DIGITS(&should_be) = NULL;
   MP_DIGITS(&tmp) = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(140));
+  PT_CHECKA(cfg = PrioConfig_newTest(140, 16));
   PT_CHECKA(points_in = MPArray_new(nPoints));
   PT_CHECKA(points_out = MPArray_new(nPoints));
   PT_CHECKA(roots = MPArray_new(nPoints));
@@ -144,7 +144,7 @@ mu_test__fft_invert(void)
   MPArray points_out2 = NULL;
   MPArray roots = NULL;
 
-  PT_CHECKA(cfg = PrioConfig_newTest(91));
+  PT_CHECKA(cfg = PrioConfig_newTest(91, 16));
   PT_CHECKA(points_in = MPArray_new(nPoints));
   PT_CHECKA(points_out = MPArray_new(nPoints));
   PT_CHECKA(points_out2 = MPArray_new(nPoints));

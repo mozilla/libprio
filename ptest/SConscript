@@ -7,7 +7,9 @@ prio_env = env.Clone()
 test_srcs = [
     "mutest.c",
     "client_test.c",
+    "circuit_test.c",
     "example_test.c",
+    "encode_test.c",
     "encrypt_test.c",
     "fft_test.c",
     "mpi_test.c",
@@ -41,4 +43,3 @@ prio_env.Install("mutest.h")
 test_objs = prio_env.Object(test_srcs)
 test_main = prio_env.MkMutest(test_objs)
 prio_env.Program("ptest", [test_main] + test_objs)
-

@@ -7,6 +7,8 @@ penv = env.Clone()
 src = [
     "client.c",
     "config.c",
+    "circuit.c",
+    "encode.c",
     "encrypt.c",
     "mparray.c",
     "poly.c",

@@ -9,6 +9,7 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+#include "params.h"
 #include <mpi.h>
 #include <mprio.h>
 
