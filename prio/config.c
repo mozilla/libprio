@@ -22,6 +22,12 @@ PrioConfig_maxDataFields(void)
   return (n_roots >> 1) - 1;
 }
 
+int
+PrioConfig_maxIntEntries(int prec)
+{
+  return PrioConfig_maxDataFields() / prec;
+}
+
 PrioConfig
 PrioConfig_new(int n_fields, PublicKey server_a, PublicKey server_b,
                const unsigned char* batch_id, unsigned int batch_id_len)
@@ -68,6 +74,15 @@ cleanup:
 }
 
 PrioConfig
+PrioConfig_new_int(int num_ints, int prec, PublicKey server_a,
+                   PublicKey server_b, const unsigned char* batch_id,
+                   unsigned int batch_id_len)
+{
+  return PrioConfig_new(num_ints * prec, server_a, server_b, batch_id,
+                        batch_id_len);
+}
+
+PrioConfig
 PrioConfig_newTest(int nFields)
 {
   return PrioConfig_new(nFields, NULL, NULL, (unsigned char*)"testBatch", 9);
@@ -90,6 +105,12 @@ int
 PrioConfig_numDataFields(const_PrioConfig cfg)
 {
   return cfg->num_data_fields;
+}
+
+int
+PrioConfig_numIntEntries(const_PrioConfig cfg, int prec)
+{
+  return cfg->num_data_fields / prec;
 }
 
 SECStatus

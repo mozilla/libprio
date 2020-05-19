@@ -119,6 +119,41 @@ PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s)
 }
 
 SECStatus
+PrioTotalShare_set_data_int(PrioTotalShare t, const_PrioServer s,
+                            const int prec)
+{
+  t->idx = s->idx;
+  SECStatus rv = SECSuccess;
+
+  mp_int tmp;
+  MP_DIGITS(&tmp) = NULL;
+  MP_CHECKC(mp_init(&tmp));
+
+  int num_ints = PrioConfig_numIntEntries(s->cfg, prec);
+
+  P_CHECKC(MPArray_resize(t->data_shares, num_ints));
+
+  /*
+   * Accumulate aggregated bit shares into aggregated x shares:
+   * Let b_i_j be the i-th bit of the j-th b-bit integer, j = {1, .., m}.
+   * x_1 + .. + x_m = \sum_(i=0)^(b-1) ([b_i_0]_1 + .. + [b_b_0]_1) * 2^i + .. +
+   *                  \sum_(i=0)^(b-1) ([b_i_m]_1 + .. + [b_b_m]_1) * 2^i
+   */
+  for (int i = 0; i < num_ints; i++) {
+    for (int bit = 0; bit < prec; bit++) {
+      MP_CHECKC(mp_mul_d(&s->data_shares->data[(i * prec) + bit],
+                         (1l << (prec - bit - 1)), &tmp));
+      MP_CHECKC(mp_addmod(&t->data_shares->data[i], &tmp, &s->cfg->modulus,
+                          &t->data_shares->data[i]));
+    }
+  }
+
+cleanup:
+  mp_clear(&tmp);
+  return rv;
+}
+
+SECStatus
 PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
                      const_PrioTotalShare tA, const_PrioTotalShare tB)
 {
@@ -147,6 +182,35 @@ PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
 
 cleanup:
   mp_clear(&tmp);
+  return rv;
+}
+
+SECStatus
+PrioTotalShare_final_int(const_PrioConfig cfg, const int prec,
+                         unsigned long long* output, const_PrioTotalShare tA,
+                         const_PrioTotalShare tB)
+{
+  SECStatus rv = SECSuccess;
+  PrioConfig int_cfg = NULL;
+
+  int num_ints = PrioConfig_numIntEntries(cfg, prec);
+
+  /*
+   * Create a config to match int share array length.
+   *
+   * NOTE: It is admissible here to set num_data_fields to a smaller
+   * value for wrapping purposes since only affine, server side
+   * transformations happen after this point. Do not do this before
+   * SNIPs about mulgates get verified.
+   */
+  P_CHECKA(int_cfg =
+             PrioConfig_new(num_ints, cfg->server_a_pub, cfg->server_b_pub,
+                            cfg->batch_id, cfg->batch_id_len));
+
+  P_CHECKC(PrioTotalShare_final(int_cfg, output, tA, tB));
+
+cleanup:
+  PrioConfig_clear(int_cfg);
   return rv;
 }
 
