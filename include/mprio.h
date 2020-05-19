@@ -93,13 +93,35 @@ void Prio_clear();
 PrioConfig PrioConfig_new(int nFields, PublicKey serverA, PublicKey serverB,
                           const unsigned char* batchId,
                           unsigned int batchIdLen);
+
+/*
+ * Wraps PrioConfig_new. Returns PrioConfig for nInts integers with
+ * precision prec.
+ *
+ * NOTE: For compatibility reasons, prec is not contained in the
+ * PrioConfig struct and must be set client- and serverside.
+ */
+PrioConfig PrioConfig_new_int(int nInts, int prec, PublicKey serverA,
+                              PublicKey serverB, const unsigned char* batchId,
+                              unsigned int batchIdLen);
+
 void PrioConfig_clear(PrioConfig cfg);
 int PrioConfig_numDataFields(const_PrioConfig cfg);
+
+/*
+ * Return the number of integers with precision prec.
+ */
+int PrioConfig_numIntEntries(const_PrioConfig cfg, int prec);
 
 /*
  * Return the maximum number of data fields that the implementation supports.
  */
 int PrioConfig_maxDataFields(void);
+
+/*
+ * Return the maximum number of integer entries for a given precision.
+ */
+int PrioConfig_maxIntEntries(int prec);
 
 /*
  * Create a PrioConfig object with no encryption keys.  This routine is
@@ -187,6 +209,19 @@ SECStatus PrioClient_encode(const_PrioConfig cfg, const bool* data_in,
                             unsigned char** forServerB, unsigned int* bLen);
 
 /*
+ * Takes as input a pointer to an array (`data_int`) of integer
+ * values and their precision, encodes them as a boolean array and
+ * hands it to PrioClient_encode.
+ *
+ * NOTE: The caller must free() the strings `for_server_a` and
+ * `for_server_b` to avoid memory leaks.
+ */
+SECStatus PrioClient_encode_int(const_PrioConfig cfg, const int prec,
+                                const long* data_int,
+                                unsigned char** forServerA, unsigned int* aLen,
+                                unsigned char** forServerB, unsigned int* bLen);
+
+/*
  * Generate a new PRG seed using the NSS global randomness source.
  * Use this routine to initialize the secret that the two Prio servers
  * share.
@@ -212,8 +247,8 @@ PrioVerifier PrioVerifier_new(PrioServer s);
 void PrioVerifier_clear(PrioVerifier v);
 
 /*
- * Read in encrypted data from the client, decrypt it, and prepare to check the
- * request for validity.
+ * Read in encrypted data from the client, decrypt it, and prepare to check
+ * the request for validity.
  */
 SECStatus PrioVerifier_set_data(PrioVerifier v, unsigned char* data,
                                 unsigned int dataLen);
@@ -280,6 +315,12 @@ void PrioTotalShare_clear(PrioTotalShare t);
 
 SECStatus PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s);
 
+/*
+ * Aggregates bit shares into integers shares
+ */
+SECStatus PrioTotalShare_set_data_int(PrioTotalShare t, const_PrioServer s,
+                                      const int prec);
+
 SECStatus PrioTotalShare_write(const_PrioTotalShare t, msgpack_packer* pk);
 SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
                               const_PrioConfig cfg);
@@ -296,6 +337,19 @@ SECStatus PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
 SECStatus PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
                                const_PrioTotalShare tA,
                                const_PrioTotalShare tB);
+
+/*
+ * Wraps PrioTotalShare_final. Ensure that output is an array of
+ * nInts unsigned long longs. This is equal to num_data_fields
+ * divided by prec.
+ *
+ * This function returns failure if some final data value is too
+ * long to fit in an `unsigned long long`.
+ */
+SECStatus PrioTotalShare_final_int(const_PrioConfig cfg, const int prec,
+                                   unsigned long long* output,
+                                   const_PrioTotalShare tA,
+                                   const_PrioTotalShare tB);
 
 #endif /* __PRIO_H__ */
 
