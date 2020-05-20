@@ -36,6 +36,12 @@ if env["SANITIZE"]:
 if sys.platform == "darwin":
     env.Append(LINKFLAGS=["-L/usr/local/opt/nss/lib"])
     include_pattern = "-I/usr/local/opt/{0}/include/{0}"
+elif sys.platform.startswith("dragonfly") or \
+     sys.platform.startswith("freebsd") or \
+     sys.platform.startswith("openbsd"):
+    env.Append(LINKFLAGS=["-L/usr/local/lib"])
+    env.Append(CFLAGS=["-isystem/usr/local/include"])
+    include_pattern = "-isystem/usr/local/include/{0}"
 else:
     include_pattern = "-I/usr/include/{0}"
 
