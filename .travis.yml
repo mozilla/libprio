@@ -2,6 +2,7 @@ language: c
 
 os:
   - linux
+  - freebsd
   - osx
 
 dist: bionic
@@ -9,7 +10,9 @@ dist: bionic
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       ./scripts/clang-format.sh;
-    else
+    elif [[ "$TRAVIS_OS_NAME" = "freebsd" ]]; then
+      sudo pkg install -y scons msgpack nss;
+    elif [[ "$TRAVIS_OS_NAME" = "osx" ]]; then
       brew update;
       brew install nss nspr scons msgpack;
       export LINKFLAGS="-L/usr/local/opt/nss/lib";
@@ -28,3 +31,7 @@ script:
   - scons DEBUG=1 SANITIZE=1
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./build/ptest/ptest -v
+
+matrix:
+  allow_failures:
+    - os: freebsd # https://github.com/mozilla/libprio/issues/92
