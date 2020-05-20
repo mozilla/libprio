@@ -31,7 +31,3 @@ script:
   - scons DEBUG=1 SANITIZE=1
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - ./build/ptest/ptest -v
-
-matrix:
-  allow_failures:
-    - os: freebsd # https://github.com/mozilla/libprio/issues/92

@@ -59,6 +59,7 @@ env.Append(
         include_pattern.format("nspr"),
         "-Impi",
         "-DDO_PR_CLEANUP",
+        "-DNSS_PKCS11_2_0_COMPAT",
     ],
 )
 
