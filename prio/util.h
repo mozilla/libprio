@@ -13,7 +13,9 @@
 #include <mprio.h>
 
 // Minimum of two values
+#ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 // Check a Prio error code and return failure if the call fails.
 #define P_CHECK(s)                                                             \
