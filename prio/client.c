@@ -361,8 +361,8 @@ long_to_bool(bool* dst, long x, int prec, int entry)
     // shift by one for subsequent bits (b_1, ..., b_(b-1))
     (x >>= 1);
     dst[offset + bit] = (x & 1);
-    // from C99 on ">>" produces leading 0s since only non-negative ints are handled
-    // (see ISO/IEC 9899:1999, 6.5.7)
+    // from C99 on ">>" produces leading 0s since only non-negative ints are
+    // handled (see ISO/IEC 9899:1999, 6.5.7)
   }
 
 cleanup:
