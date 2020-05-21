@@ -343,7 +343,7 @@ long_to_bool(bool* dst, long x, int prec, int entry)
   SECStatus rv = SECSuccess;
 
   // maximum for b-bit encoding (b = precision)
-  long max = (1l << prec) - 1; // TODO: Compute maximum in PrioConfig?
+  long max = (1l << prec) - 1;
 
   // position at which encoding of current entry starts in dst
   int offset = entry * prec;
@@ -351,15 +351,17 @@ long_to_bool(bool* dst, long x, int prec, int entry)
   P_CHECKCB(max >= x); // Check wether x is can be encoded with given precision
   P_CHECKCB(0 <= x);   // Check wether x is non-negative
 
-  // The following block sets b_0, ..., b_(b-1)
-  // set b_0 (the first bit)
+  // The following block sets b_0, ..., b_(b-1), in reverse order,
+  // using a big-endian representation.
+
+  // set b_(b-1) (the least significant bit)
   dst[offset + prec - 1] = (x & 1);
   // start with prec-2 to shift correctly
   for (int bit = prec - 2; bit >= 0; bit--) {
     // shift by one for subsequent bits (b_1, ..., b_(b-1))
     (x >>= 1);
     dst[offset + bit] = (x & 1);
-    // from C99 on ">>" produces leading 0s since only unsigned ints are handled
+    // from C99 on ">>" produces leading 0s since only non-negative ints are handled
     // (see ISO/IEC 9899:1999, 6.5.7)
   }
 
@@ -375,6 +377,10 @@ PrioClient_encode_int(const_PrioConfig cfg, const int prec,
 {
   SECStatus rv = SECSuccess;
   bool* data_bool = NULL;
+
+  // Check wether prec is in permissible bounds.
+  P_CHECKCB(prec > 0);
+  P_CHECKCB(prec <= BBIT_PREC_MAX);
 
   int num_ints = PrioConfig_numIntEntries(cfg, prec);
   P_CHECKCB(cfg->num_data_fields == prec * num_ints);
