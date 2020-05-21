@@ -30,6 +30,9 @@ typedef unsigned char PrioPRGSeed[PRG_SEED_LENGTH];
 /* Length of a hex-encoded curve25519 public key, in bytes. */
 #define CURVE25519_KEY_LEN_HEX 64
 
+/* Maximum of supported precision for b-bit integer circuit. */
+#define BBIT_PREC_MAX (int)MIN(sizeof(long) * CHAR_BIT - 1, 63)
+
 /*
  * Type for each of the two servers.
  */
@@ -96,7 +99,8 @@ PrioConfig PrioConfig_new(int nFields, PublicKey serverA, PublicKey serverB,
 
 /*
  * Wraps PrioConfig_new. Returns PrioConfig for nInts integers with
- * precision prec.
+ * precision prec that this configuration supports.
+ * Valid range: 0 < prec <= BBIT_PREC_MAX.
  *
  * NOTE: For compatibility reasons, prec is not contained in the
  * PrioConfig struct and must be set client- and serverside.
@@ -109,7 +113,8 @@ void PrioConfig_clear(PrioConfig cfg);
 int PrioConfig_numDataFields(const_PrioConfig cfg);
 
 /*
- * Return the number of integers with precision prec.
+ * Return the number of integers with precision prec that this configuration
+ * supports. Returns 0 for invalid values of prec.
  */
 int PrioConfig_numIntEntries(const_PrioConfig cfg, int prec);
 
@@ -119,7 +124,8 @@ int PrioConfig_numIntEntries(const_PrioConfig cfg, int prec);
 int PrioConfig_maxDataFields(void);
 
 /*
- * Return the maximum number of integer entries for a given precision.
+ * Return the maximum number of integer entries for a given
+ * precision. Returns 0 for invalid values of prec.
  */
 int PrioConfig_maxIntEntries(int prec);
 

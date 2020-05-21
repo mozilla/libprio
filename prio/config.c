@@ -25,6 +25,11 @@ PrioConfig_maxDataFields(void)
 int
 PrioConfig_maxIntEntries(int prec)
 {
+  if (prec <= 0)
+    return 0;
+  if (prec > BBIT_PREC_MAX)
+    return 0;
+
   return PrioConfig_maxDataFields() / prec;
 }
 
@@ -78,6 +83,11 @@ PrioConfig_new_int(int num_ints, int prec, PublicKey server_a,
                    PublicKey server_b, const unsigned char* batch_id,
                    unsigned int batch_id_len)
 {
+  if (prec <= 0)
+    return NULL;
+  if (prec > BBIT_PREC_MAX)
+    return NULL;
+
   return PrioConfig_new(num_ints * prec, server_a, server_b, batch_id,
                         batch_id_len);
 }
@@ -110,6 +120,10 @@ PrioConfig_numDataFields(const_PrioConfig cfg)
 int
 PrioConfig_numIntEntries(const_PrioConfig cfg, int prec)
 {
+  if (prec <= 0)
+    return 0;
+  if (prec > BBIT_PREC_MAX)
+    return 0;
   return cfg->num_data_fields / prec;
 }
 

@@ -461,7 +461,3 @@ mu_test__verify_full_int_bad5(void)
 {
   verify_full_int(5);
 }
-
-// TODO: reject malicious integer
-
-// TODO: fail well on array size mismatch
