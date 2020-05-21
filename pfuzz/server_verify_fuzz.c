@@ -24,7 +24,6 @@
     }                                                                          \
   } while (0);
 
-
 // We will initialize these once and continue using them each iteration
 // to increase the overall performance.
 static PublicKey pkA = NULL;
@@ -34,7 +33,9 @@ static PrivateKey skB = NULL;
 static PrioPRGSeed seed;
 
 // Used to free all memory at the end to help track down memory leaks.
-void LLVMFuzzerShutdown() {
+void
+LLVMFuzzerShutdown()
+{
   if (pkA)
     PublicKey_clear(pkA);
 
@@ -51,7 +52,9 @@ void LLVMFuzzerShutdown() {
 }
 
 // This is called once at startup to initialize everything.
-int LLVMFuzzerInitialize() {
+int
+LLVMFuzzerInitialize()
+{
   SECStatus rv = SECSuccess;
 
   Prio_init();
@@ -72,9 +75,12 @@ int LLVMFuzzerInitialize() {
 // Forward declaration for libFuzzer's internal mutation routine.
 size_t LLVMFuzzerMutate(uint8_t*, size_t, size_t);
 
-// The server verify target requires two data blobs, once for server A and one for server B.
-// There are many ways to achieve this, the simplest here seems to use a custom mutator that
-// splits the data according to the indicated sizes. The layout of each file in the sample
+// The server verify target requires two data blobs, once for server A and one
+// for server B.
+// There are many ways to achieve this, the simplest here seems to use a custom
+// mutator that
+// splits the data according to the indicated sizes. The layout of each file in
+// the sample
 // corpus is as follows:
 //
 //       | size of A |    data for A   | size of B |    data for B   |
@@ -82,10 +88,16 @@ size_t LLVMFuzzerMutate(uint8_t*, size_t, size_t);
 //           ^               ^             ^               ^
 // Index --- 0 ------------- 1 ----------- size A + 1 ---- size A + 2
 //
-// The custom mutator ensures that the data structures remain intact. Based on the given
-// seed, we decide whether we should mutate the A or B part. The actual mutation is then
-// performed by calling `LLVMFuzzerMutate` which is the internal libFuzzer mutation routine.
-size_t LLVMFuzzerCustomMutator(uint8_t *data, size_t size, size_t max, unsigned int seed) {
+// The custom mutator ensures that the data structures remain intact. Based on
+// the given
+// seed, we decide whether we should mutate the A or B part. The actual mutation
+// is then
+// performed by calling `LLVMFuzzerMutate` which is the internal libFuzzer
+// mutation routine.
+size_t
+LLVMFuzzerCustomMutator(uint8_t* data, size_t size, size_t max,
+                        unsigned int seed)
+{
   // In our structure, we can only encode a limited amount of data.
   // Enforce this here to make the mutator work regardless of size settings.
   size_t max_allowed = UINT8_MAX * 2 + 2;
@@ -129,7 +141,9 @@ size_t LLVMFuzzerCustomMutator(uint8_t *data, size_t size, size_t max, unsigned 
   }
 }
 
-int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
+int
+LLVMFuzzerTestOneInput(uint8_t* data, size_t size)
+{
   SECStatus rv = SECSuccess;
   PrioConfig cfg = NULL;
   PrioServer sA = NULL;
@@ -152,7 +166,8 @@ int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
 
   // Same checks as in the custom mutator.
   // The smallest possible sample is 4 bytes
-  if (size < 4 || data[0] + 2 >= size || data[0] + data[data[0] + 1] + 2 > size) {
+  if (size < 4 || data[0] + 2 >= size ||
+      data[0] + data[data[0] + 1] + 2 > size) {
     return 0;
   }
 
@@ -165,11 +180,11 @@ int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
 
   // TODO: Number of fields (3) and name chosen by fair dice roll.
 
-  PT_CHECKB_FATAL(cfg = PrioConfig_new(3, pkA, pkB, (unsigned char*)"test4", 5));
+  PT_CHECKB_FATAL(cfg =
+                    PrioConfig_new(3, pkA, pkB, (unsigned char*)"test4", 5));
 
   PT_CHECKB_FATAL(sA = PrioServer_new(cfg, 0, skA, seed));
   PT_CHECKB_FATAL(sB = PrioServer_new(cfg, 1, skB, seed));
-
 
   PT_CHECKC_FATAL(PublicKey_encryptSize(sizeA, &aLen));
   PT_CHECKC_FATAL(PublicKey_encryptSize(sizeB, &bLen));
@@ -214,7 +229,8 @@ int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
 
   rv = PrioPacketVerify2_set_data(p2A, vA, p1A, p1B);
   if (PrioPacketVerify2_set_data(p2B, vB, p1A, p1B) == SECSuccess) {
-    if (rv != SECSuccess) goto cleanup;
+    if (rv != SECSuccess)
+      goto cleanup;
   } else {
     goto cleanup;
   }
@@ -244,8 +260,10 @@ cleanup:
   PrioServer_clear(sB);
   PrioConfig_clear(cfg);
 
-  if (dataA) free(dataA);
-  if (dataB) free(dataB);
+  if (dataA)
+    free(dataA);
+  if (dataB)
+    free(dataB);
 
   return 0;
 }
