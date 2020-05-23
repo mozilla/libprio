@@ -494,13 +494,25 @@ mu_test_client_uint__agg_max_bad(void)
 }
 
 void
+mu_test_client__agg_uint__max_prec_0(void)
+{
+  test_client_agg_uint(1, BBIT_PREC_MAX, 133, true);
+}
+
+void
+mu_test_client__agg_uint__max_prec_1(void)
+{
+  test_client_agg_uint(10, BBIT_PREC_MAX, 133, true);
+}
+
+void
 mu_test_client__agg_uint__exceed_prec_0(void)
 {
-  test_client_agg_uint(1, 64, 133, false);
+  test_client_agg_uint(1, BBIT_PREC_MAX + 1, 133, false);
 }
 
 void
 mu_test_client__agg_uint__exceed_prec_1(void)
 {
-  test_client_agg_uint(10, 64, 133, false);
+  test_client_agg_uint(10, BBIT_PREC_MAX + 1, 133, false);
 }
