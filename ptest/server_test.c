@@ -299,7 +299,7 @@ mu_test__verify_full_bad5(void)
 }
 
 void
-verify_full_int(int tweak)
+verify_full_uint(int tweak)
 {
   SECStatus rv = SECSuccess;
   PublicKey pkA = NULL;
@@ -332,11 +332,11 @@ verify_full_int(int tweak)
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  PT_CHECKA(cfg = PrioConfig_new_int(ndata, prec, pkA, pkB,
-                                     (unsigned char*)"test4", 5));
+  PT_CHECKA(cfg = PrioConfig_new_uint(ndata, prec, pkA, pkB,
+                                      (unsigned char*)"test4", 5));
 
   PT_CHECKCB(ndata == (PrioConfig_numDataFields(cfg) / prec));
-  PT_CHECKCB(ndata == PrioConfig_numIntEntries(cfg, prec));
+  PT_CHECKCB(ndata == PrioConfig_numUIntEntries(cfg, prec));
 
   PT_CHECKA(data_items = calloc(ndata, sizeof(long)));
 
@@ -351,8 +351,8 @@ verify_full_int(int tweak)
   PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
 
   unsigned int aLen, bLen;
-  PT_CHECKC(
-    PrioClient_encode_int(cfg, prec, data_items, &for_a, &aLen, &for_b, &bLen));
+  PT_CHECKC(PrioClient_encode_uint(cfg, prec, data_items, &for_a, &aLen, &for_b,
+                                   &bLen));
 
   if (tweak == 5) {
     for_a[3] = 3;
@@ -427,37 +427,37 @@ cleanup:
 }
 
 void
-mu_test__verify_full_int__good(void)
+mu_test__verify_full_uint__good(void)
 {
-  verify_full_int(0);
+  verify_full_uint(0);
 }
 
 void
-mu_test__verify_full_int_bad1(void)
+mu_test__verify_full_uint_bad1(void)
 {
-  verify_full_int(1);
+  verify_full_uint(1);
 }
 
 void
-mu_test__verify_full_int_bad2(void)
+mu_test__verify_full_uint_bad2(void)
 {
-  verify_full_int(2);
+  verify_full_uint(2);
 }
 
 void
-mu_test__verify_full_int_bad3(void)
+mu_test__verify_full_uint_bad3(void)
 {
-  verify_full_int(3);
+  verify_full_uint(3);
 }
 
 void
-mu_test__verify_full_int_bad4(void)
+mu_test__verify_full_uint_bad4(void)
 {
-  verify_full_int(4);
+  verify_full_uint(4);
 }
 
 void
-mu_test__verify_full_int_bad5(void)
+mu_test__verify_full_uint_bad5(void)
 {
-  verify_full_int(5);
+  verify_full_uint(5);
 }

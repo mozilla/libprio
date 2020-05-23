@@ -186,34 +186,34 @@ mu_test_client__agg_max_bad(void)
 }
 
 void
-gen_int_data(int nInts, int prec, long* data, int tweak)
+gen_uint_data(int nUInts, int prec, long* data, int tweak)
 {
   long max = (1l << (prec)) - 1;
 
-  // Produce valid values (nInts < max)
+  // Produce valid values (nUInts < max)
   if (tweak == 0) {
-    for (int i = 0; i < nInts; i++) {
+    for (int i = 0; i < nUInts; i++) {
       data[i] = max - i;
     }
   }
 
   // Produce values which are too big
   if (tweak == 1) {
-    for (int i = 0; i < nInts; i++) {
+    for (int i = 0; i < nUInts; i++) {
       data[i] = max + i + 1;
     }
   }
 
   // Produce negative values
   if (tweak == 2) {
-    for (int i = 0; i < nInts; i++) {
+    for (int i = 0; i < nUInts; i++) {
       data[i] = 0 - i - 1;
     }
   }
 
-  // Produce another set of valid values (nInts < max - 1)
+  // Produce another set of valid values (nUInts < max - 1)
   if (tweak == 3) {
-    for (int i = 0; i < nInts; i++) {
+    for (int i = 0; i < nUInts; i++) {
       data[i] = max - i - 1;
     }
   }
@@ -221,15 +221,15 @@ gen_int_data(int nInts, int prec, long* data, int tweak)
 
 // Check wether integers get correctly encoded as bits
 SECStatus
-check_bits(long* int_data, bool* bool_data, int prec, int nInts)
+check_bits(long* uint_data, bool* bool_data, int prec, int nUInts)
 {
   SECStatus rv = SECSuccess;
-  mp_int cur_int;
+  mp_int cur_uint;
   mp_int cur_bit;
   mp_int tmp;
   mp_int accum;
-  MP_DIGITS(&cur_int) = NULL;
-  MPT_CHECKC(mp_init(&cur_int));
+  MP_DIGITS(&cur_uint) = NULL;
+  MPT_CHECKC(mp_init(&cur_uint));
   MP_DIGITS(&cur_bit) = NULL;
   MPT_CHECKC(mp_init(&cur_bit));
   MP_DIGITS(&tmp) = NULL;
@@ -239,9 +239,9 @@ check_bits(long* int_data, bool* bool_data, int prec, int nInts)
 
   int offset;
 
-  for (int i = 0; i < nInts; i++) {
+  for (int i = 0; i < nUInts; i++) {
     offset = prec * i;
-    mp_set_int(&cur_int, int_data[i]);
+    mp_set_int(&cur_uint, uint_data[i]);
     mp_zero(&accum);
 
     for (int b = 0; b < prec; b++) {
@@ -250,11 +250,11 @@ check_bits(long* int_data, bool* bool_data, int prec, int nInts)
       MPT_CHECKC(mp_mul_d(&cur_bit, (1l << (prec - b - 1)), &tmp));
       MPT_CHECKC(mp_add(&tmp, &accum, &accum));
     }
-    MPT_CHECKC(mp_cmp(&cur_int, &accum)); // MP_EQ == MP_OKAY
+    MPT_CHECKC(mp_cmp(&cur_uint, &accum)); // MP_EQ == MP_OKAY
   }
 
 cleanup:
-  mp_clear(&cur_int);
+  mp_clear(&cur_uint);
   mp_clear(&cur_bit);
   mp_clear(&tmp);
   mp_clear(&accum);
@@ -262,22 +262,22 @@ cleanup:
 }
 
 void
-test_long_to_bool(int nInts, int prec, int tweak)
+test_long_to_bool(int nLongs, int prec, int tweak)
 {
   SECStatus rv = SECSuccess;
 
-  long* int_data = NULL;
+  long* long_data = NULL;
   bool* bool_data = NULL;
 
-  PT_CHECKA(int_data = calloc(nInts, sizeof(long)));
-  PT_CHECKA(bool_data = calloc(nInts * prec, sizeof(bool)));
-  gen_int_data(nInts, prec, int_data, tweak);
+  PT_CHECKA(long_data = calloc(nLongs, sizeof(long)));
+  PT_CHECKA(bool_data = calloc(nLongs * prec, sizeof(bool)));
+  gen_uint_data(nLongs, prec, long_data, tweak);
 
-  for (int i = 0; i < nInts; i++) {
-    P_CHECKC(long_to_bool(bool_data, int_data[i], prec, i));
+  for (int i = 0; i < nLongs; i++) {
+    P_CHECKC(long_to_bool(bool_data, long_data[i], prec, i));
   }
 
-  P_CHECKC(check_bits(int_data, bool_data, prec, nInts));
+  P_CHECKC(check_bits(long_data, bool_data, prec, nLongs));
 
 cleanup:
   if (tweak == 0) {
@@ -290,8 +290,8 @@ cleanup:
     mu_check(rv == SECSuccess);
   }
 
-  if (int_data)
-    free(int_data);
+  if (long_data)
+    free(long_data);
   if (bool_data)
     free(bool_data);
 }
@@ -350,8 +350,8 @@ mu_test_encode__invalid_100_1(void)
 }
 
 void
-test_client_agg_int(int nclients, int prec, int num_int_entries,
-                    bool config_is_okay)
+test_client_agg_uint(int nclients, int prec, int num_uint_entries,
+                     bool config_is_okay)
 {
   SECStatus rv = SECSuccess;
   PublicKey pkA = NULL;
@@ -377,11 +377,11 @@ test_client_agg_int(int nclients, int prec, int num_int_entries,
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  P_CHECKA(cfg = PrioConfig_new_int(num_int_entries, prec, pkA, pkB, batch_id,
-                                    batch_id_len));
+  P_CHECKA(cfg = PrioConfig_new_uint(num_uint_entries, prec, pkA, pkB, batch_id,
+                                     batch_id_len));
   if (!config_is_okay) {
-    PT_CHECKCB((PrioConfig_new_int(num_int_entries, prec, pkA, pkB, batch_id,
-                                   batch_id_len) == NULL));
+    PT_CHECKCB((PrioConfig_new_uint(num_uint_entries, prec, pkA, pkB, batch_id,
+                                    batch_id_len) == NULL));
   }
   PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
   PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
@@ -390,20 +390,20 @@ test_client_agg_int(int nclients, int prec, int num_int_entries,
   PT_CHECKA(vA = PrioVerifier_new(sA));
   PT_CHECKA(vB = PrioVerifier_new(sB));
 
-  PT_CHECKCB(PrioConfig_numIntEntries(cfg, prec) == num_int_entries);
+  PT_CHECKCB(PrioConfig_numUIntEntries(cfg, prec) == num_uint_entries);
 
   long max = (1l << (prec)) - 1;
 
-  PT_CHECKA(data_items = calloc(num_int_entries, sizeof(long)));
-  for (int i = 0; i < num_int_entries; i++) {
+  PT_CHECKA(data_items = calloc(num_uint_entries, sizeof(long)));
+  for (int i = 0; i < num_uint_entries; i++) {
     // Arbitrary data
     data_items[i] = max - i;
   }
 
   for (int i = 0; i < nclients; i++) {
     unsigned int aLen, bLen;
-    PT_CHECKC(PrioClient_encode_int(cfg, prec, data_items, &for_a, &aLen,
-                                    &for_b, &bLen));
+    PT_CHECKC(PrioClient_encode_uint(cfg, prec, data_items, &for_a, &aLen,
+                                     &for_b, &bLen));
 
     PT_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
     PT_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
@@ -418,12 +418,12 @@ test_client_agg_int(int nclients, int prec, int num_int_entries,
     for_b = NULL;
   }
 
-  mu_check(PrioTotalShare_set_data_int(tA, sA, prec) == SECSuccess);
-  mu_check(PrioTotalShare_set_data_int(tB, sB, prec) == SECSuccess);
+  mu_check(PrioTotalShare_set_data_uint(tA, sA, prec) == SECSuccess);
+  mu_check(PrioTotalShare_set_data_uint(tB, sB, prec) == SECSuccess);
 
-  PT_CHECKA(output = calloc(num_int_entries, sizeof(unsigned long)));
-  mu_check(PrioTotalShare_final_int(cfg, prec, output, tA, tB) == SECSuccess);
-  for (int i = 0; i < num_int_entries; i++) {
+  PT_CHECKA(output = calloc(num_uint_entries, sizeof(unsigned long)));
+  mu_check(PrioTotalShare_final_uint(cfg, prec, output, tA, tB) == SECSuccess);
+  for (int i = 0; i < num_uint_entries; i++) {
     unsigned long v = max - i;
     mu_check(output[i] == v * nclients);
   }
@@ -460,47 +460,47 @@ cleanup:
 }
 
 void
-mu_test_client__agg_int_1(void)
+mu_test_client__agg_uint_1(void)
 {
-  test_client_agg_int(1, 32, 133, true);
+  test_client_agg_uint(1, 32, 133, true);
 }
 
 void
-mu_test_client__agg_int_2(void)
+mu_test_client__agg_uint_2(void)
 {
-  test_client_agg_int(2, 32, 133, true);
+  test_client_agg_uint(2, 32, 133, true);
 }
 
 void
-mu_test_client__agg_int_10(void)
+mu_test_client__agg_uint_10(void)
 {
-  test_client_agg_int(10, 32, 133, true);
+  test_client_agg_uint(10, 32, 133, true);
 }
 
 void
-mu_test_client_int__agg_max(void)
+mu_test_client_uint__agg_max(void)
 {
   int prec = 32;
-  int max = MIN(PrioConfig_maxIntEntries(prec), 500);
-  test_client_agg_int(10, prec, max, true);
+  int max = MIN(PrioConfig_maxUIntEntries(prec), 500);
+  test_client_agg_uint(10, prec, max, true);
 }
 
 void
-mu_test_client_int__agg_max_bad(void)
+mu_test_client_uint__agg_max_bad(void)
 {
   int prec = 32;
-  int max = PrioConfig_maxIntEntries(prec);
-  test_client_agg_int(10, prec, max + 1, false);
+  int max = PrioConfig_maxUIntEntries(prec);
+  test_client_agg_uint(10, prec, max + 1, false);
 }
 
 void
-mu_test_client__agg_int__exceed_prec_0(void)
+mu_test_client__agg_uint__exceed_prec_0(void)
 {
-  test_client_agg_int(1, 64, 133, false);
+  test_client_agg_uint(1, 64, 133, false);
 }
 
 void
-mu_test_client__agg_int__exceed_prec_1(void)
+mu_test_client__agg_uint__exceed_prec_1(void)
 {
-  test_client_agg_int(10, 64, 133, false);
+  test_client_agg_uint(10, 64, 133, false);
 }

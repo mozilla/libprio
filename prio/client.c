@@ -336,7 +336,7 @@ cleanup:
   return rv;
 }
 
-// Encode long as bools and write them to an array with offset.
+// Encode positive long as bools and write them to an array with offset.
 SECStatus
 long_to_bool(bool* dst, long x, int prec, int entry)
 {
@@ -370,10 +370,10 @@ cleanup:
 }
 
 SECStatus
-PrioClient_encode_int(const_PrioConfig cfg, const int prec,
-                      const long* data_int, unsigned char** forServerA,
-                      unsigned int* aLen, unsigned char** forServerB,
-                      unsigned int* bLen)
+PrioClient_encode_uint(const_PrioConfig cfg, const int prec,
+                       const long* data_uint, unsigned char** forServerA,
+                       unsigned int* aLen, unsigned char** forServerB,
+                       unsigned int* bLen)
 {
   SECStatus rv = SECSuccess;
   bool* data_bool = NULL;
@@ -382,13 +382,13 @@ PrioClient_encode_int(const_PrioConfig cfg, const int prec,
   P_CHECKCB(prec > 0);
   P_CHECKCB(prec <= BBIT_PREC_MAX);
 
-  int num_ints = PrioConfig_numIntEntries(cfg, prec);
-  P_CHECKCB(cfg->num_data_fields == prec * num_ints);
+  int num_uints = PrioConfig_numUIntEntries(cfg, prec);
+  P_CHECKCB(cfg->num_data_fields == prec * num_uints);
 
   P_CHECKA(data_bool = calloc(cfg->num_data_fields, sizeof(bool)));
 
-  for (int i = 0; i < num_ints; i++) {
-    P_CHECKC(long_to_bool(data_bool, data_int[i], prec, i));
+  for (int i = 0; i < num_uints; i++) {
+    P_CHECKC(long_to_bool(data_bool, data_uint[i], prec, i));
   }
 
   P_CHECKC(
