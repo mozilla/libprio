@@ -14,5 +14,5 @@ libs = [
 ]
 
 prio_env.Append(LIBS = libs)
-prio_env.Program("pclient_int", src)
+prio_env.Program("pclient_uint", src)
 
