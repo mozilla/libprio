@@ -120,7 +120,7 @@ PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s)
 
 SECStatus
 PrioTotalShare_set_data_uint(PrioTotalShare t, const_PrioServer s,
-                            const int prec)
+                             const int prec)
 {
   t->idx = s->idx;
   SECStatus rv = SECSuccess;
@@ -134,17 +134,47 @@ PrioTotalShare_set_data_uint(PrioTotalShare t, const_PrioServer s,
   P_CHECKC(MPArray_resize(t->data_shares, num_uints));
 
   /*
-   * Accumulate aggregated bit shares into aggregated x shares:
-   * Let b_i_j be the i-th bit of the j-th b-bit integer, j = {1, .., m}.
-   * x_1 + .. + x_m = \sum_(i=0)^(b-1) ([b_i_0]_1 + .. + [b_b_0]_1) * 2^i + .. +
-   *                  \sum_(i=0)^(b-1) ([b_i_m]_1 + .. + [b_b_m]_1) * 2^i
+   * Each b-bit integer x gets encoded as follows:
+   * Enc(x) = (B_0, .. , B_(b-1))
+   *
+   * (Enc(x) diverges from the prio paper since here we optimize for
+   * code reuse.)
+   *
+   * Let B_i_j be the i-th bit of the j-th b-bit integer x_j,
+   * j in {0, .., n-1}, of any single client.
+   *
+   * For m clients PrioServer_aggregate
+   * aggregates the i-th bit shares of the j-th b-bit integers as
+   * follows: [B_i_j]_s_agg = \sum_(k=0)^m-1 [B_i_j_k]_s, s in {1,2},
+   * with [B_i_j_k]_s being share s of B_i_j of client k
+   *
+   * For any b-bit integer x the following holds:
+   * x =  \sum_(i=0)^(b-1) 2^i * B_i
+   *   =  \sum_(i=0)^(b-1) ([B_i]_1 + [B_i]_2) * 2^i
+   *   => [x]_1 = \sum_(i=0)^(n-1) [B_i]_1 * 2^i,
+   *      [x]_2 = \sum_(i=0)^(n-1) [B_i]_2 * 2^i
+   *
+   * Sums of integer shares map to sums of bit shares:
+   * [x_0]_s + .. + [x_n-1]_s =
+   *   ([B_0_0]_s + .. + [B_0_n-1]_s) * 2^0 + ..
+   *   + ([B_b-1_0]_s + .. + [B_b-1_n-1]_s) * 2^b-1,
+   *   s in {1, 2}
+   *
+   * Thus, PrioTotalShare_set_data_uint needs to accumulate the
+   * aggregated bit shares into aggregated b-bit ingeger shares as
+   * follows:
+   *
+   * \sum_(j=0)^(n-1) \sum_(k=0)^(m-1) [x_j_k]_s =
+   *   \sum_(j=0)^(n-1) \sum_(i=0)^(b-1) [B_i_j]_s_agg * 2^i,
+   *   s in {1,2}
    */
-  for (int i = 0; i < num_uints; i++) {
+
+  for (int uint = 0; uint < num_uints; uint++) {
     for (int bit = 0; bit < prec; bit++) {
-      MP_CHECKC(mp_mul_d(&s->data_shares->data[(i * prec) + bit],
+      MP_CHECKC(mp_mul_d(&s->data_shares->data[(uint * prec) + bit],
                          (1l << (prec - bit - 1)), &tmp));
-      MP_CHECKC(mp_addmod(&t->data_shares->data[i], &tmp, &s->cfg->modulus,
-                          &t->data_shares->data[i]));
+      MP_CHECKC(mp_addmod(&t->data_shares->data[uint], &tmp, &s->cfg->modulus,
+                          &t->data_shares->data[uint]));
     }
   }
 
@@ -187,8 +217,8 @@ cleanup:
 
 SECStatus
 PrioTotalShare_final_uint(const_PrioConfig cfg, const int prec,
-                         unsigned long long* output, const_PrioTotalShare tA,
-                         const_PrioTotalShare tB)
+                          unsigned long long* output, const_PrioTotalShare tA,
+                          const_PrioTotalShare tB)
 {
   SECStatus rv = SECSuccess;
   PrioConfig uint_cfg = NULL;
