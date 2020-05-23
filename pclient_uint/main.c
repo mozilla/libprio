@@ -65,8 +65,8 @@ verify_full(void)
   P_CHECKC(Keypair_new(&skB, &pkB));
 
   // Use the default configuration parameters.
-  P_CHECKA(cfg =
-             PrioConfig_new_int(ndata, prec, pkA, pkB, batch_id, batch_id_len));
+  P_CHECKA(
+    cfg = PrioConfig_new_uint(ndata, prec, pkA, pkB, batch_id, batch_id_len));
 
   PrioPRGSeed server_secret;
   P_CHECKC(PrioPRGSeed_randomize(&server_secret));
@@ -111,8 +111,8 @@ verify_full(void)
     //
     // Construct the client data packets.
     unsigned int aLen, bLen;
-    P_CHECKC(PrioClient_encode_int(cfg, prec, data_items, &for_server_a, &aLen,
-                                   &for_server_b, &bLen));
+    P_CHECKC(PrioClient_encode_uint(cfg, prec, data_items, &for_server_a, &aLen,
+                                    &for_server_b, &bLen));
 
     // The Prio servers A and B can come online later (e.g., at the end of
     // each day) to download the encrypted telemetry packets from the
@@ -179,12 +179,12 @@ verify_full(void)
     // their shares of the aggregate statistics.
     //
     // Server B can send tB to Server A.
-    P_CHECKC(PrioTotalShare_set_data_int(tA, sA, prec));
-    P_CHECKC(PrioTotalShare_set_data_int(tB, sB, prec));
+    P_CHECKC(PrioTotalShare_set_data_uint(tA, sA, prec));
+    P_CHECKC(PrioTotalShare_set_data_uint(tB, sB, prec));
 
     // Once Server A has tA and tB, it can learn the aggregate statistics
     // in the clear.
-    P_CHECKC(PrioTotalShare_final_int(cfg, prec, output, tA, tB));
+    P_CHECKC(PrioTotalShare_final_uint(cfg, prec, output, tA, tB));
 
     // Now the output[i] contains a counter that indicates how many clients
     // submitted TRUE for data value i.  We print out this data.
