@@ -137,33 +137,34 @@ PrioTotalShare_set_data_uint(PrioTotalShare t, const_PrioServer s,
    * Each b-bit integer x gets encoded as follows:
    * Enc(x) = (B_0, .. , B_(b-1))
    *
-   * (This diverges from the prio paper, since here we optimize for
+   * (Enc(x) diverges from the prio paper since here we optimize for
    * code reuse.)
    *
    * Let B_i_j be the i-th bit of the j-th b-bit integer x_j,
-   * j = {0, .., n}.
+   * j in {0, .., n-1}, of any single client.
    *
-   * For m (m in {0, .. , k-1}) clients PrioServer_aggregate
+   * For m clients PrioServer_aggregate
    * aggregates the i-th bit shares of the j-th b-bit integers as
-   * follows: [B_i_j]_s_agg = \sum_(k=0)^m-1 [B_i_j]_s_k, s in {1,2}
+   * follows: [B_i_j]_s_agg = \sum_(k=0)^m-1 [B_i_j_k]_s, s in {1,2},
+   * with [B_i_j_k]_s being share s of B_i_j of client k
    *
    * For any b-bit integer x the following holds:
    * x =  \sum_(i=0)^(b-1) 2^i * B_i
-   *   => \sum_(i=0)^(b-1) ([B_i]_1 + [B_i]_2) * 2^i
+   *   =  \sum_(i=0)^(b-1) ([B_i]_1 + [B_i]_2) * 2^i
    *   => [x]_1 = \sum_(i=0)^(n-1) [B_i]_1 * 2^i,
    *      [x]_2 = \sum_(i=0)^(n-1) [B_i]_2 * 2^i
    *
-   * Also, for sums of shares:
-   * [x_1]_s + .. + [x_n]_s =
-   *   \sum_(i=0)^(b-1) ([B_i_0]_s + .. + [B_b_0]_s) * 2^i + .. +
-   *   \sum_(i=0)^(b-1) ([B_i_n]_s + .. + [B_b_n]_s) * 2^i,
+   * Sums of integer shares map to sums of bit shares:
+   * [x_0]_s + .. + [x_n-1]_s =
+   *   ([B_0_0]_s + .. + [B_0_n-1]_s) * 2^0 + ..
+   *   + ([B_b-1_0]_s + .. + [B_b-1_n-1]_s) * 2^b-1,
    *   s in {1, 2}
    *
    * Thus, PrioTotalShare_set_data_uint needs to accumulate the
    * aggregated bit shares into aggregated b-bit ingeger shares as
    * follows:
    *
-   * \sum_(j=0)^(n-1) [x_j]_s =
+   * \sum_(j=0)^(n-1) \sum_(k=0)^(m-1) [x_j_k]_s =
    *   \sum_(j=0)^(n-1) \sum_(i=0)^(b-1) [B_i_j]_s_agg * 2^i,
    *   s in {1,2}
    */
