@@ -332,8 +332,8 @@ verify_full_uint(int tweak)
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  PT_CHECKA(cfg = PrioConfig_new_uint(ndata, prec, pkA, pkB,
-                                      (unsigned char*)"test4", 5));
+  PT_CHECKA(cfg = PrioConfig_new_uint(
+              ndata, prec, pkA, pkB, (unsigned char*)"test4", 5));
 
   PT_CHECKCB(ndata == (PrioConfig_numDataFields(cfg) / prec));
   PT_CHECKCB(ndata == PrioConfig_numUIntEntries(cfg, prec));
@@ -351,8 +351,8 @@ verify_full_uint(int tweak)
   PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
 
   unsigned int aLen, bLen;
-  PT_CHECKC(PrioClient_encode_uint(cfg, prec, data_items, &for_a, &aLen, &for_b,
-                                   &bLen));
+  PT_CHECKC(PrioClient_encode_uint(
+    cfg, prec, data_items, &for_a, &aLen, &for_b, &bLen));
 
   if (tweak == 5) {
     for_a[3] = 3;

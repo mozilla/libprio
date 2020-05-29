@@ -118,7 +118,9 @@ cleanup:
 }
 
 static SECStatus
-serial_read_mp_array(msgpack_unpacker* upk, MPArray arr, size_t len,
+serial_read_mp_array(msgpack_unpacker* upk,
+                     MPArray arr,
+                     size_t len,
                      const mp_int* max)
 {
   SECStatus rv = SECSuccess;
@@ -165,7 +167,8 @@ cleanup:
 }
 
 static SECStatus
-serial_read_beaver_triple(msgpack_unpacker* pk, BeaverTriple t,
+serial_read_beaver_triple(msgpack_unpacker* pk,
+                          BeaverTriple t,
                           const mp_int* max)
 {
   SECStatus rv = SECSuccess;
@@ -195,17 +198,18 @@ cleanup:
 }
 
 static SECStatus
-serial_read_server_a_data(msgpack_unpacker* upk, struct server_a_data* A,
+serial_read_server_a_data(msgpack_unpacker* upk,
+                          struct server_a_data* A,
                           const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
   P_CHECKCB(upk != NULL);
   P_CHECKCB(A != NULL);
 
-  P_CHECKC(serial_read_mp_array(upk, A->data_shares, cfg->num_data_fields,
-                               &cfg->modulus));
-  P_CHECKC(serial_read_mp_array(upk, A->h_points, PrioConfig_hPoints(cfg),
-                               &cfg->modulus));
+  P_CHECKC(serial_read_mp_array(
+    upk, A->data_shares, cfg->num_data_fields, &cfg->modulus));
+  P_CHECKC(serial_read_mp_array(
+    upk, A->h_points, PrioConfig_hPoints(cfg), &cfg->modulus));
 
 cleanup:
   return rv;
@@ -276,7 +280,8 @@ cleanup:
 }
 
 SECStatus
-serial_write_packet_client(msgpack_packer* pk, const_PrioPacketClient p,
+serial_write_packet_client(msgpack_packer* pk,
+                           const_PrioPacketClient p,
                            const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
@@ -326,7 +331,8 @@ cleanup:
 }
 
 SECStatus
-serial_read_packet_client(msgpack_unpacker* upk, PrioPacketClient p,
+serial_read_packet_client(msgpack_unpacker* upk,
+                          PrioPacketClient p,
                           const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
@@ -388,7 +394,8 @@ cleanup:
 }
 
 SECStatus
-PrioPacketVerify1_read(PrioPacketVerify1 p, msgpack_unpacker* upk,
+PrioPacketVerify1_read(PrioPacketVerify1 p,
+                       msgpack_unpacker* upk,
                        const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
@@ -416,7 +423,8 @@ cleanup:
 }
 
 SECStatus
-PrioPacketVerify2_read(PrioPacketVerify2 p, msgpack_unpacker* upk,
+PrioPacketVerify2_read(PrioPacketVerify2 p,
+                       msgpack_unpacker* upk,
                        const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
@@ -443,15 +451,16 @@ cleanup:
 }
 
 SECStatus
-PrioTotalShare_read(PrioTotalShare t, msgpack_unpacker* upk,
+PrioTotalShare_read(PrioTotalShare t,
+                    msgpack_unpacker* upk,
                     const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
   P_CHECKCB(t != NULL);
   P_CHECKCB(upk != NULL);
   P_CHECKC(serial_read_server_id(upk, &t->idx));
-  P_CHECKC(serial_read_mp_array(upk, t->data_shares, cfg->num_data_fields,
-                               &cfg->modulus));
+  P_CHECKC(serial_read_mp_array(
+    upk, t->data_shares, cfg->num_data_fields, &cfg->modulus));
 
 cleanup:
   return rv;

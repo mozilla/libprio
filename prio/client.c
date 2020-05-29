@@ -29,8 +29,10 @@
 // and we return these evaluations as `evals_out`
 // and we return f(0) as `const_term`.
 static SECStatus
-data_polynomial_evals(const_PrioConfig cfg, const_MPArray data_in,
-                      MPArray evals_out, mp_int* const_term)
+data_polynomial_evals(const_PrioConfig cfg,
+                      const_MPArray data_in,
+                      MPArray evals_out,
+                      mp_int* const_term)
 {
   SECStatus rv = SECSuccess;
   const mp_int* mod = &cfg->modulus;
@@ -79,8 +81,11 @@ cleanup:
 }
 
 static SECStatus
-share_polynomials(const_PrioConfig cfg, const_MPArray data_in,
-                  PrioPacketClient pA, PrioPacketClient pB, PRG prgB)
+share_polynomials(const_PrioConfig cfg,
+                  const_MPArray data_in,
+                  PrioPacketClient pA,
+                  PrioPacketClient pB,
+                  PRG prgB)
 {
   SECStatus rv = SECSuccess;
   const mp_int* mod = &cfg->modulus;
@@ -199,8 +204,10 @@ cleanup:
 }
 
 SECStatus
-PrioPacketClient_set_data(const_PrioConfig cfg, const bool* data_in,
-                          PrioPacketClient pA, PrioPacketClient pB)
+PrioPacketClient_set_data(const_PrioConfig cfg,
+                          const bool* data_in,
+                          PrioPacketClient pA,
+                          PrioPacketClient pB)
 {
   MPArray client_data = NULL;
   PRG prgB = NULL;
@@ -277,9 +284,12 @@ PrioPacketClient_areEqual(const_PrioPacketClient p1, const_PrioPacketClient p2)
 }
 
 SECStatus
-PrioClient_encode(const_PrioConfig cfg, const bool* data_in,
-                  unsigned char** for_server_a, unsigned int* aLen,
-                  unsigned char** for_server_b, unsigned int* bLen)
+PrioClient_encode(const_PrioConfig cfg,
+                  const bool* data_in,
+                  unsigned char** for_server_a,
+                  unsigned int* aLen,
+                  unsigned char** for_server_b,
+                  unsigned int* bLen)
 {
   SECStatus rv = SECSuccess;
   PrioPacketClient pA = NULL;
@@ -310,10 +320,18 @@ PrioClient_encode(const_PrioConfig cfg, const bool* data_in,
 
   unsigned int writtenA;
   unsigned int writtenB;
-  P_CHECKC(PublicKey_encrypt(cfg->server_a_pub, *for_server_a, &writtenA, *aLen,
-                             (unsigned char*)sbufA.data, sbufA.size));
-  P_CHECKC(PublicKey_encrypt(cfg->server_b_pub, *for_server_b, &writtenB, *bLen,
-                             (unsigned char*)sbufB.data, sbufB.size));
+  P_CHECKC(PublicKey_encrypt(cfg->server_a_pub,
+                             *for_server_a,
+                             &writtenA,
+                             *aLen,
+                             (unsigned char*)sbufA.data,
+                             sbufA.size));
+  P_CHECKC(PublicKey_encrypt(cfg->server_b_pub,
+                             *for_server_b,
+                             &writtenB,
+                             *bLen,
+                             (unsigned char*)sbufB.data,
+                             sbufB.size));
 
   P_CHECKCB(writtenA == *aLen);
   P_CHECKCB(writtenB == *bLen);
@@ -370,9 +388,12 @@ cleanup:
 }
 
 SECStatus
-PrioClient_encode_uint(const_PrioConfig cfg, const int prec,
-                       const long* data_uint, unsigned char** forServerA,
-                       unsigned int* aLen, unsigned char** forServerB,
+PrioClient_encode_uint(const_PrioConfig cfg,
+                       const int prec,
+                       const long* data_uint,
+                       unsigned char** forServerA,
+                       unsigned int* aLen,
+                       unsigned char** forServerB,
                        unsigned int* bLen)
 {
   SECStatus rv = SECSuccess;
@@ -401,8 +422,10 @@ cleanup:
 }
 
 SECStatus
-PrioPacketClient_decrypt(PrioPacketClient p, const_PrioConfig cfg,
-                         PrivateKey server_priv, const unsigned char* data_in,
+PrioPacketClient_decrypt(PrioPacketClient p,
+                         const_PrioConfig cfg,
+                         PrivateKey server_priv,
+                         const unsigned char* data_in,
                          unsigned int data_len)
 {
   SECStatus rv = SECSuccess;
@@ -415,7 +438,10 @@ PrioPacketClient_decrypt(PrioPacketClient p, const_PrioConfig cfg,
   unsigned int bytes_decrypted;
   P_CHECKC(PrivateKey_decrypt(server_priv,
                               (unsigned char*)msgpack_unpacker_buffer(&upk),
-                              &bytes_decrypted, data_len, data_in, data_len));
+                              &bytes_decrypted,
+                              data_len,
+                              data_in,
+                              data_len));
   msgpack_unpacker_buffer_consumed(&upk, bytes_decrypted);
 
   P_CHECKC(serial_read_packet_client(&upk, p, cfg));

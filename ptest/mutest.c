@@ -76,14 +76,19 @@ main(int argc, char* argv[])
 
   Prio_clear();
 
-  mu_print(MU_SUMMARY, "\n"
-                       "Tests done:\n"
-                       "\t%d test suite(s) passed, %d failed, %d skipped.\n"
-                       "\t%d test case(s) passed, %d failed.\n"
-                       "\t%d check(s) passed, %d failed.\n"
-                       "\n",
-           mutest_passed_suites, mutest_failed_suites, mutest_skipped_suites,
-           mutest_passed_cases, mutest_failed_cases, mutest_passed_checks,
+  mu_print(MU_SUMMARY,
+           "\n"
+           "Tests done:\n"
+           "\t%d test suite(s) passed, %d failed, %d skipped.\n"
+           "\t%d test case(s) passed, %d failed.\n"
+           "\t%d check(s) passed, %d failed.\n"
+           "\n",
+           mutest_passed_suites,
+           mutest_failed_suites,
+           mutest_skipped_suites,
+           mutest_passed_cases,
+           mutest_failed_cases,
+           mutest_passed_checks,
            mutest_failed_checks);
 
   return (mutest_failed_suites + mutest_skipped_suites) ? 1 : 0;

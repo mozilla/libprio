@@ -8,20 +8,23 @@ die() {
     exit 1
 }
 
-CLANG_FORMAT_VERSION="clang-format version 3.9"
+CLANG_FORMAT_VERSION="clang-format version 9.0"
 
-if which clang-format-3.9 > /dev/null; then
-    alias clang-format=clang-format-3.9
+if which clang-format-9 > /dev/null; then
+    alias clang-format=clang-format-9
+elif which clang-format-mp-9.0 > /dev/null; then
+    alias clang-format=clang-format-mp-9.0
 elif which clang-format > /dev/null; then
     case "$(clang-format --version)" in
         "$CLANG_FORMAT_VERSION"*)
             ;;
         *)
-            die "clang-format 3.9 required"
+            echo "you have $(clang-format --version)";
+            die "clang-format 9.0 required"
             ;;
     esac
 else
-    die "$CLANG_FORMAT_VERSION required"
+    die "$CLANG_FORMAT_VERSION not found"
 fi
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then

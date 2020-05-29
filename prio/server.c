@@ -26,8 +26,10 @@
 #endif
 
 PrioServer
-PrioServer_new(const_PrioConfig cfg, PrioServerId server_idx,
-               PrivateKey server_priv, const PrioPRGSeed seed)
+PrioServer_new(const_PrioConfig cfg,
+               PrioServerId server_idx,
+               PrivateKey server_priv,
+               const PrioPRGSeed seed)
 {
   SECStatus rv = SECSuccess;
   PrioServer s = malloc(sizeof(*s));
@@ -119,7 +121,8 @@ PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s)
 }
 
 SECStatus
-PrioTotalShare_set_data_uint(PrioTotalShare t, const_PrioServer s,
+PrioTotalShare_set_data_uint(PrioTotalShare t,
+                             const_PrioServer s,
                              const int prec)
 {
   t->idx = s->idx;
@@ -175,8 +178,11 @@ PrioTotalShare_set_data_uint(PrioTotalShare t, const_PrioServer s,
   for (int uint = 0; uint < num_uints; uint++) {
     for (int bit = 0; bit < prec; bit++) {
       MP_CHECKC(mp_mul_d(&s->data_shares->data[(uint * prec) + bit],
-                         (1l << (prec - bit - 1)), &tmp));
-      MP_CHECKC(mp_addmod(&t->data_shares->data[uint], &tmp, &s->cfg->modulus,
+                         (1l << (prec - bit - 1)),
+                         &tmp));
+      MP_CHECKC(mp_addmod(&t->data_shares->data[uint],
+                          &tmp,
+                          &s->cfg->modulus,
                           &t->data_shares->data[uint]));
     }
   }
@@ -187,8 +193,10 @@ cleanup:
 }
 
 SECStatus
-PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
-                     const_PrioTotalShare tA, const_PrioTotalShare tB)
+PrioTotalShare_final(const_PrioConfig cfg,
+                     unsigned long long* output,
+                     const_PrioTotalShare tA,
+                     const_PrioTotalShare tB)
 {
   if (tA->data_shares->len != cfg->num_data_fields)
     return SECFailure;
@@ -204,8 +212,10 @@ PrioTotalShare_final(const_PrioConfig cfg, unsigned long long* output,
   MP_CHECKC(mp_init(&tmp));
 
   for (int i = 0; i < cfg->num_data_fields; i++) {
-    MP_CHECKC(mp_addmod(&tA->data_shares->data[i], &tB->data_shares->data[i],
-                        &cfg->modulus, &tmp));
+    MP_CHECKC(mp_addmod(&tA->data_shares->data[i],
+                        &tB->data_shares->data[i],
+                        &cfg->modulus,
+                        &tmp));
 
     if (MP_USED(&tmp) > 1) {
       P_CHECKCB(false);
@@ -219,8 +229,10 @@ cleanup:
 }
 
 SECStatus
-PrioTotalShare_final_uint(const_PrioConfig cfg, const int prec,
-                          unsigned long long* output, const_PrioTotalShare tA,
+PrioTotalShare_final_uint(const_PrioConfig cfg,
+                          const int prec,
+                          unsigned long long* output,
+                          const_PrioTotalShare tA,
                           const_PrioTotalShare tB)
 {
   SECStatus rv = SECSuccess;
@@ -236,9 +248,11 @@ PrioTotalShare_final_uint(const_PrioConfig cfg, const int prec,
    * transformations happen after this point. Do not do this before
    * SNIPs about mulgates get verified.
    */
-  P_CHECKA(uint_cfg =
-             PrioConfig_new(num_uints, cfg->server_a_pub, cfg->server_b_pub,
-                            cfg->batch_id, cfg->batch_id_len));
+  P_CHECKA(uint_cfg = PrioConfig_new(num_uints,
+                                     cfg->server_a_pub,
+                                     cfg->server_b_pub,
+                                     cfg->batch_id,
+                                     cfg->batch_id_len));
 
   P_CHECKC(PrioTotalShare_final(uint_cfg, output, tA, tB));
 
@@ -389,13 +403,14 @@ cleanup:
 }
 
 SECStatus
-PrioVerifier_set_data(PrioVerifier v, unsigned char* data,
+PrioVerifier_set_data(PrioVerifier v,
+                      unsigned char* data,
                       unsigned int data_len)
 {
   SECStatus rv = SECSuccess;
   PRG prgB = NULL;
-  P_CHECKC(PrioPacketClient_decrypt(v->clientp, v->s->cfg, v->s->priv_key, data,
-                                    data_len));
+  P_CHECKC(PrioPacketClient_decrypt(
+    v->clientp, v->s->cfg, v->s->priv_key, data, data_len));
 
   PrioPacketClient p = v->clientp;
   if (p->for_server != v->s->idx)
@@ -525,7 +540,8 @@ PrioPacketVerify2_clear(PrioPacketVerify2 p)
 }
 
 SECStatus
-PrioPacketVerify2_set_data(PrioPacketVerify2 p2, const_PrioVerifier v,
+PrioPacketVerify2_set_data(PrioPacketVerify2 p2,
+                           const_PrioVerifier v,
                            const_PrioPacketVerify1 p1A,
                            const_PrioPacketVerify1 p1B)
 {
@@ -583,7 +599,8 @@ cleanup:
 }
 
 int
-PrioVerifier_isValid(const_PrioVerifier v, const_PrioPacketVerify2 pA,
+PrioVerifier_isValid(const_PrioVerifier v,
+                     const_PrioPacketVerify2 pA,
                      const_PrioPacketVerify2 pB)
 {
   SECStatus rv = SECSuccess;

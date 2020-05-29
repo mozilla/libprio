@@ -24,7 +24,7 @@ addons:
     - scons
     - libmsgpack-dev
     - libnss3-dev
-    - clang-format-3.9
+    - clang-format-9
 
 script:
   - scons DEBUG=1 SANITIZE=1

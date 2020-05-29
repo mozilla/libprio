@@ -37,12 +37,14 @@
  * is too large (larger than `MAX_ENCRYPT_LEN`), this function returns
  * an error.
  */
-SECStatus PublicKey_encryptSize(unsigned int inputLen, unsigned int* outputLen);
+SECStatus
+PublicKey_encryptSize(unsigned int inputLen, unsigned int* outputLen);
 
 /*
  * Generate a new keypair for public-key encryption.
  */
-SECStatus Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey);
+SECStatus
+Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey);
 
 /*
  * Encrypt an arbitrary bitstring to the specified public key. The buffer
@@ -52,17 +54,25 @@ SECStatus Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey);
  *
  * The value `inputLen` must be smaller than `MAX_ENCRYPT_LEN`.
  */
-SECStatus PublicKey_encrypt(PublicKey pubkey, unsigned char* output,
-                            unsigned int* outputLen, unsigned int maxOutputLen,
-                            const unsigned char* input, unsigned int inputLen);
+SECStatus
+PublicKey_encrypt(PublicKey pubkey,
+                  unsigned char* output,
+                  unsigned int* outputLen,
+                  unsigned int maxOutputLen,
+                  const unsigned char* input,
+                  unsigned int inputLen);
 
 /*
  * Decrypt an arbitrary bitstring using the specified private key.  The output
  * buffer should be at least 16 bytes larger than the plaintext you expect. If
  * `outputLen` >= `inputLen`, you should be safe.
  */
-SECStatus PrivateKey_decrypt(PrivateKey privkey, unsigned char* output,
-                             unsigned int* outputLen, unsigned int maxOutputLen,
-                             const unsigned char* input, unsigned int inputLen);
+SECStatus
+PrivateKey_decrypt(PrivateKey privkey,
+                   unsigned char* output,
+                   unsigned int* outputLen,
+                   unsigned int maxOutputLen,
+                   const unsigned char* input,
+                   unsigned int inputLen);
 
 #endif /* __ENCRYPT_H__ */

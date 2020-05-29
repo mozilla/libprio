@@ -29,6 +29,7 @@ struct prio_config
   mp_int generator;
 };
 
-int PrioConfig_hPoints(const_PrioConfig cfg);
+int
+PrioConfig_hPoints(const_PrioConfig cfg);
 
 #endif /* __CONFIG_H__ */

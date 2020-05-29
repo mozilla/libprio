@@ -55,11 +55,12 @@ PRG_new(const PrioPRGSeed key_in)
   CK_AES_CTR_PARAMS param = { 128, {} };
   SECItem paramItem = { siBuffer, (void*)&param, sizeof(CK_AES_CTR_PARAMS) };
 
-  P_CHECKA(prg->key = PK11_ImportSymKey(prg->slot, cipher, PK11_OriginUnwrap,
-                                        CKA_ENCRYPT, &keyItem, NULL));
+  P_CHECKA(
+    prg->key = PK11_ImportSymKey(
+      prg->slot, cipher, PK11_OriginUnwrap, CKA_ENCRYPT, &keyItem, NULL));
 
-  P_CHECKA(prg->ctx = PK11_CreateContextBySymKey(cipher, CKA_ENCRYPT, prg->key,
-                                                 &paramItem));
+  P_CHECKA(prg->ctx = PK11_CreateContextBySymKey(
+             cipher, CKA_ENCRYPT, prg->key, &paramItem));
 
 cleanup:
   if (rv != SECSuccess) {
@@ -94,7 +95,7 @@ PRG_get_bytes_internal(void* prg_vp, unsigned char* bytes, size_t len)
   unsigned char* in = NULL;
 
   P_CHECKA(in = calloc(len, sizeof(unsigned char)));
-  
+
   int outlen;
   P_CHECKC(PK11_CipherOp(prg->ctx, bytes, &outlen, len, in, len));
   P_CHECKCB((size_t)outlen == len);

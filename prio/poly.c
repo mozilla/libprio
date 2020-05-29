@@ -24,8 +24,14 @@
  */
 
 static SECStatus
-fft_recurse(mp_int* out, const mp_int* mod, int n, const mp_int* roots,
-            const mp_int* ys, mp_int* tmp, mp_int* ySub, mp_int* rootsSub)
+fft_recurse(mp_int* out,
+            const mp_int* mod,
+            int n,
+            const mp_int* roots,
+            const mp_int* ys,
+            mp_int* tmp,
+            mp_int* ySub,
+            mp_int* rootsSub)
 {
   if (n == 1) {
     MP_CHECK(mp_copy(&ys[0], &out[0]));
@@ -38,8 +44,14 @@ fft_recurse(mp_int* out, const mp_int* mod, int n, const mp_int* roots,
     MP_CHECK(mp_copy(&roots[2 * i], &rootsSub[i]));
   }
 
-  MP_CHECK(fft_recurse(tmp, mod, n / 2, rootsSub, ySub, &tmp[n / 2],
-                       &ySub[n / 2], &rootsSub[n / 2]));
+  MP_CHECK(fft_recurse(tmp,
+                       mod,
+                       n / 2,
+                       rootsSub,
+                       ySub,
+                       &tmp[n / 2],
+                       &ySub[n / 2],
+                       &rootsSub[n / 2]));
   for (int i = 0; i < n / 2; i++) {
     MP_CHECK(mp_copy(&tmp[i], &out[2 * i]));
   }
@@ -50,8 +62,14 @@ fft_recurse(mp_int* out, const mp_int* mod, int n, const mp_int* roots,
     MP_CHECK(mp_mulmod(&ySub[i], &roots[i], mod, &ySub[i]));
   }
 
-  MP_CHECK(fft_recurse(tmp, mod, n / 2, rootsSub, ySub, &tmp[n / 2],
-                       &ySub[n / 2], &rootsSub[n / 2]));
+  MP_CHECK(fft_recurse(tmp,
+                       mod,
+                       n / 2,
+                       rootsSub,
+                       ySub,
+                       &tmp[n / 2],
+                       &ySub[n / 2],
+                       &rootsSub[n / 2]));
   for (int i = 0; i < n / 2; i++) {
     MP_CHECK(mp_copy(&tmp[i], &out[2 * i + 1]));
   }
@@ -60,8 +78,12 @@ fft_recurse(mp_int* out, const mp_int* mod, int n, const mp_int* roots,
 }
 
 static SECStatus
-fft_interpolate_raw(mp_int* out, const mp_int* ys, int nPoints,
-                    const_MPArray roots, const mp_int* mod, bool invert)
+fft_interpolate_raw(mp_int* out,
+                    const mp_int* ys,
+                    int nPoints,
+                    const_MPArray roots,
+                    const mp_int* mod,
+                    bool invert)
 {
   SECStatus rv = SECSuccess;
   MPArray tmp = NULL;
@@ -75,8 +97,8 @@ fft_interpolate_raw(mp_int* out, const mp_int* ys, int nPoints,
   mp_int n_inverse;
   MP_DIGITS(&n_inverse) = NULL;
 
-  MP_CHECKC(fft_recurse(out, mod, nPoints, roots->data, ys, tmp->data,
-                        ySub->data, rootsSub->data));
+  MP_CHECKC(fft_recurse(
+    out, mod, nPoints, roots->data, ys, tmp->data, ySub->data, rootsSub->data));
 
   if (invert) {
     MP_CHECKC(mp_init(&n_inverse));
@@ -104,7 +126,9 @@ cleanup:
  * of the n-th roots of unity.
  */
 SECStatus
-poly_fft_get_roots(MPArray roots_out, int n_points, const_PrioConfig cfg,
+poly_fft_get_roots(MPArray roots_out,
+                   int n_points,
+                   const_PrioConfig cfg,
                    bool invert)
 {
   if (n_points < 1) {
@@ -139,15 +163,17 @@ poly_fft_get_roots(MPArray roots_out, int n_points, const_PrioConfig cfg,
 
   for (int i = 2; i < n_points; i++) {
     // Compute g^i for all i in {0,..., n-1}
-    MP_CHECK(mp_mulmod(gen, &roots_out->data[i - 1], &cfg->modulus,
-                       &roots_out->data[i]));
+    MP_CHECK(mp_mulmod(
+      gen, &roots_out->data[i - 1], &cfg->modulus, &roots_out->data[i]));
   }
 
   return SECSuccess;
 }
 
 SECStatus
-poly_fft(MPArray points_out, const_MPArray points_in, const_PrioConfig cfg,
+poly_fft(MPArray points_out,
+         const_MPArray points_in,
+         const_PrioConfig cfg,
          bool invert)
 {
   SECStatus rv = SECSuccess;
@@ -164,8 +190,12 @@ poly_fft(MPArray points_out, const_MPArray points_in, const_PrioConfig cfg,
   P_CHECKA(scaled_roots = MPArray_new(n_points));
   P_CHECKC(poly_fft_get_roots(scaled_roots, n_points, cfg, invert));
 
-  P_CHECKC(fft_interpolate_raw(points_out->data, points_in->data, n_points,
-                               scaled_roots, &cfg->modulus, invert));
+  P_CHECKC(fft_interpolate_raw(points_out->data,
+                               points_in->data,
+                               n_points,
+                               scaled_roots,
+                               &cfg->modulus,
+                               invert));
 
 cleanup:
   MPArray_clear(scaled_roots);
@@ -174,7 +204,9 @@ cleanup:
 }
 
 SECStatus
-poly_eval(mp_int* value, const_MPArray coeffs, const mp_int* eval_at,
+poly_eval(mp_int* value,
+          const_MPArray coeffs,
+          const mp_int* eval_at,
           const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
@@ -192,8 +224,10 @@ poly_eval(mp_int* value, const_MPArray coeffs, const mp_int* eval_at,
 }
 
 SECStatus
-poly_interp_evaluate(mp_int* value, const_MPArray poly_points,
-                     const mp_int* eval_at, const_PrioConfig cfg)
+poly_interp_evaluate(mp_int* value,
+                     const_MPArray poly_points,
+                     const mp_int* eval_at,
+                     const_PrioConfig cfg)
 {
   SECStatus rv;
   MPArray coeffs = NULL;
