@@ -219,7 +219,7 @@ gen_uint_data(int nUInts, int prec, long* data, int tweak)
   }
 }
 
-// Check wether integers get correctly encoded as bits
+// Check whether integers get correctly encoded as bits
 SECStatus
 check_bits(long* uint_data, bool* bool_data, int prec, int nUInts)
 {

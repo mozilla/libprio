@@ -34,7 +34,7 @@ typedef unsigned char PrioPRGSeed[PRG_SEED_LENGTH];
  * Maximum of supported precision for b-bit integer circuit. Since
  * every PrioTotalShare_final result entry can hold only one MP_DIGIT,
  * which is at most ULONG_MAX, ULONG_MAX/(2^BBIT_PREC_MAX-1) will be
- * the minimum amount of submissions which can be aggregated.
+ * the maximum number of submissions that can be aggregated.
  */
 #define BBIT_PREC_MAX (int)MIN(sizeof(long) * CHAR_BIT - 12, 42)
 
@@ -109,7 +109,7 @@ PrioConfig PrioConfig_new(int nFields, PublicKey serverA, PublicKey serverB,
  *
  * NOTE: For compatibility reasons, prec is not contained in the
  * PrioConfig struct and must be kept in sync on clients and servers
- * by out of band means.
+ * by out-of-band means.
  */
 PrioConfig PrioConfig_new_uint(int nUInts, int prec, PublicKey serverA,
                                PublicKey serverB, const unsigned char* batchId,
