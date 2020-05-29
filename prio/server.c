@@ -131,6 +131,9 @@ PrioTotalShare_set_data_uint(PrioTotalShare t, const_PrioServer s,
 
   int num_uints = PrioConfig_numUIntEntries(s->cfg, prec);
 
+  // Check wether submitted array matches given cfg and prec
+  P_CHECKCB(s->data_shares->len == num_uints * prec);
+
   P_CHECKC(MPArray_resize(t->data_shares, num_uints));
 
   /*

@@ -351,7 +351,7 @@ mu_test_encode__invalid_100_1(void)
 
 void
 test_client_agg_uint(int nclients, int prec, int num_uint_entries,
-                     bool config_is_okay)
+                     bool config_is_okay, int tweak)
 {
   SECStatus rv = SECSuccess;
   PublicKey pkA = NULL;
@@ -418,8 +418,15 @@ test_client_agg_uint(int nclients, int prec, int num_uint_entries,
     for_b = NULL;
   }
 
-  mu_check(PrioTotalShare_set_data_uint(tA, sA, prec) == SECSuccess);
-  mu_check(PrioTotalShare_set_data_uint(tB, sB, prec) == SECSuccess);
+  if (tweak == 0) {
+    mu_check(PrioTotalShare_set_data_uint(tA, sA, prec) == SECSuccess);
+    mu_check(PrioTotalShare_set_data_uint(tB, sB, prec) == SECSuccess);
+  }
+
+  if (tweak == 1) {
+    P_CHECKC(PrioTotalShare_set_data_uint(tA, sA, prec + 1));
+    P_CHECKC(PrioTotalShare_set_data_uint(tB, sB, prec + 1));
+  }
 
   PT_CHECKA(output = calloc(num_uint_entries, sizeof(unsigned long)));
   mu_check(PrioTotalShare_final_uint(cfg, prec, output, tA, tB) == SECSuccess);
@@ -429,9 +436,13 @@ test_client_agg_uint(int nclients, int prec, int num_uint_entries,
   }
 
 cleanup:
-  if (config_is_okay) {
-    mu_check(rv == SECSuccess);
-  } else {
+  if (tweak == 0) {
+    if (config_is_okay) {
+      mu_check(rv == SECSuccess);
+    } else {
+      mu_check(rv == SECFailure);
+    }
+  } else if (tweak == 1) {
     mu_check(rv == SECFailure);
   }
   if (data_items)
@@ -462,19 +473,19 @@ cleanup:
 void
 mu_test_client__agg_uint_1(void)
 {
-  test_client_agg_uint(1, 32, 133, true);
+  test_client_agg_uint(1, 32, 133, true, 0);
 }
 
 void
 mu_test_client__agg_uint_2(void)
 {
-  test_client_agg_uint(2, 32, 133, true);
+  test_client_agg_uint(2, 32, 133, true, 0);
 }
 
 void
 mu_test_client__agg_uint_10(void)
 {
-  test_client_agg_uint(10, 32, 133, true);
+  test_client_agg_uint(10, 32, 133, true, 0);
 }
 
 void
@@ -482,7 +493,7 @@ mu_test_client_uint__agg_max(void)
 {
   int prec = 32;
   int max = MIN(PrioConfig_maxUIntEntries(prec), 500);
-  test_client_agg_uint(10, prec, max, true);
+  test_client_agg_uint(10, prec, max, true, 0);
 }
 
 void
@@ -490,29 +501,35 @@ mu_test_client_uint__agg_max_bad(void)
 {
   int prec = 32;
   int max = PrioConfig_maxUIntEntries(prec);
-  test_client_agg_uint(10, prec, max + 1, false);
+  test_client_agg_uint(10, prec, max + 1, false, 0);
 }
 
 void
 mu_test_client__agg_uint__max_prec_0(void)
 {
-  test_client_agg_uint(1, BBIT_PREC_MAX, 133, true);
+  test_client_agg_uint(1, BBIT_PREC_MAX, 133, true, 0);
 }
 
 void
 mu_test_client__agg_uint__max_prec_1(void)
 {
-  test_client_agg_uint(10, BBIT_PREC_MAX, 133, true);
+  test_client_agg_uint(10, BBIT_PREC_MAX, 133, true, 0);
 }
 
 void
 mu_test_client__agg_uint__exceed_prec_0(void)
 {
-  test_client_agg_uint(1, BBIT_PREC_MAX + 1, 133, false);
+  test_client_agg_uint(1, BBIT_PREC_MAX + 1, 133, false, 0);
 }
 
 void
 mu_test_client__agg_uint__exceed_prec_1(void)
 {
-  test_client_agg_uint(10, BBIT_PREC_MAX + 1, 133, false);
+  test_client_agg_uint(10, BBIT_PREC_MAX + 1, 133, false, 0);
+}
+
+void
+mu_test_client__agg_wrong_server_prec(void)
+{
+  test_client_agg_uint(10, 32, 133, true, 1);
 }
