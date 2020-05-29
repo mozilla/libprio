@@ -28,4 +28,4 @@ addons:
 
 script:
   - scons DEBUG=1 SANITIZE=1
-  - ./build/ptest/ptest -v
+  - ./build/ptest/ptest -vvv
