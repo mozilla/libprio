@@ -27,7 +27,11 @@ rand_init(void)
     return SECSuccess;
 
   prioGlobalContext =
-    NSS_InitContext("", "", "", "", NULL,
+    NSS_InitContext("",
+                    "",
+                    "",
+                    "",
+                    NULL,
                     NSS_INIT_READONLY | NSS_INIT_NOCERTDB | NSS_INIT_NOMODDB |
                       NSS_INIT_FORCEOPEN | NSS_INIT_NOROOTINIT);
 
@@ -76,7 +80,9 @@ rand_int(mp_int* out, const mp_int* max)
 }
 
 SECStatus
-rand_int_rng(mp_int* out, const mp_int* max, RandBytesFunc rng_func,
+rand_int_rng(mp_int* out,
+             const mp_int* max,
+             RandBytesFunc rng_func,
              void* user_data)
 {
   SECStatus rv = SECSuccess;

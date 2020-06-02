@@ -27,8 +27,11 @@ typedef const struct beaver_triple* const_BeaverTriple;
  * Use secret sharing to split the int src into two shares.
  * The mp_ints must be initialized.
  */
-SECStatus share_int(const_PrioConfig cfg, const mp_int* src, mp_int* shareA,
-                    mp_int* shareB);
+SECStatus
+share_int(const_PrioConfig cfg,
+          const mp_int* src,
+          mp_int* shareA,
+          mp_int* shareB);
 
 /*
  * Prio uses Beaver triples to implement one step of the
@@ -36,12 +39,17 @@ SECStatus share_int(const_PrioConfig cfg, const mp_int* src, mp_int* shareA,
  * a sharing of random values a, b, c such that
  *    a * b = c
  */
-BeaverTriple BeaverTriple_new(void);
-void BeaverTriple_clear(BeaverTriple t);
+BeaverTriple
+BeaverTriple_new(void);
+void
+BeaverTriple_clear(BeaverTriple t);
 
-SECStatus BeaverTriple_set_rand(const_PrioConfig cfg, BeaverTriple triple_a,
-                                BeaverTriple triple_b);
+SECStatus
+BeaverTriple_set_rand(const_PrioConfig cfg,
+                      BeaverTriple triple_a,
+                      BeaverTriple triple_b);
 
-bool BeaverTriple_areEqual(const_BeaverTriple t1, const_BeaverTriple t2);
+bool
+BeaverTriple_areEqual(const_BeaverTriple t1, const_BeaverTriple t2);
 
 #endif /* __SHARE_H__ */

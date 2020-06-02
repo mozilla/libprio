@@ -350,8 +350,11 @@ mu_test_encode__invalid_100_1(void)
 }
 
 void
-test_client_agg_uint(int nclients, int prec, int num_uint_entries,
-                     bool config_is_okay, int tweak)
+test_client_agg_uint(int nclients,
+                     int prec,
+                     int num_uint_entries,
+                     bool config_is_okay,
+                     int tweak)
 {
   SECStatus rv = SECSuccess;
   PublicKey pkA = NULL;
@@ -377,11 +380,12 @@ test_client_agg_uint(int nclients, int prec, int num_uint_entries,
 
   PT_CHECKC(Keypair_new(&skA, &pkA));
   PT_CHECKC(Keypair_new(&skB, &pkB));
-  P_CHECKA(cfg = PrioConfig_new_uint(num_uint_entries, prec, pkA, pkB, batch_id,
-                                     batch_id_len));
+  P_CHECKA(cfg = PrioConfig_new_uint(
+             num_uint_entries, prec, pkA, pkB, batch_id, batch_id_len));
   if (!config_is_okay) {
-    PT_CHECKCB((PrioConfig_new_uint(num_uint_entries, prec, pkA, pkB, batch_id,
-                                    batch_id_len) == NULL));
+    PT_CHECKCB(
+      (PrioConfig_new_uint(
+         num_uint_entries, prec, pkA, pkB, batch_id, batch_id_len) == NULL));
   }
   PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
   PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
@@ -402,8 +406,8 @@ test_client_agg_uint(int nclients, int prec, int num_uint_entries,
 
   for (int i = 0; i < nclients; i++) {
     unsigned int aLen, bLen;
-    PT_CHECKC(PrioClient_encode_uint(cfg, prec, data_items, &for_a, &aLen,
-                                     &for_b, &bLen));
+    PT_CHECKC(PrioClient_encode_uint(
+      cfg, prec, data_items, &for_a, &aLen, &for_b, &bLen));
 
     PT_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
     PT_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));

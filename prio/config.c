@@ -34,8 +34,11 @@ PrioConfig_maxUIntEntries(int prec)
 }
 
 PrioConfig
-PrioConfig_new(int n_fields, PublicKey server_a, PublicKey server_b,
-               const unsigned char* batch_id, unsigned int batch_id_len)
+PrioConfig_new(int n_fields,
+               PublicKey server_a,
+               PublicKey server_b,
+               const unsigned char* batch_id,
+               unsigned int batch_id_len)
 {
   SECStatus rv = SECSuccess;
   PrioConfig cfg = malloc(sizeof(*cfg));
@@ -79,8 +82,11 @@ cleanup:
 }
 
 PrioConfig
-PrioConfig_new_uint(int num_uints, int prec, PublicKey server_a,
-                    PublicKey server_b, const unsigned char* batch_id,
+PrioConfig_new_uint(int num_uints,
+                    int prec,
+                    PublicKey server_a,
+                    PublicKey server_b,
+                    const unsigned char* batch_id,
                     unsigned int batch_id_len)
 {
   if (prec <= 0)
@@ -88,8 +94,8 @@ PrioConfig_new_uint(int num_uints, int prec, PublicKey server_a,
   if (prec > BBIT_PREC_MAX)
     return NULL;
 
-  return PrioConfig_new(num_uints * prec, server_a, server_b, batch_id,
-                        batch_id_len);
+  return PrioConfig_new(
+    num_uints * prec, server_a, server_b, batch_id, batch_id_len);
 }
 
 PrioConfig
