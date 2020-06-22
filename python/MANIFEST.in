@@ -1,0 +1,3 @@
+recursive-include prio *
+recursive-include ../build *.a
+recursive-include ../include/ *
