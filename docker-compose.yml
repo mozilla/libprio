@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  libprio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: libprio:${TAG:-latest}
