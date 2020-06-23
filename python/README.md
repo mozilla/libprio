@@ -2,6 +2,18 @@
 
 This module contains a Python wrapper around libprio.
 
+## Quickstart
+
+```python
+python3 -m venv venv
+source venv/bin/activate
+make install
+
+# run tests
+pip install pytest
+python -m pytest
+```
+
 ## Build Process
 
 There are issues running an installation of the extension module inside of the
