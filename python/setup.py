@@ -8,11 +8,6 @@ from os import path
 from sys import platform
 
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
-    long_description = f.read()
-
-
 # Add platform specific settings for building the extension module
 if platform == "darwin":
     # macOS
@@ -33,20 +28,20 @@ else:
 
 
 extension_mod = Extension(
-    "_libprio",
-    ["libprio.i"],
+    "prio._libprio",
+    sources=["libprio.i"],
     library_dirs=["libprio/build/prio", "libprio/build/mpi"] + library_dirs,
     include_dirs=include_dirs,
     libraries=["mprio", "mpi", "msgpackc", "nss3", "nspr4"],
-    swig_opts=["-python", "-outdir", "prio"]
+    swig_opts=["-outdir", "prio"]
 )
 
 setup(
     name="prio",
     version="1.0",
     description="An interface to libprio",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
+    # long_description=long_description,
+    # long_description_content_type="text/markdown",
     author="Anthony Miyaguchi",
     author_email="amiyaguchi@mozilla.com",
     url="https://github.com/mozilla/libprio",

@@ -5,14 +5,16 @@ all:
 	mkdir -p build
 	mkdir -p libprio
 	cp -r ../build ../include libprio
-	#swig -python -outdir prio -o libprio_wrap.c libprio.i
-	python3 setup.py build_ext
+	python3 setup.py build
+
+install: all
+	python3 setup.py install
 
 test:
 	tox
 
 clean:
-	cd .. && scons -c && cd python
+	cd .. && scons -c && rm .sconsign.dblite && cd python
 	find . \( \
 		-name "*.pyc" \
 		-o -name "*.so" \

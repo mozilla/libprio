@@ -17,7 +17,7 @@ RUN dnf install -y epel-release \
 
 # set a default python binary and install scons
 RUN alternatives --set python /usr/bin/python3
-RUN pip3 install --upgrade pip && pip3 install scons tox
+RUN python -m pip install --upgrade pip && pip3 install scons pytest
 
 # symbolically link to name without version suffix for libprio
 RUN ln -s /usr/include/nspr4 /usr/include/nspr \
@@ -28,4 +28,10 @@ ADD . /app
 
 RUN scons VERBOSE=1
 
-CMD echo "starting ptest" && time build/ptest/ptest -vv
+WORKDIR /app/python
+RUN make install
+
+WORKDIR /app
+CMD echo "starting ptest" \
+    && time build/ptest/ptest -vvv \
+    && pytest -v python/tests

@@ -54,5 +54,11 @@ config.log
 *.tiff
 
 # python files
+python/libprio
+*.egg-info/
+__pycache__
+*.pyc
+MANIFEST
 venv/
-.tox
+.tox/
+dist/
