@@ -17,7 +17,7 @@ RUN dnf install -y epel-release \
 
 # set a default python binary and install scons
 RUN alternatives --set python /usr/bin/python3
-RUN pip3 install --upgrade pip && pip3 install scons
+RUN pip3 install --upgrade pip && pip3 install scons tox
 
 # symbolically link to name without version suffix for libprio
 RUN ln -s /usr/include/nspr4 /usr/include/nspr \

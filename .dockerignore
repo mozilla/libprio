@@ -56,8 +56,3 @@ config.log
 # python files
 venv/
 .tox
-python/libprio
-*.egg-info/
-__pycache__
-*.pyc
-MANIFEST

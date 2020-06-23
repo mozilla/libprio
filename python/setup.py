@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import setuptools
 from distutils.core import setup, Extension
 from glob import glob
 from os import path
@@ -17,10 +16,15 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 # Add platform specific settings for building the extension module
 if platform == "darwin":
     # macOS
-    library_dirs = ["/usr/local/opt/nss/lib"]
+    library_dirs = [
+        "/usr/local/opt/nss/lib",
+        "/usr/local/opt/nspr/lib",
+        "/usr/local/opt/msgpack/lib",
+    ]
     include_dirs = [
         "/usr/local/opt/nss/include/nss",
         "/usr/local/opt/nspr/include/nspr",
+        "/usr/local/opt/msgpack/include",
     ]
 else:
     # Fedora
@@ -30,10 +34,11 @@ else:
 
 extension_mod = Extension(
     "_libprio",
-    ["libprio_wrap.c"],
-    library_dirs=["../build/prio", "../build/mpi"] + library_dirs,
+    ["libprio.i"],
+    library_dirs=["libprio/build/prio", "libprio/build/mpi"] + library_dirs,
     include_dirs=include_dirs,
     libraries=["mprio", "mpi", "msgpackc", "nss3", "nspr4"],
+    swig_opts=["-python", "-outdir", "prio"]
 )
 
 setup(
