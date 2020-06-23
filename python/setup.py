@@ -29,7 +29,7 @@ else:
 
 extension_mod = Extension(
     "prio._libprio",
-    sources=["libprio.i"],
+    sources=["swig/libprio.i"],
     library_dirs=["libprio/build/prio", "libprio/build/mpi"] + library_dirs,
     include_dirs=include_dirs,
     libraries=["mprio", "mpi", "msgpackc", "nss3", "nspr4"],

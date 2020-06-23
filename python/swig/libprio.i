@@ -4,7 +4,7 @@
 
 %module libprio
 %{
-#include "libprio/include/mprio.h"
+#include "../libprio/include/mprio.h"
 %}
 
 %feature("autodoc", "3");
@@ -276,7 +276,7 @@ MSGPACK_READ(PrioPacketVerify2)
 MSGPACK_READ(PrioTotalShare)
 
 
-%include "libprio/include/mprio.h"
+%include "../libprio/include/mprio.h"
 
 
 // Helpful resources:

@@ -5,7 +5,6 @@
 # the SWIG interface file instead.
 
 from sys import version_info as _swig_python_version_info
-
 if _swig_python_version_info < (2, 7, 0):
     raise RuntimeError("Python 2.7 or later required")
 
@@ -20,17 +19,12 @@ try:
 except ImportError:
     import __builtin__
 
-
 def _swig_repr(self):
     try:
         strthis = "proxy of " + self.this.__repr__()
     except __builtin__.Exception:
         strthis = ""
-    return "<%s.%s; %s >" % (
-        self.__class__.__module__,
-        self.__class__.__name__,
-        strthis,
-    )
+    return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
 
 
 def _swig_setattr_nondynamic_instance_variable(set):
@@ -43,7 +37,6 @@ def _swig_setattr_nondynamic_instance_variable(set):
             set(self, name, value)
         else:
             raise AttributeError("You cannot add instance attributes to %s" % self)
-
     return set_instance_attr
 
 
@@ -53,23 +46,20 @@ def _swig_setattr_nondynamic_class_variable(set):
             set(cls, name, value)
         else:
             raise AttributeError("You cannot add class attributes to %s" % cls)
-
     return set_class_attr
 
 
 def _swig_add_metaclass(metaclass):
     """Class decorator for adding a metaclass to a SWIG wrapped class - a slimmed down version of six.add_metaclass"""
-
     def wrapper(cls):
         return metaclass(cls.__name__, cls.__bases__, cls.__dict__.copy())
-
     return wrapper
 
 
 class _SwigNonDynamicMeta(type):
     """Meta class to enforce nondynamic attributes (no new attributes) for a class"""
-
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
+
 
 
 def PublicKey_export(key):
@@ -83,7 +73,6 @@ def PublicKey_export(key):
     """
     return _libprio.PublicKey_export(key)
 
-
 def PublicKey_export_hex(key):
     r"""
     PublicKey_export_hex(const_PublicKey key) -> PyObject *
@@ -94,7 +83,6 @@ def PublicKey_export_hex(key):
 
     """
     return _libprio.PublicKey_export_hex(key)
-
 
 def PrivateKey_export(key):
     r"""
@@ -107,7 +95,6 @@ def PrivateKey_export(key):
     """
     return _libprio.PrivateKey_export(key)
 
-
 def PrivateKey_export_hex(key):
     r"""
     PrivateKey_export_hex(PrivateKey key) -> PyObject *
@@ -118,7 +105,6 @@ def PrivateKey_export_hex(key):
 
     """
     return _libprio.PrivateKey_export_hex(key)
-
 
 def PrioPacketVerify1_write(p):
     r"""
@@ -131,7 +117,6 @@ def PrioPacketVerify1_write(p):
     """
     return _libprio.PrioPacketVerify1_write(p)
 
-
 def PrioPacketVerify2_write(p):
     r"""
     PrioPacketVerify2_write(const_PrioPacketVerify2 p) -> PyObject *
@@ -143,7 +128,6 @@ def PrioPacketVerify2_write(p):
     """
     return _libprio.PrioPacketVerify2_write(p)
 
-
 def PrioTotalShare_write(p):
     r"""
     PrioTotalShare_write(const_PrioTotalShare p) -> PyObject *
@@ -154,7 +138,6 @@ def PrioTotalShare_write(p):
 
     """
     return _libprio.PrioTotalShare_write(p)
-
 
 def PrioPacketVerify1_read(p, data, cfg):
     r"""
@@ -169,7 +152,6 @@ def PrioPacketVerify1_read(p, data, cfg):
     """
     return _libprio.PrioPacketVerify1_read(p, data, cfg)
 
-
 def PrioPacketVerify2_read(p, data, cfg):
     r"""
     PrioPacketVerify2_read(PrioPacketVerify2 p, unsigned char const * data, const_PrioConfig cfg) -> SECStatus
@@ -183,7 +165,6 @@ def PrioPacketVerify2_read(p, data, cfg):
     """
     return _libprio.PrioPacketVerify2_read(p, data, cfg)
 
-
 def PrioTotalShare_read(p, data, cfg):
     r"""
     PrioTotalShare_read(PrioTotalShare p, unsigned char const * data, const_PrioConfig cfg) -> SECStatus
@@ -196,8 +177,6 @@ def PrioTotalShare_read(p, data, cfg):
 
     """
     return _libprio.PrioTotalShare_read(p, data, cfg)
-
-
 CURVE25519_KEY_LEN = _libprio.CURVE25519_KEY_LEN
 
 CURVE25519_KEY_LEN_HEX = _libprio.CURVE25519_KEY_LEN_HEX
@@ -211,11 +190,9 @@ def Prio_init():
     r"""Prio_init() -> SECStatus"""
     return _libprio.Prio_init()
 
-
 def Prio_clear():
     r"""Prio_clear()"""
     return _libprio.Prio_clear()
-
 
 def PrioConfig_new(nFields, serverA, serverB, batchId):
     r"""
@@ -230,7 +207,6 @@ def PrioConfig_new(nFields, serverA, serverB, batchId):
 
     """
     return _libprio.PrioConfig_new(nFields, serverA, serverB, batchId)
-
 
 def PrioConfig_new_uint(nUInts, prec, serverA, serverB, batchId):
     r"""
@@ -247,7 +223,6 @@ def PrioConfig_new_uint(nUInts, prec, serverA, serverB, batchId):
     """
     return _libprio.PrioConfig_new_uint(nUInts, prec, serverA, serverB, batchId)
 
-
 def PrioConfig_numDataFields(cfg):
     r"""
     PrioConfig_numDataFields(const_PrioConfig cfg) -> int
@@ -258,7 +233,6 @@ def PrioConfig_numDataFields(cfg):
 
     """
     return _libprio.PrioConfig_numDataFields(cfg)
-
 
 def PrioConfig_numUIntEntries(cfg, prec):
     r"""
@@ -272,11 +246,9 @@ def PrioConfig_numUIntEntries(cfg, prec):
     """
     return _libprio.PrioConfig_numUIntEntries(cfg, prec)
 
-
 def PrioConfig_maxDataFields():
     r"""PrioConfig_maxDataFields() -> int"""
     return _libprio.PrioConfig_maxDataFields()
-
 
 def PrioConfig_maxUIntEntries(prec):
     r"""
@@ -289,7 +261,6 @@ def PrioConfig_maxUIntEntries(prec):
     """
     return _libprio.PrioConfig_maxUIntEntries(prec)
 
-
 def PrioConfig_newTest(nFields):
     r"""
     PrioConfig_newTest(int nFields) -> PrioConfig
@@ -301,11 +272,9 @@ def PrioConfig_newTest(nFields):
     """
     return _libprio.PrioConfig_newTest(nFields)
 
-
 def Keypair_new():
     r"""Keypair_new() -> SECStatus"""
     return _libprio.Keypair_new()
-
 
 def PublicKey_import(data):
     r"""
@@ -317,7 +286,6 @@ def PublicKey_import(data):
 
     """
     return _libprio.PublicKey_import(data)
-
 
 def PrivateKey_import(privData, pubData):
     r"""
@@ -331,7 +299,6 @@ def PrivateKey_import(privData, pubData):
     """
     return _libprio.PrivateKey_import(privData, pubData)
 
-
 def PublicKey_import_hex(hexData):
     r"""
     PublicKey_import_hex(unsigned char const * hexData) -> SECStatus
@@ -342,7 +309,6 @@ def PublicKey_import_hex(hexData):
 
     """
     return _libprio.PublicKey_import_hex(hexData)
-
 
 def PrivateKey_import_hex(privHexData, pubHexData):
     r"""
@@ -356,7 +322,6 @@ def PrivateKey_import_hex(privHexData, pubHexData):
     """
     return _libprio.PrivateKey_import_hex(privHexData, pubHexData)
 
-
 def PrioClient_encode(cfg, data_in):
     r"""
     PrioClient_encode(const_PrioConfig cfg, bool const * data_in) -> SECStatus
@@ -368,7 +333,6 @@ def PrioClient_encode(cfg, data_in):
 
     """
     return _libprio.PrioClient_encode(cfg, data_in)
-
 
 def PrioClient_encode_uint(cfg, prec, data_uint):
     r"""
@@ -383,11 +347,9 @@ def PrioClient_encode_uint(cfg, prec, data_uint):
     """
     return _libprio.PrioClient_encode_uint(cfg, prec, data_uint)
 
-
 def PrioPRGSeed_randomize():
     r"""PrioPRGSeed_randomize() -> SECStatus"""
     return _libprio.PrioPRGSeed_randomize()
-
 
 def PrioServer_new(cfg, serverIdx, serverPriv, serverSharedSecret):
     r"""
@@ -403,7 +365,6 @@ def PrioServer_new(cfg, serverIdx, serverPriv, serverSharedSecret):
     """
     return _libprio.PrioServer_new(cfg, serverIdx, serverPriv, serverSharedSecret)
 
-
 def PrioVerifier_new(s):
     r"""
     PrioVerifier_new(PrioServer s) -> PrioVerifier
@@ -414,7 +375,6 @@ def PrioVerifier_new(s):
 
     """
     return _libprio.PrioVerifier_new(s)
-
 
 def PrioVerifier_set_data(v, data):
     r"""
@@ -428,11 +388,9 @@ def PrioVerifier_set_data(v, data):
     """
     return _libprio.PrioVerifier_set_data(v, data)
 
-
 def PrioPacketVerify1_new():
     r"""PrioPacketVerify1_new() -> PrioPacketVerify1"""
     return _libprio.PrioPacketVerify1_new()
-
 
 def PrioPacketVerify1_set_data(p1, v):
     r"""
@@ -446,11 +404,9 @@ def PrioPacketVerify1_set_data(p1, v):
     """
     return _libprio.PrioPacketVerify1_set_data(p1, v)
 
-
 def PrioPacketVerify2_new():
     r"""PrioPacketVerify2_new() -> PrioPacketVerify2"""
     return _libprio.PrioPacketVerify2_new()
-
 
 def PrioPacketVerify2_set_data(p2, v, p1A, p1B):
     r"""
@@ -466,7 +422,6 @@ def PrioPacketVerify2_set_data(p2, v, p1A, p1B):
     """
     return _libprio.PrioPacketVerify2_set_data(p2, v, p1A, p1B)
 
-
 def PrioVerifier_isValid(v, pA, pB):
     r"""
     PrioVerifier_isValid(const_PrioVerifier v, const_PrioPacketVerify2 pA, const_PrioPacketVerify2 pB) -> SECStatus
@@ -480,7 +435,6 @@ def PrioVerifier_isValid(v, pA, pB):
     """
     return _libprio.PrioVerifier_isValid(v, pA, pB)
 
-
 def PrioServer_aggregate(s, v):
     r"""
     PrioServer_aggregate(PrioServer s, PrioVerifier v) -> SECStatus
@@ -493,11 +447,9 @@ def PrioServer_aggregate(s, v):
     """
     return _libprio.PrioServer_aggregate(s, v)
 
-
 def PrioTotalShare_new():
     r"""PrioTotalShare_new() -> PrioTotalShare"""
     return _libprio.PrioTotalShare_new()
-
 
 def PrioTotalShare_set_data(t, s):
     r"""
@@ -510,7 +462,6 @@ def PrioTotalShare_set_data(t, s):
 
     """
     return _libprio.PrioTotalShare_set_data(t, s)
-
 
 def PrioTotalShare_set_data_uint(t, s, prec):
     r"""
@@ -525,7 +476,6 @@ def PrioTotalShare_set_data_uint(t, s, prec):
     """
     return _libprio.PrioTotalShare_set_data_uint(t, s, prec)
 
-
 def PrioTotalShare_final(cfg, tA, tB):
     r"""
     PrioTotalShare_final(const_PrioConfig cfg, const_PrioTotalShare tA, const_PrioTotalShare tB) -> SECStatus
@@ -538,7 +488,6 @@ def PrioTotalShare_final(cfg, tA, tB):
 
     """
     return _libprio.PrioTotalShare_final(cfg, tA, tB)
-
 
 def PrioTotalShare_final_uint(cfg, prec, output, tA, tB):
     r"""
@@ -554,3 +503,5 @@ def PrioTotalShare_final_uint(cfg, prec, output, tA, tB):
 
     """
     return _libprio.PrioTotalShare_final_uint(cfg, prec, output, tA, tB)
+
+
