@@ -55,10 +55,9 @@ config.log
 
 # python files
 python/libprio
-*.egg-info/
-__pycache__
-*.pyc
-MANIFEST
-venv/
-.tox/
-dist/
+**/*.egg-info/
+**/.pytest_cache/
+**/__pycache__/
+**/*.pyc
+**/venv/
+**/dist/

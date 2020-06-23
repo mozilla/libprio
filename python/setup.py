@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 from glob import glob
 from os import path
 from sys import platform
@@ -40,8 +40,6 @@ setup(
     name="prio",
     version="1.0",
     description="An interface to libprio",
-    # long_description=long_description,
-    # long_description_content_type="text/markdown",
     author="Anthony Miyaguchi",
     author_email="amiyaguchi@mozilla.com",
     url="https://github.com/mozilla/libprio",

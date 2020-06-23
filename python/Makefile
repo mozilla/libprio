@@ -8,13 +8,13 @@ all:
 	python3 setup.py build
 
 install: all
-	python3 setup.py install
+	pip3 install .
 
 test:
 	tox
 
 clean:
-	cd .. && scons -c && rm .sconsign.dblite && cd python
+	cd .. && scons -c && rm -f .sconsign.dblite && cd python
 	find . \( \
 		-name "*.pyc" \
 		-o -name "*.so" \
@@ -25,3 +25,6 @@ clean:
 		-o -name "htmlcov" \
 		\) -exec rm -r {} +
 	rm -rf build
+	rm -rf libprio
+	rm -rf dist
+	rm MANIFEST

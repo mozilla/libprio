@@ -26,12 +26,14 @@ RUN ln -s /usr/include/nspr4 /usr/include/nspr \
 WORKDIR /app
 ADD . /app
 
-RUN scons VERBOSE=1
-
+# first build the python wrapper with -fPIC
 WORKDIR /app/python
 RUN make install
 
 WORKDIR /app
+# rebuild the library with default CFLAGS
+RUN scons VERBOSE=1
+
 CMD echo "starting ptest" \
     && time build/ptest/ptest -vvv \
     && pytest -v python/tests
