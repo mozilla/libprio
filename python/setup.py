@@ -33,7 +33,7 @@ extension_mod = Extension(
     library_dirs=["libprio/build/prio", "libprio/build/mpi"] + library_dirs,
     include_dirs=include_dirs,
     libraries=["mprio", "mpi", "msgpackc", "nss3", "nspr4"],
-    swig_opts=["-outdir", "prio"]
+    swig_opts=["-outdir", "src"],
 )
 
 setup(
@@ -44,5 +44,6 @@ setup(
     author_email="amiyaguchi@mozilla.com",
     url="https://github.com/mozilla/libprio",
     packages=["prio"],
+    package_dir={"prio": "src"},
     ext_modules=[extension_mod],
 )
