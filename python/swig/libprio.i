@@ -173,6 +173,16 @@
     }
 %enddef
 
+// MIN is an implict function that's not available on all compilers. Define an
+// inline function to avoid compile errors during swig build time.
+%{
+    inline int MIN(int a, int b) {
+        if (a > b) {
+            return b;
+        }
+        return a;
+    }
+%}
 %constant BBIT_PREC_MAX = BBIT_PREC_MAX;
 
 OPAQUE_POINTER(PrioConfig)

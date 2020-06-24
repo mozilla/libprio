@@ -2931,6 +2931,15 @@ static swig_module_info swig_module = { swig_types, 19, 0, 0, 0, 0 };
 
 #define MSGPACK_INIT_BUFFER_SIZE (size_t)128
 
+inline int
+MIN(int a, int b)
+{
+  if (a > b) {
+    return b;
+  }
+  return a;
+}
+
 SWIGINTERNINLINE PyObject*
 SWIG_From_int(int value)
 {

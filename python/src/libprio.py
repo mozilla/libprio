@@ -72,6 +72,9 @@ class _SwigNonDynamicMeta(type):
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
 
 
+BBIT_PREC_MAX = _libprio.BBIT_PREC_MAX
+
+
 def PrioPacketVerify1_write(p):
     r"""
     PrioPacketVerify1_write(const_PrioPacketVerify1 p) -> PyObject *
