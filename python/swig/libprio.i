@@ -173,6 +173,7 @@
     }
 %enddef
 
+%constant BBIT_PREC_MAX = BBIT_PREC_MAX;
 
 OPAQUE_POINTER(PrioConfig)
 OPAQUE_POINTER(PrioServer)

@@ -2931,6 +2931,12 @@ static swig_module_info swig_module = { swig_types, 19, 0, 0, 0, 0 };
 
 #define MSGPACK_INIT_BUFFER_SIZE (size_t)128
 
+SWIGINTERNINLINE PyObject*
+SWIG_From_int(int value)
+{
+  return PyInt_FromLong((long)value);
+}
+
 void
 PrioConfig_PyCapsule_clear(PyObject* capsule)
 {
@@ -3342,12 +3348,6 @@ PrivateKey_export_hex_wrapper(PrivateKey key)
     return NULL;
   }
   return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN_HEX + 1);
-}
-
-SWIGINTERNINLINE PyObject*
-SWIG_From_int(int value)
-{
-  return PyInt_FromLong((long)value);
 }
 
 SWIGINTERN int
@@ -6484,6 +6484,8 @@ void
   Prio_init();
   atexit(Prio_clear);
 
+  SWIG_Python_SetConstant(
+    d, "BBIT_PREC_MAX", SWIG_From_int((int)(BBIT_PREC_MAX)));
   SWIG_Python_SetConstant(d, "CURVE25519_KEY_LEN", SWIG_From_int((int)(32)));
   SWIG_Python_SetConstant(
     d, "CURVE25519_KEY_LEN_HEX", SWIG_From_int((int)(64)));
