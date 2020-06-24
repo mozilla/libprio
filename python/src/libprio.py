@@ -72,6 +72,87 @@ class _SwigNonDynamicMeta(type):
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
 
 
+def PrioPacketVerify1_write(p):
+    r"""
+    PrioPacketVerify1_write(const_PrioPacketVerify1 p) -> PyObject *
+
+    Parameters
+    ----------
+    p: const_PrioPacketVerify1
+
+    """
+    return _libprio.PrioPacketVerify1_write(p)
+
+
+def PrioPacketVerify2_write(p):
+    r"""
+    PrioPacketVerify2_write(const_PrioPacketVerify2 p) -> PyObject *
+
+    Parameters
+    ----------
+    p: const_PrioPacketVerify2
+
+    """
+    return _libprio.PrioPacketVerify2_write(p)
+
+
+def PrioTotalShare_write(p):
+    r"""
+    PrioTotalShare_write(const_PrioTotalShare p) -> PyObject *
+
+    Parameters
+    ----------
+    p: const_PrioTotalShare
+
+    """
+    return _libprio.PrioTotalShare_write(p)
+
+
+def PrioPacketVerify1_read(p, data, len, cfg):
+    r"""
+    PrioPacketVerify1_read(PrioPacketVerify1 p, unsigned char const * data, unsigned int len, const_PrioConfig cfg) -> SECStatus
+
+    Parameters
+    ----------
+    p: PrioPacketVerify1
+    data: unsigned char const *
+    len: unsigned int
+    cfg: const_PrioConfig
+
+    """
+    return _libprio.PrioPacketVerify1_read(p, data, len, cfg)
+
+
+def PrioPacketVerify2_read(p, data, len, cfg):
+    r"""
+    PrioPacketVerify2_read(PrioPacketVerify2 p, unsigned char const * data, unsigned int len, const_PrioConfig cfg) -> SECStatus
+
+    Parameters
+    ----------
+    p: PrioPacketVerify2
+    data: unsigned char const *
+    len: unsigned int
+    cfg: const_PrioConfig
+
+    """
+    return _libprio.PrioPacketVerify2_read(p, data, len, cfg)
+
+
+def PrioTotalShare_read(p, data, len, cfg):
+    r"""
+    PrioTotalShare_read(PrioTotalShare p, unsigned char const * data, unsigned int len, const_PrioConfig cfg) -> SECStatus
+
+    Parameters
+    ----------
+    p: PrioTotalShare
+    data: unsigned char const *
+    len: unsigned int
+    cfg: const_PrioConfig
+
+    """
+    return _libprio.PrioTotalShare_read(p, data, len, cfg)
+
+
 def PublicKey_export(key):
     r"""
     PublicKey_export(const_PublicKey key) -> PyObject *
@@ -118,84 +199,6 @@ def PrivateKey_export_hex(key):
 
     """
     return _libprio.PrivateKey_export_hex(key)
-
-
-def PrioPacketVerify1_write(p):
-    r"""
-    PrioPacketVerify1_write(const_PrioPacketVerify1 p) -> PyObject *
-
-    Parameters
-    ----------
-    p: const_PrioPacketVerify1
-
-    """
-    return _libprio.PrioPacketVerify1_write(p)
-
-
-def PrioPacketVerify2_write(p):
-    r"""
-    PrioPacketVerify2_write(const_PrioPacketVerify2 p) -> PyObject *
-
-    Parameters
-    ----------
-    p: const_PrioPacketVerify2
-
-    """
-    return _libprio.PrioPacketVerify2_write(p)
-
-
-def PrioTotalShare_write(p):
-    r"""
-    PrioTotalShare_write(const_PrioTotalShare p) -> PyObject *
-
-    Parameters
-    ----------
-    p: const_PrioTotalShare
-
-    """
-    return _libprio.PrioTotalShare_write(p)
-
-
-def PrioPacketVerify1_read(p, data, cfg):
-    r"""
-    PrioPacketVerify1_read(PrioPacketVerify1 p, unsigned char const * data, const_PrioConfig cfg) -> SECStatus
-
-    Parameters
-    ----------
-    p: PrioPacketVerify1
-    data: unsigned char const *
-    cfg: const_PrioConfig
-
-    """
-    return _libprio.PrioPacketVerify1_read(p, data, cfg)
-
-
-def PrioPacketVerify2_read(p, data, cfg):
-    r"""
-    PrioPacketVerify2_read(PrioPacketVerify2 p, unsigned char const * data, const_PrioConfig cfg) -> SECStatus
-
-    Parameters
-    ----------
-    p: PrioPacketVerify2
-    data: unsigned char const *
-    cfg: const_PrioConfig
-
-    """
-    return _libprio.PrioPacketVerify2_read(p, data, cfg)
-
-
-def PrioTotalShare_read(p, data, cfg):
-    r"""
-    PrioTotalShare_read(PrioTotalShare p, unsigned char const * data, const_PrioConfig cfg) -> SECStatus
-
-    Parameters
-    ----------
-    p: PrioTotalShare
-    data: unsigned char const *
-    cfg: const_PrioConfig
-
-    """
-    return _libprio.PrioTotalShare_read(p, data, cfg)
 
 
 CURVE25519_KEY_LEN = _libprio.CURVE25519_KEY_LEN
