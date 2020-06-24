@@ -4,14 +4,14 @@
 
 %module libprio
 %{
-#include "../libprio/include/mprio.h"
+    #include "../libprio/include/mprio.h"
 %}
 
 %feature("autodoc", "3");
 
 %init %{
-Prio_init();
-atexit(Prio_clear);
+    Prio_init();
+    atexit(Prio_clear);
 %}
 
 // Handle SECStatus.
@@ -26,37 +26,38 @@ atexit(Prio_clear);
 
 // Typemaps for dealing with the pointer to implementation idiom.
 %define OPAQUE_POINTER(T)
+    %{
+        void T ## _PyCapsule_clear(PyObject *capsule) {
+            T ptr = PyCapsule_GetPointer(capsule, "T");
+            T ## _clear(ptr);
+        }
+    %}
 
-%{
-void T ## _PyCapsule_clear(PyObject *capsule) {
-    T ptr = PyCapsule_GetPointer(capsule, "T");
-    T ## _clear(ptr);
-}
-%}
+    // We've assigned a destructor to the capsule instance, so prevent users from
+    // manually destroying the pointer for safety.
+    %ignore T ## _clear;
 
-// We've assigned a destructor to the capsule instance, so prevent users from
-// manually destroying the pointer for safety.
-%ignore T ## _clear;
+    // Get the pointer from the capsule
+    %typemap(in) T, const_ ## T {
+        $1 = PyCapsule_GetPointer($input, "T");
+    }
 
-// Get the pointer from the capsule
-%typemap(in) T, const_ ## T {
-    $1 = PyCapsule_GetPointer($input, "T");
-}
+    // Create a new capsule for the new pointer
+    %typemap(out) T {
+        $result = PyCapsule_New($1, "T", T ## _PyCapsule_clear);
+    }
 
-// Create a new capsule for the new pointer
-%typemap(out) T {
-    $result = PyCapsule_New($1, "T", T ## _PyCapsule_clear);
-}
+    // Create a temporary stack variable for allocating a new opaque pointer
+    %typemap(in,numinputs=0) T* (T tmp = NULL) {
+        $1 = &tmp;
+    }
 
-// Create a temporary stack variable for allocating a new opaque pointer
-%typemap(in,numinputs=0) T* (T tmp = NULL) {
-    $1 = &tmp;
-}
-
-// Return the pointer to the newly allocated memory
-%typemap(argout) T* {
-    $result = SWIG_Python_AppendOutput($result,PyCapsule_New(*$1, "T", T ## _PyCapsule_clear));
-}
+    // Return the pointer to the newly allocated memory
+    %typemap(argout) T* {
+        $result = SWIG_Python_AppendOutput(
+            $result,PyCapsule_New(*$1, "T", T ## _PyCapsule_clear)
+        );
+    }
 %enddef
 
 OPAQUE_POINTER(PrioConfig)
@@ -75,7 +76,9 @@ OPAQUE_POINTER(PrivateKey)
 }
 
 %typemap(argout) PrioPRGSeed * {
-    $result = SWIG_Python_AppendOutput($result,PyBytes_FromStringAndSize((const char*)*$1, PRG_SEED_LENGTH));
+    $result = SWIG_Python_AppendOutput(
+        $result, PyBytes_FromStringAndSize((const char*)*$1, PRG_SEED_LENGTH)
+    );
 }
 
 %typemap(in) const PrioPRGSeed {
@@ -104,7 +107,8 @@ OPAQUE_POINTER(PrivateKey)
     (const unsigned char *privData, unsigned int privDataLen),
     (const unsigned char *pubData, unsigned int pubDataLen),
     (const unsigned char *privHexData, unsigned int privDataLen),
-    (const unsigned char *pubHexData, unsigned int pubDataLen)
+    (const unsigned char *pubHexData, unsigned int pubDataLen),
+    (const unsigned char *data, unsigned int len)
 }
 
 
@@ -112,26 +116,26 @@ OPAQUE_POINTER(PrivateKey)
 // compile time, using the Python object
 %define EXPORT_KEY(TYPE, ARGTYPE, FUNC, BUFSIZE)
 
-// Ignore the mprio.h functions
-%ignore TYPE ## _ ## FUNC;
+    // Ignore the mprio.h functions
+    %ignore TYPE ## _ ## FUNC;
 
-// Rename the wrapper function
-%rename(TYPE ## _ ## FUNC) TYPE ## _ ## FUNC ## _wrapper;
+    // Rename the wrapper function
+    %rename(TYPE ## _ ## FUNC) TYPE ## _ ## FUNC ## _wrapper;
 
-// Define the wrapper function
-%inline {
-    PyObject* TYPE ## _ ## FUNC ## _wrapper(ARGTYPE key) {
-        SECStatus rv = SECFailure;
-        unsigned char data[BUFSIZE];
+    // Define the wrapper function
+    %inline {
+        PyObject* TYPE ## _ ## FUNC ## _wrapper(ARGTYPE key) {
+            SECStatus rv = SECFailure;
+            unsigned char data[BUFSIZE];
 
-        rv = TYPE ## _ ## FUNC(key, data, BUFSIZE);
-        if (rv != SECSuccess) {
-            PyErr_SetString(PyExc_RuntimeError, "Error exporting TYPE");
-            return NULL;
+            rv = TYPE ## _ ## FUNC(key, data, BUFSIZE);
+            if (rv != SECSuccess) {
+                PyErr_SetString(PyExc_RuntimeError, "Error exporting TYPE");
+                return NULL;
+            }
+            return PyBytes_FromStringAndSize((char *)data, BUFSIZE);
         }
-        return PyBytes_FromStringAndSize((char *)data, BUFSIZE);
     }
-}
 
 %enddef
 
@@ -150,7 +154,9 @@ EXPORT_KEY(PrivateKey, PrivateKey, export_hex, CURVE25519_KEY_LEN_HEX+1)
     $1 = (bool*) PyBytes_AsString($input);
 }
 
-%typemap(in,numinputs=0) (unsigned char **, unsigned int *) (unsigned char *data = NULL, unsigned int len = 0) {
+%typemap(in,numinputs=0)
+    (unsigned char **, unsigned int *)
+    (unsigned char *data = NULL, unsigned int len = 0) {
     $1 = &data;
     $2 = &len;
 }
@@ -159,7 +165,9 @@ EXPORT_KEY(PrivateKey, PrivateKey, export_hex, CURVE25519_KEY_LEN_HEX+1)
     $result = SWIG_Python_AppendOutput(
         $result, PyBytes_FromStringAndSize((const char *)*$1, *$2));
     // Free malloc'ed data from within PrioClient_encode
-    if (*$1) free(*$1);
+    if (*$1) {
+        free(*$1);
+    }
 }
 
 %apply (unsigned char **, unsigned int *) {
@@ -188,89 +196,84 @@ EXPORT_KEY(PrivateKey, PrivateKey, export_hex, CURVE25519_KEY_LEN_HEX+1)
 %typemap(argout) (const_PrioConfig, unsigned long long *) {
     $result = SWIG_Python_AppendOutput(
         $result,
-        PyByteArray_FromStringAndSize((const char*)$2, sizeof(long long)*PrioConfig_numDataFields($1))
+        PyByteArray_FromStringAndSize(
+            (const char*)$2, sizeof(long long)*PrioConfig_numDataFields($1)
+        )
     );
-    if ($2) free($2);
+    if ($2) {
+        free($2);
+    }
 }
 
 %apply (const_PrioConfig, unsigned long long *) {
     (const_PrioConfig cfg, unsigned long long *output)
 }
 
-
-// Define wrapper functions for msgpacker_packer due to the dynamically allocated sbuffer.
-// Memory shouldn't be moving around so much, but this wrapper function needs to exist in
-// order to marshal data due to typemaps not having side-effects
+// Define wrapper functions for msgpacker_packer to marshall data from the
+// msgpack buffer initialized by a library function (e.g.
+// PrioPacketVerify1_write) into a Python string.
 
 %define MSGPACK_WRITE(TYPE)
-%ignore TYPE ## _write;
-%rename(TYPE ## _write) TYPE ## _write_wrapper;
+    %ignore TYPE ## _write;
+    %rename(TYPE ## _write) TYPE ## _write_wrapper;
+    %inline %{
+        PyObject* TYPE ## _write_wrapper(const_ ## TYPE p) {
+            PyObject* data = NULL;
+            msgpack_sbuffer sbuf;
+            msgpack_packer pk;
+            msgpack_sbuffer_init(&sbuf);
+            msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
+
+            SECStatus rv = TYPE ## _write(p, &pk);
+            if (rv == SECSuccess) {
+                // move the data outside of this wrapper
+                data = PyBytes_FromStringAndSize(sbuf.data, sbuf.size);
+            }
+
+            // free msgpacker buffer
+            msgpack_sbuffer_destroy(&sbuf);
+
+            return data;
+        }
+    %}
+%enddef
+
 %inline %{
-PyObject* TYPE ## _write_wrapper(const_ ## TYPE p) {
-    PyObject* data = NULL;
-    msgpack_sbuffer sbuf;
-    msgpack_packer pk;
-    msgpack_sbuffer_init(&sbuf);
-    msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
-
-    SECStatus rv = TYPE ## _write(p, &pk);
-    if (rv == SECSuccess) {
-        // move the data outside of this wrapper
-        data = PyBytes_FromStringAndSize(sbuf.data, sbuf.size);
-    }
-
-    // free msgpacker data-structures
-    msgpack_sbuffer_destroy(&sbuf);
-
-    return data;
-}
+    #define MSGPACK_INIT_BUFFER_SIZE (size_t)128
 %}
+
+%define MSGPACK_READ(TYPE)
+    %ignore TYPE ## _read;
+    %rename(TYPE ## _read) TYPE ## _read_wrapper;
+    %inline %{
+        SECStatus TYPE ## _read_wrapper(
+            TYPE p, const unsigned char *data, unsigned int len, const_PrioConfig cfg
+        ) {
+            SECStatus rv = SECFailure;
+            msgpack_unpacker upk;
+            // Initialize the unpacker with a reasonably sized initial buffer.
+            // The unpacker will eat into the initially reserved space for
+            // counting and may need to be reallocated.
+            bool result = msgpack_unpacker_init(&upk, MSGPACK_INIT_BUFFER_SIZE);
+            if (result) {
+                if (msgpack_unpacker_buffer_capacity(&upk) < len) {
+                    result = msgpack_unpacker_reserve_buffer(&upk, len);
+                }
+                if (result) {
+                    memcpy(msgpack_unpacker_buffer(&upk), data, len);
+                    msgpack_unpacker_buffer_consumed(&upk, len);
+                    rv = TYPE ## _read(p, &upk, cfg);
+                }
+            }
+            msgpack_unpacker_destroy(&upk);
+            return rv;
+        }
+    %}
 %enddef
 
 MSGPACK_WRITE(PrioPacketVerify1)
 MSGPACK_WRITE(PrioPacketVerify2)
 MSGPACK_WRITE(PrioTotalShare)
-
-
-// Unfortunately, unpacking also requires some manual work. We take the binary message and
-// copy the data into an unpacker
-
-%apply (const unsigned char*, unsigned int) {
-    (const unsigned char *data, unsigned int len)
-}
-
-// Add a type-casting rule to prevent swig from adding the define into the scripting interface
-%inline %{
-#define MSGPACK_INIT_BUFFER_SIZE (size_t)128
-%}
-
-%define MSGPACK_READ(TYPE)
-%ignore TYPE ## _read;
-%rename(TYPE ## _read) TYPE ## _read_wrapper;
-%inline %{
-SECStatus TYPE ## _read_wrapper(TYPE p, const unsigned char *data, unsigned int len, const_PrioConfig cfg) {
-    SECStatus rv = SECFailure;
-    msgpack_unpacker upk;
-    // Initialize the unpacker with a reasonably sized initial buffer. The
-    // unpacker will eat into the initially reserved space for counting and may
-    // need to be reallocated.
-    bool result = msgpack_unpacker_init(&upk, MSGPACK_INIT_BUFFER_SIZE);
-    if (result) {
-        if (msgpack_unpacker_buffer_capacity(&upk) < len) {
-            result = msgpack_unpacker_reserve_buffer(&upk, len);
-        }
-        if (result) {
-            memcpy(msgpack_unpacker_buffer(&upk), data, len);
-            msgpack_unpacker_buffer_consumed(&upk, len);
-            rv = TYPE ## _read(p, &upk, cfg);
-        }
-    }
-    msgpack_unpacker_destroy(&upk);
-    return rv;
-}
-%}
-%enddef
-
 MSGPACK_READ(PrioPacketVerify1)
 MSGPACK_READ(PrioPacketVerify2)
 MSGPACK_READ(PrioTotalShare)

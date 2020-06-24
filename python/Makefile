@@ -10,6 +10,10 @@ all:
 install: all
 	pip3 install .
 
+format:
+	clang-format -style=Mozilla -i swig/libprio_wrap.c
+	black setup.py src tests
+
 test:
 	tox
 
