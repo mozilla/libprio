@@ -91,7 +91,8 @@ def test_publickey_import_hex_bad_length_raises_exception():
 
 def test_publickey_export_hex():
     # TODO: the output includes the null-byte
-    expect = bytes(
+    expect = b"102030405060708090A0B0C0D0E0F00000FFEEDDCCBBAA998877665544332211\0"
+    raw_bytes = bytes(
         # fmt:off
         [
             0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xA0, 0xB0,
