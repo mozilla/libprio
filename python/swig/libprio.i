@@ -253,13 +253,6 @@ OPAQUE_POINTER(PrioTotalShare)
 OPAQUE_POINTER(PublicKey)
 OPAQUE_POINTER(PrivateKey)
 
-MSGPACK_WRITE(PrioPacketVerify1)
-MSGPACK_WRITE(PrioPacketVerify2)
-MSGPACK_WRITE(PrioTotalShare)
-MSGPACK_READ(PrioPacketVerify1)
-MSGPACK_READ(PrioPacketVerify2)
-MSGPACK_READ(PrioTotalShare)
-
 EXPORT_KEY(PublicKey, const_PublicKey, export, CURVE25519_KEY_LEN)
 EXPORT_KEY(PublicKey, const_PublicKey, export_hex, CURVE25519_KEY_LEN_HEX+1)
 EXPORT_KEY(PrivateKey, PrivateKey, export, CURVE25519_KEY_LEN)
@@ -270,6 +263,14 @@ EXPORT_PYTHON_DATA()
 CLIENT_ENCODE()
 VERIFIER_SET_DATA()
 TOTAL_SHARE_FINAL()
+
+// depends on typemap defined in EXPORT_PYTHON_DATA
+MSGPACK_WRITE(PrioPacketVerify1)
+MSGPACK_WRITE(PrioPacketVerify2)
+MSGPACK_WRITE(PrioTotalShare)
+MSGPACK_READ(PrioPacketVerify1)
+MSGPACK_READ(PrioPacketVerify2)
+MSGPACK_READ(PrioTotalShare)
 
 
 %include "../libprio/include/mprio.h"
