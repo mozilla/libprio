@@ -137,11 +137,9 @@ def test_client_aggregation(n_clients):
     data_items = bytes([(i % 3 == 1) or (i % 5 == 1) for i in range(n_data)])
 
     for i in range(n_clients):
-        for_server_a, for_server_b = PrioClient_encode(cfg, data_items)
-
-        PrioVerifier_set_data(vA, for_server_a)
-        PrioVerifier_set_data(vB, for_server_b)
-
+        for_a, for_b = PrioClient_encode(cfg, data_items)
+        PrioVerifier_set_data(vA, for_a)
+        PrioVerifier_set_data(vB, for_b)
         PrioServer_aggregate(sA, vA)
         PrioServer_aggregate(sB, vB)
 
@@ -152,3 +150,53 @@ def test_client_aggregation(n_clients):
 
     expected = [item * n_clients for item in list(data_items)]
     assert list(output) == expected
+
+
+@pytest.mark.parametrize(
+    "n_clients,precision,num_uint_entries", [(1, 8, 5), (2, 32, 133), (10, 32, 133)]
+)
+def test_client_aggregation_uint(n_clients, precision, num_uint_entries):
+    """Run a test of the integer circuit to ensure the main path works as expected
+    within the bindings."""
+
+    seed = PrioPRGSeed_randomize()
+    skA, pkA = Keypair_new()
+    skB, pkB = Keypair_new()
+    batch_id = b"test_batch"
+
+    cfg = PrioConfig_new_uint(num_uint_entries, precision, pkA, pkB, batch_id)
+    sA = PrioServer_new(cfg, PRIO_SERVER_A, skA, seed)
+    sB = PrioServer_new(cfg, PRIO_SERVER_B, skB, seed)
+    vA = PrioVerifier_new(sA)
+    vB = PrioVerifier_new(sB)
+    tA = PrioTotalShare_new()
+    tB = PrioTotalShare_new()
+
+    assert PrioConfig_numUIntEntries(cfg, precision) == num_uint_entries
+    max_length = (1 << precision) - 1
+
+    data_items = [max_length - i for i in range(num_uint_entries)]
+
+    for _ in range(n_clients):
+        for_a, for_b = PrioClient_encode_uint(
+            cfg, precision, bytes(array.array("L", data_items))
+        )
+        PrioVerifier_set_data(vA, for_a)
+        PrioVerifier_set_data(vB, for_b)
+        PrioServer_aggregate(sA, vA)
+        PrioServer_aggregate(sB, vB)
+
+    PrioTotalShare_set_data_uint(tA, sA, precision)
+    PrioTotalShare_set_data_uint(tB, sB, precision)
+
+    final_bytes = PrioTotalShare_final_uint(cfg, precision, tA, tB)
+    print(final_bytes)
+    print(data_items)
+    output = array.array("Q", final_bytes)
+
+    print(output)
+
+    expected = [item * n_clients for item in list(data_items)]
+    assert (
+        list(output) == expected
+    ), f"got {len(output)} expected {len(expected)} elements"

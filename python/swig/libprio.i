@@ -113,7 +113,7 @@
     }
 
     // PrioClient_encode
-    %typemap(in) const long* {
+    %typemap(in) const long * {
         if (!PyBytes_Check($input)) {
             PyErr_SetString(PyExc_ValueError, "Expecting a byte string");
             SWIG_fail;
@@ -161,39 +161,48 @@
     // PrioTotalShare_final
     %typemap(in) (const_PrioConfig, unsigned long long *) {
         $1 = PyCapsule_GetPointer($input, "PrioConfig");
-        $2 = malloc(sizeof(long long)*PrioConfig_numDataFields($1));
+        $2 = malloc(sizeof(unsigned long long)*PrioConfig_numDataFields($1));
     }
 
     %typemap(argout) (const_PrioConfig, unsigned long long *) {
         $result = SWIG_Python_AppendOutput(
             $result,
             PyByteArray_FromStringAndSize(
-                (const char*)$2, sizeof(long long)*PrioConfig_numDataFields($1)
+                (const char*)$2,
+                sizeof(unsigned long long) * PrioConfig_numDataFields($1)
             )
         );
         if ($2) {
             free($2);
         }
     }
-
+    
     %apply (const_PrioConfig, unsigned long long *) {
         (const_PrioConfig cfg, unsigned long long *output)
     }
 
-
     // PrioTotalShare_final_uint
-    %typemap(in) (const_PrioConfig, unsigned long long *) {
+    // Note the logic is similar to PrioClient_encode/
+    %typemap(in) (const_PrioConfig, unsigned long long **, unsigned int *) 
+        (unsigned long long *data, unsigned int len = 0)
+    {
         $1 = PyCapsule_GetPointer($input, "PrioConfig");
-        $2 = NULL;
+        $2 = &data;
+        $3 = &len;
     }
 
-    // NOTE: we define a completely different name to the wrapper output. If we
-    // instead clear immediately after applying the typemap from
-    // PrioTotalShare_final, we will end up overwriting the original typemap
-    // that was applied. We have total control over the wrapper, so we can use a
-    // different identifier to identify the different behavior.
-    %apply (const_PrioConfig, unsigned long long*) {
-        (const_PrioConfig cfg, unsigned long long *output_uint_wrap)
+    %typemap(argout) (const_PrioConfig, unsigned long long **, unsigned int *) {
+        $result = SWIG_Python_AppendOutput(
+            $result,
+            PyByteArray_FromStringAndSize((const char*)*$2, *$3)
+        );
+        if (*$2) {
+            free(*$2);
+        }
+    }
+
+    %apply (const_PrioConfig, unsigned long long**, unsigned int*) {
+        (const_PrioConfig cfg, unsigned long long** outputWrap, unsigned int *outputWrapLen)
     }
 
     %ignore PrioTotalShare_final_uint;
@@ -202,39 +211,24 @@
         /// This wrapper exists because config is now a leaky abstraction.
         /// Precision should be added directly into the configuration struct if
         /// possible. Note that the arguments are reordered in order to keep the
-        /// same interface to PrioTotalShare_final
+        /// same interface to PrioTotalShare_final. The precision cannot be used
+        /// within an output typemap. Instead, we dynamically allocate memory in
+        /// references to stack allocated swig variables (the typemap(in)).
         SECStatus PrioTotalShare_final_uint_wrapper(
             const_PrioConfig cfg,
-            unsigned long long* output_uint_wrap,
+            unsigned long long** outputWrap,
+            unsigned int* outputWrapLen,
             const int prec,
             const_PrioTotalShare tA,
             const_PrioTotalShare tB
         ) {
             const int numEntries = PrioConfig_numUIntEntries(cfg, prec);
+            *outputWrapLen = sizeof(unsigned long long) * numEntries;
             // NOTE: the caller __must__ free the resources allocated here
-            output_uint_wrap = malloc(sizeof(long long)*numEntries);
-            return PrioTotalShare_final_uint(cfg, prec, output_uint_wrap, tA, tB);
+            *outputWrap = calloc(numEntries, sizeof(unsigned long long));
+            return PrioTotalShare_final_uint(cfg, prec, *outputWrap, tA, tB);
         }
     }
-
-    %typemap(argout) (const_PrioConfig, unsigned long long *, const int) {
-        $result = SWIG_Python_AppendOutput(
-            $result,
-            // TODO: does this return the right result?
-            PyByteArray_FromStringAndSize(
-                (const char*)$2, sizeof(long long)*PrioConfig_numUIntEntries($1, $3)
-            )
-        );
-        if ($2) {
-            free($2);
-        }
-    }
-
-    %apply (const_PrioConfig, unsigned long long *, const int) {
-        (const_PrioConfig cfg, unsigned long long *output_uint_wrap, const int)
-    }
-
-
 
 %enddef
 

@@ -2886,17 +2886,18 @@ extern "C"
 #define SWIGTYPE_p_p_SECKEYPrivateKey swig_types[7]
 #define SWIGTYPE_p_p_SECKEYPublicKey swig_types[8]
 #define SWIGTYPE_p_p_unsigned_char swig_types[9]
-#define SWIGTYPE_p_prio_config swig_types[10]
-#define SWIGTYPE_p_prio_packet_verify1 swig_types[11]
-#define SWIGTYPE_p_prio_packet_verify2 swig_types[12]
-#define SWIGTYPE_p_prio_server swig_types[13]
-#define SWIGTYPE_p_prio_total_share swig_types[14]
-#define SWIGTYPE_p_prio_verifier swig_types[15]
-#define SWIGTYPE_p_unsigned_char swig_types[16]
-#define SWIGTYPE_p_unsigned_int swig_types[17]
-#define SWIGTYPE_p_unsigned_long_long swig_types[18]
-static swig_type_info* swig_types[20];
-static swig_module_info swig_module = { swig_types, 19, 0, 0, 0, 0 };
+#define SWIGTYPE_p_p_unsigned_long_long swig_types[10]
+#define SWIGTYPE_p_prio_config swig_types[11]
+#define SWIGTYPE_p_prio_packet_verify1 swig_types[12]
+#define SWIGTYPE_p_prio_packet_verify2 swig_types[13]
+#define SWIGTYPE_p_prio_server swig_types[14]
+#define SWIGTYPE_p_prio_total_share swig_types[15]
+#define SWIGTYPE_p_prio_verifier swig_types[16]
+#define SWIGTYPE_p_unsigned_char swig_types[17]
+#define SWIGTYPE_p_unsigned_int swig_types[18]
+#define SWIGTYPE_p_unsigned_long_long swig_types[19]
+static swig_type_info* swig_types[21];
+static swig_module_info swig_module = { swig_types, 20, 0, 0, 0, 0 };
 #define SWIG_TypeQuery(name)                                                   \
   SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name)                                            \
@@ -3362,18 +3363,22 @@ PrivateKey_export_hex_wrapper(PrivateKey key)
 /// This wrapper exists because config is now a leaky abstraction.
 /// Precision should be added directly into the configuration struct if
 /// possible. Note that the arguments are reordered in order to keep the
-/// same interface to PrioTotalShare_final
+/// same interface to PrioTotalShare_final. The precision cannot be used
+/// within an output typemap. Instead, we dynamically allocate memory in
+/// references to stack allocated swig variables (the typemap(in)).
 SECStatus
 PrioTotalShare_final_uint_wrapper(const_PrioConfig cfg,
-                                  unsigned long long* output_uint_wrap,
+                                  unsigned long long** outputWrap,
+                                  unsigned int* outputWrapLen,
                                   const int prec,
                                   const_PrioTotalShare tA,
                                   const_PrioTotalShare tB)
 {
   const int numEntries = PrioConfig_numUIntEntries(cfg, prec);
+  *outputWrapLen = sizeof(unsigned long long) * numEntries;
   // NOTE: the caller __must__ free the resources allocated here
-  output_uint_wrap = malloc(sizeof(long long) * numEntries);
-  return PrioTotalShare_final_uint(cfg, prec, output_uint_wrap, tA, tB);
+  *outputWrap = calloc(numEntries, sizeof(unsigned long long));
+  return PrioTotalShare_final_uint(cfg, prec, *outputWrap, tA, tB);
 }
 
 SWIGINTERN int
@@ -3797,12 +3802,15 @@ extern "C"
   {
     PyObject* resultobj = 0;
     const_PrioConfig arg1 = (const_PrioConfig)0;
-    unsigned long long* arg2 = (unsigned long long*)0;
-    int arg3;
-    const_PrioTotalShare arg4 = (const_PrioTotalShare)0;
+    unsigned long long** arg2 = (unsigned long long**)0;
+    unsigned int* arg3 = (unsigned int*)0;
+    int arg4;
     const_PrioTotalShare arg5 = (const_PrioTotalShare)0;
-    int val3;
-    int ecode3 = 0;
+    const_PrioTotalShare arg6 = (const_PrioTotalShare)0;
+    unsigned long long* data1;
+    unsigned int len1 = 0;
+    int val4;
+    int ecode4 = 0;
     PyObject* swig_obj[4];
     SECStatus result;
 
@@ -3811,32 +3819,34 @@ extern "C"
       SWIG_fail;
     {
       arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioConfig");
-      arg2 = NULL;
+      arg2 = &data1;
+      arg3 = &len1;
     }
-    ecode3 = SWIG_AsVal_int(swig_obj[1], &val3);
-    if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3),
+    ecode4 = SWIG_AsVal_int(swig_obj[1], &val4);
+    if (!SWIG_IsOK(ecode4)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode4),
                           "in method '"
                           "PrioTotalShare_final_uint"
                           "', argument "
-                          "3"
+                          "4"
                           " of type '"
                           "int"
                           "'");
     }
-    arg3 = (int)(val3);
+    arg4 = (int)(val4);
     {
-      arg4 = PyCapsule_GetPointer(swig_obj[2], "PrioTotalShare");
+      arg5 = PyCapsule_GetPointer(swig_obj[2], "PrioTotalShare");
     }
     {
-      arg5 = PyCapsule_GetPointer(swig_obj[3], "PrioTotalShare");
+      arg6 = PyCapsule_GetPointer(swig_obj[3], "PrioTotalShare");
     }
     result =
       PrioTotalShare_final_uint_wrapper((struct prio_config const*)arg1,
                                         arg2,
                                         arg3,
-                                        (struct prio_total_share const*)arg4,
-                                        (struct prio_total_share const*)arg5);
+                                        arg4,
+                                        (struct prio_total_share const*)arg5,
+                                        (struct prio_total_share const*)arg6);
     {
       if (result != SECSuccess) {
         PyErr_SetString(PyExc_RuntimeError,
@@ -3847,12 +3857,9 @@ extern "C"
     }
     {
       resultobj = SWIG_Python_AppendOutput(
-        resultobj,
-        PyByteArray_FromStringAndSize((const char*)arg2,
-                                      sizeof(long long) *
-                                        PrioConfig_numDataFields(arg1)));
-      if (arg2) {
-        free(arg2);
+        resultobj, PyByteArray_FromStringAndSize((const char*)*arg2, *arg3));
+      if (*arg2) {
+        free(*arg2);
       }
     }
     return resultobj;
@@ -5008,7 +5015,8 @@ extern "C"
       SWIG_fail;
     {
       arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioConfig");
-      arg2 = malloc(sizeof(long long) * PrioConfig_numDataFields(arg1));
+      arg2 =
+        malloc(sizeof(unsigned long long) * PrioConfig_numDataFields(arg1));
     }
     {
       arg3 = PyCapsule_GetPointer(swig_obj[1], "PrioTotalShare");
@@ -5032,7 +5040,7 @@ extern "C"
       resultobj = SWIG_Python_AppendOutput(
         resultobj,
         PyByteArray_FromStringAndSize((const char*)arg2,
-                                      sizeof(long long) *
+                                      sizeof(unsigned long long) *
                                         PrioConfig_numDataFields(arg1)));
       if (arg2) {
         free(arg2);
@@ -5542,6 +5550,9 @@ extern "C"
   static swig_type_info _swigt__p_p_unsigned_char = {
     "_p_p_unsigned_char", "unsigned char **", 0, 0, (void*)0, 0
   };
+  static swig_type_info _swigt__p_p_unsigned_long_long = {
+    "_p_p_unsigned_long_long", "unsigned long long **", 0, 0, (void*)0, 0
+  };
   static swig_type_info _swigt__p_prio_config = {
     "_p_prio_config", "struct prio_config *|const_PrioConfig", 0, 0, (void*)0, 0
   };
@@ -5606,6 +5617,7 @@ extern "C"
     &_swigt__p_p_SECKEYPrivateKey,
     &_swigt__p_p_SECKEYPublicKey,
     &_swigt__p_p_unsigned_char,
+    &_swigt__p_p_unsigned_long_long,
     &_swigt__p_prio_config,
     &_swigt__p_prio_packet_verify1,
     &_swigt__p_prio_packet_verify2,
@@ -5649,6 +5661,10 @@ extern "C"
   };
   static swig_cast_info _swigc__p_p_unsigned_char[] = {
     { &_swigt__p_p_unsigned_char, 0, 0, 0 },
+    { 0, 0, 0, 0 }
+  };
+  static swig_cast_info _swigc__p_p_unsigned_long_long[] = {
+    { &_swigt__p_p_unsigned_long_long, 0, 0, 0 },
     { 0, 0, 0, 0 }
   };
   static swig_cast_info _swigc__p_prio_config[] = {
@@ -5699,6 +5715,7 @@ extern "C"
     _swigc__p_p_SECKEYPrivateKey,
     _swigc__p_p_SECKEYPublicKey,
     _swigc__p_p_unsigned_char,
+    _swigc__p_p_unsigned_long_long,
     _swigc__p_prio_config,
     _swigc__p_prio_packet_verify1,
     _swigc__p_prio_packet_verify2,
