@@ -3359,6 +3359,23 @@ PrivateKey_export_hex_wrapper(PrivateKey key)
   return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN_HEX + 1);
 }
 
+/// This wrapper exists because config is now a leaky abstraction.
+/// Precision should be added directly into the configuration struct if
+/// possible. Note that the arguments are reordered in order to keep the
+/// same interface to PrioTotalShare_final
+SECStatus
+PrioTotalShare_final_uint_wrapper(const_PrioConfig cfg,
+                                  unsigned long long* output_uint_wrap,
+                                  const int prec,
+                                  const_PrioTotalShare tA,
+                                  const_PrioTotalShare tB)
+{
+  const int numEntries = PrioConfig_numUIntEntries(cfg, prec);
+  // NOTE: the caller __must__ free the resources allocated here
+  output_uint_wrap = malloc(sizeof(long long) * numEntries);
+  return PrioTotalShare_final_uint(cfg, prec, output_uint_wrap, tA, tB);
+}
+
 SWIGINTERN int
 SWIG_AsVal_long(PyObject* obj, long* val)
 {
@@ -3769,6 +3786,75 @@ extern "C"
     }
     result = (PyObject*)PrivateKey_export_hex_wrapper(arg1);
     resultobj = result;
+    return resultobj;
+  fail:
+    return NULL;
+  }
+
+  SWIGINTERN PyObject* _wrap_PrioTotalShare_final_uint(
+    PyObject* SWIGUNUSEDPARM(self),
+    PyObject* args)
+  {
+    PyObject* resultobj = 0;
+    const_PrioConfig arg1 = (const_PrioConfig)0;
+    unsigned long long* arg2 = (unsigned long long*)0;
+    int arg3;
+    const_PrioTotalShare arg4 = (const_PrioTotalShare)0;
+    const_PrioTotalShare arg5 = (const_PrioTotalShare)0;
+    int val3;
+    int ecode3 = 0;
+    PyObject* swig_obj[4];
+    SECStatus result;
+
+    if (!SWIG_Python_UnpackTuple(
+          args, "PrioTotalShare_final_uint", 4, 4, swig_obj))
+      SWIG_fail;
+    {
+      arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioConfig");
+      arg2 = NULL;
+    }
+    ecode3 = SWIG_AsVal_int(swig_obj[1], &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3),
+                          "in method '"
+                          "PrioTotalShare_final_uint"
+                          "', argument "
+                          "3"
+                          " of type '"
+                          "int"
+                          "'");
+    }
+    arg3 = (int)(val3);
+    {
+      arg4 = PyCapsule_GetPointer(swig_obj[2], "PrioTotalShare");
+    }
+    {
+      arg5 = PyCapsule_GetPointer(swig_obj[3], "PrioTotalShare");
+    }
+    result =
+      PrioTotalShare_final_uint_wrapper((struct prio_config const*)arg1,
+                                        arg2,
+                                        arg3,
+                                        (struct prio_total_share const*)arg4,
+                                        (struct prio_total_share const*)arg5);
+    {
+      if (result != SECSuccess) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "PrioTotalShare_final_uint was not successful.");
+        SWIG_fail;
+      }
+      resultobj = Py_BuildValue("");
+    }
+    {
+      resultobj = SWIG_Python_AppendOutput(
+        resultobj,
+        PyByteArray_FromStringAndSize((const char*)arg2,
+                                      sizeof(long long) *
+                                        PrioConfig_numDataFields(arg1)));
+      if (arg2) {
+        free(arg2);
+      }
+    }
     return resultobj;
   fail:
     return NULL;
@@ -4399,8 +4485,6 @@ extern "C"
     unsigned int* arg7 = (unsigned int*)0;
     int val2;
     int ecode2 = 0;
-    void* argp3 = 0;
-    int res3 = 0;
     unsigned char* data4 = NULL;
     unsigned int len4 = 0;
     unsigned char* data6 = NULL;
@@ -4434,18 +4518,13 @@ extern "C"
                           "'");
     }
     arg2 = (int)(val2);
-    res3 = SWIG_ConvertPtr(swig_obj[2], &argp3, SWIGTYPE_p_long, 0 | 0);
-    if (!SWIG_IsOK(res3)) {
-      SWIG_exception_fail(SWIG_ArgError(res3),
-                          "in method '"
-                          "PrioClient_encode_uint"
-                          "', argument "
-                          "3"
-                          " of type '"
-                          "long const *"
-                          "'");
+    {
+      if (!PyBytes_Check(swig_obj[2])) {
+        PyErr_SetString(PyExc_ValueError, "Expecting a byte string");
+        SWIG_fail;
+      }
+      arg3 = (long*)PyBytes_AsString(swig_obj[2]);
     }
-    arg3 = (long*)(argp3);
     result = PrioClient_encode_uint((struct prio_config const*)arg1,
                                     arg2,
                                     (long const*)arg3,
@@ -4964,78 +5043,6 @@ extern "C"
     return NULL;
   }
 
-  SWIGINTERN PyObject* _wrap_PrioTotalShare_final_uint(
-    PyObject* SWIGUNUSEDPARM(self),
-    PyObject* args)
-  {
-    PyObject* resultobj = 0;
-    const_PrioConfig arg1 = (const_PrioConfig)0;
-    int arg2;
-    unsigned long long* arg3 = (unsigned long long*)0;
-    const_PrioTotalShare arg4 = (const_PrioTotalShare)0;
-    const_PrioTotalShare arg5 = (const_PrioTotalShare)0;
-    int val2;
-    int ecode2 = 0;
-    void* argp3 = 0;
-    int res3 = 0;
-    PyObject* swig_obj[5];
-    SECStatus result;
-
-    if (!SWIG_Python_UnpackTuple(
-          args, "PrioTotalShare_final_uint", 5, 5, swig_obj))
-      SWIG_fail;
-    {
-      arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioConfig");
-    }
-    ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
-    if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2),
-                          "in method '"
-                          "PrioTotalShare_final_uint"
-                          "', argument "
-                          "2"
-                          " of type '"
-                          "int"
-                          "'");
-    }
-    arg2 = (int)(val2);
-    res3 = SWIG_ConvertPtr(
-      swig_obj[2], &argp3, SWIGTYPE_p_unsigned_long_long, 0 | 0);
-    if (!SWIG_IsOK(res3)) {
-      SWIG_exception_fail(SWIG_ArgError(res3),
-                          "in method '"
-                          "PrioTotalShare_final_uint"
-                          "', argument "
-                          "3"
-                          " of type '"
-                          "unsigned long long *"
-                          "'");
-    }
-    arg3 = (unsigned long long*)(argp3);
-    {
-      arg4 = PyCapsule_GetPointer(swig_obj[3], "PrioTotalShare");
-    }
-    {
-      arg5 = PyCapsule_GetPointer(swig_obj[4], "PrioTotalShare");
-    }
-    result = PrioTotalShare_final_uint((struct prio_config const*)arg1,
-                                       arg2,
-                                       arg3,
-                                       (struct prio_total_share const*)arg4,
-                                       (struct prio_total_share const*)arg5);
-    {
-      if (result != SECSuccess) {
-        PyErr_SetString(PyExc_RuntimeError,
-                        "PrioTotalShare_final_uint was not successful.");
-        SWIG_fail;
-      }
-      resultobj = Py_BuildValue("");
-    }
-    return resultobj;
-  fail:
-    return NULL;
-  }
-
   static PyMethodDef SwigMethods[] = {
     { "SWIG_PyInstanceMethod_New", SWIG_PyInstanceMethod_New, METH_O, NULL },
     { "PrioPacketVerify1_write",
@@ -5158,6 +5165,21 @@ extern "C"
       "Parameters\n"
       "----------\n"
       "key: PrivateKey\n"
+      "\n"
+      "" },
+    { "PrioTotalShare_final_uint",
+      _wrap_PrioTotalShare_final_uint,
+      METH_VARARGS,
+      "\n"
+      "PrioTotalShare_final_uint(const_PrioConfig cfg, int const prec, "
+      "const_PrioTotalShare tA, const_PrioTotalShare tB) -> SECStatus\n"
+      "\n"
+      "Parameters\n"
+      "----------\n"
+      "cfg: const_PrioConfig\n"
+      "prec: int const\n"
+      "tA: const_PrioTotalShare\n"
+      "tB: const_PrioTotalShare\n"
       "\n"
       "" },
     { "Prio_init", _wrap_Prio_init, METH_NOARGS, "Prio_init() -> SECStatus" },
@@ -5467,23 +5489,6 @@ extern "C"
       "Parameters\n"
       "----------\n"
       "cfg: const_PrioConfig\n"
-      "tA: const_PrioTotalShare\n"
-      "tB: const_PrioTotalShare\n"
-      "\n"
-      "" },
-    { "PrioTotalShare_final_uint",
-      _wrap_PrioTotalShare_final_uint,
-      METH_VARARGS,
-      "\n"
-      "PrioTotalShare_final_uint(const_PrioConfig cfg, int const prec, "
-      "unsigned long long * output, const_PrioTotalShare tA, "
-      "const_PrioTotalShare tB) -> SECStatus\n"
-      "\n"
-      "Parameters\n"
-      "----------\n"
-      "cfg: const_PrioConfig\n"
-      "prec: int const\n"
-      "output: unsigned long long *\n"
       "tA: const_PrioTotalShare\n"
       "tB: const_PrioTotalShare\n"
       "\n"

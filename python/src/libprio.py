@@ -204,6 +204,21 @@ def PrivateKey_export_hex(key):
     return _libprio.PrivateKey_export_hex(key)
 
 
+def PrioTotalShare_final_uint(cfg, prec, tA, tB):
+    r"""
+    PrioTotalShare_final_uint(const_PrioConfig cfg, int const prec, const_PrioTotalShare tA, const_PrioTotalShare tB) -> SECStatus
+
+    Parameters
+    ----------
+    cfg: const_PrioConfig
+    prec: int const
+    tA: const_PrioTotalShare
+    tB: const_PrioTotalShare
+
+    """
+    return _libprio.PrioTotalShare_final_uint(cfg, prec, tA, tB)
+
+
 CURVE25519_KEY_LEN = _libprio.CURVE25519_KEY_LEN
 
 CURVE25519_KEY_LEN_HEX = _libprio.CURVE25519_KEY_LEN_HEX
@@ -544,19 +559,3 @@ def PrioTotalShare_final(cfg, tA, tB):
 
     """
     return _libprio.PrioTotalShare_final(cfg, tA, tB)
-
-
-def PrioTotalShare_final_uint(cfg, prec, output, tA, tB):
-    r"""
-    PrioTotalShare_final_uint(const_PrioConfig cfg, int const prec, unsigned long long * output, const_PrioTotalShare tA, const_PrioTotalShare tB) -> SECStatus
-
-    Parameters
-    ----------
-    cfg: const_PrioConfig
-    prec: int const
-    output: unsigned long long *
-    tA: const_PrioTotalShare
-    tB: const_PrioTotalShare
-
-    """
-    return _libprio.PrioTotalShare_final_uint(cfg, prec, output, tA, tB)
