@@ -14,6 +14,13 @@ pip install pytest
 python -m pytest
 ```
 
+To run a coverage report:
+
+```bash
+pip install pytest-cov
+python -m pytest --cov-report=html --cov-report=term --cov=prio tests
+```
+
 ## Build Process
 
 There are issues running an installation of the extension module inside of the
