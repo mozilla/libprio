@@ -396,8 +396,8 @@ extern "C"
                                       const_PrioTotalShare tA,
                                       const_PrioTotalShare tB);
 
-#endif /* __PRIO_H__ */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* __PRIO_H__ */
