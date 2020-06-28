@@ -20,20 +20,24 @@
 
 static NSSInitContext* prioGlobalContext = NULL;
 
+extern PrioNSSCtx* prioGlobalNSS;
+
 SECStatus
 rand_init(void)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (prioGlobalContext)
     return SECSuccess;
 
-  prioGlobalContext =
-    NSS_InitContext("",
-                    "",
-                    "",
-                    "",
-                    NULL,
-                    NSS_INIT_READONLY | NSS_INIT_NOCERTDB | NSS_INIT_NOMODDB |
-                      NSS_INIT_FORCEOPEN | NSS_INIT_NOROOTINIT);
+  prioGlobalContext = prioGlobalNSS->NSS_InitContext(
+    "",
+    "",
+    "",
+    "",
+    NULL,
+    NSS_INIT_READONLY | NSS_INIT_NOCERTDB | NSS_INIT_NOMODDB |
+      NSS_INIT_FORCEOPEN | NSS_INIT_NOROOTINIT);
 
   return (prioGlobalContext != NULL) ? SECSuccess : SECFailure;
 }
@@ -41,10 +45,12 @@ rand_init(void)
 static SECStatus
 rand_bytes_internal(void* user_data, unsigned char* out, size_t n_bytes)
 {
+  assert(prioGlobalNSS != NULL);
+
   // No pointer should ever be passed in.
   if (user_data != NULL)
     return SECFailure;
-  if (!NSS_IsInitialized()) {
+  if (!prioGlobalNSS->NSS_IsInitialized()) {
     PRIO_DEBUG("NSS not initialized. Call rand_init() first.");
     return SECFailure;
   }
@@ -55,7 +61,7 @@ rand_bytes_internal(void* user_data, unsigned char* out, size_t n_bytes)
   unsigned char* cp = out;
   while (to_go) {
     int to_gen = MIN(CHUNK_SIZE, to_go);
-    if ((rv = PK11_GenerateRandom(cp, to_gen)) != SECSuccess) {
+    if ((rv = prioGlobalNSS->PK11_GenerateRandom(cp, to_gen)) != SECSuccess) {
       PRIO_DEBUG("Error calling PK11_GenerateRandom");
       return SECFailure;
     }
@@ -132,8 +138,10 @@ cleanup:
 void
 rand_clear(void)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (prioGlobalContext) {
-    NSS_ShutdownContext(prioGlobalContext);
+    prioGlobalNSS->NSS_ShutdownContext(prioGlobalContext);
 #ifdef DO_PR_CLEANUP
     PR_Cleanup();
 #endif

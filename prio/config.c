@@ -133,9 +133,12 @@ PrioConfig_numUIntEntries(const_PrioConfig cfg, int prec)
   return cfg->num_data_fields / prec;
 }
 
+PrioNSSCtx* prioGlobalNSS = NULL;
+
 SECStatus
-Prio_init(void)
+Prio_init(PrioNSSCtx* pNSS)
 {
+  prioGlobalNSS = pNSS;
   return rand_init();
 }
 

@@ -68,8 +68,36 @@ parse_args(__attribute__((unused)) int argc, char* argv[])
 int
 main(int argc, char* argv[])
 {
+  PrioNSSCtx globalNSS = { .NSS_IsInitialized = NSS_IsInitialized,
+                           .NSS_InitContext = NSS_InitContext,
+                           .NSS_ShutdownContext = NSS_ShutdownContext,
+                           .PK11_FreeSlot = PK11_FreeSlot,
+                           .PK11_GetInternalSlot = PK11_GetInternalSlot,
+                           .PK11_GenerateRandom = PK11_GenerateRandom,
+                           .PK11_FreeSymKey = PK11_FreeSymKey,
+                           .PK11_ImportSymKey = PK11_ImportSymKey,
+                           .PK11_PubDeriveWithKDF = PK11_PubDeriveWithKDF,
+                           .PK11_GenerateKeyPair = PK11_GenerateKeyPair,
+                           .PK11_Decrypt = PK11_Decrypt,
+                           .PK11_Encrypt = PK11_Encrypt,
+                           .PK11_ImportDERPrivateKeyInfoAndReturnKey =
+                             PK11_ImportDERPrivateKeyInfoAndReturnKey,
+                           .PK11_DestroyContext = PK11_DestroyContext,
+                           .PK11_CreateContextBySymKey =
+                             PK11_CreateContextBySymKey,
+                           .PK11_CipherOp = PK11_CipherOp,
+                           .PK11_ReadRawAttribute = PK11_ReadRawAttribute,
+                           .SECKEY_DestroyPrivateKey = SECKEY_DestroyPrivateKey,
+                           .SECKEY_DestroyPublicKey = SECKEY_DestroyPublicKey,
+                           .SECKEY_ExtractPublicKey = SECKEY_ExtractPublicKey,
+                           .SECKEY_DestroySubjectPublicKeyInfo =
+                             SECKEY_DestroySubjectPublicKeyInfo,
+                           .SECKEY_DecodeDERSubjectPublicKeyInfo =
+                             SECKEY_DecodeDERSubjectPublicKeyInfo,
+                           .SECITEM_ZfreeItem = SECITEM_ZfreeItem,
+                           .SECOID_FindOIDByTag = SECOID_FindOIDByTag };
 
-  Prio_init();
+  Prio_init(&globalNSS);
   parse_args(argc, argv);
 
   mu_run_suites();

@@ -16,6 +16,8 @@
 #include "share.h"
 #include "util.h"
 
+extern PrioNSSCtx* prioGlobalNSS;
+
 struct prg
 {
   PK11SlotInfo* slot;
@@ -32,6 +34,7 @@ PrioPRGSeed_randomize(PrioPRGSeed* key)
 PRG
 PRG_new(const PrioPRGSeed key_in)
 {
+  assert(prioGlobalNSS != NULL);
   PRG prg = malloc(sizeof(struct prg));
   if (!prg)
     return NULL;
@@ -42,7 +45,7 @@ PRG_new(const PrioPRGSeed key_in)
   SECStatus rv = SECSuccess;
   const CK_MECHANISM_TYPE cipher = CKM_AES_CTR;
 
-  P_CHECKA(prg->slot = PK11_GetInternalSlot());
+  P_CHECKA(prg->slot = prioGlobalNSS->PK11_GetInternalSlot());
 
   // Create a mutable copy of the key.
   PrioPRGSeed key_mut;
@@ -56,10 +59,10 @@ PRG_new(const PrioPRGSeed key_in)
   SECItem paramItem = { siBuffer, (void*)&param, sizeof(CK_AES_CTR_PARAMS) };
 
   P_CHECKA(
-    prg->key = PK11_ImportSymKey(
+    prg->key = prioGlobalNSS->PK11_ImportSymKey(
       prg->slot, cipher, PK11_OriginUnwrap, CKA_ENCRYPT, &keyItem, NULL));
 
-  P_CHECKA(prg->ctx = PK11_CreateContextBySymKey(
+  P_CHECKA(prg->ctx = prioGlobalNSS->PK11_CreateContextBySymKey(
              cipher, CKA_ENCRYPT, prg->key, &paramItem));
 
 cleanup:
@@ -74,15 +77,16 @@ cleanup:
 void
 PRG_clear(PRG prg)
 {
+  assert(prioGlobalNSS != NULL);
   if (!prg)
     return;
 
   if (prg->key)
-    PK11_FreeSymKey(prg->key);
+    prioGlobalNSS->PK11_FreeSymKey(prg->key);
   if (prg->slot)
-    PK11_FreeSlot(prg->slot);
+    prioGlobalNSS->PK11_FreeSlot(prg->slot);
   if (prg->ctx)
-    PK11_DestroyContext(prg->ctx, PR_TRUE);
+    prioGlobalNSS->PK11_DestroyContext(prg->ctx, PR_TRUE);
 
   free(prg);
 }
@@ -90,6 +94,7 @@ PRG_clear(PRG prg)
 static SECStatus
 PRG_get_bytes_internal(void* prg_vp, unsigned char* bytes, size_t len)
 {
+  assert(prioGlobalNSS != NULL);
   SECStatus rv = SECSuccess;
   PRG prg = (PRG)prg_vp;
   unsigned char* in = NULL;
@@ -97,7 +102,8 @@ PRG_get_bytes_internal(void* prg_vp, unsigned char* bytes, size_t len)
   P_CHECKA(in = calloc(len, sizeof(unsigned char)));
 
   int outlen;
-  P_CHECKC(PK11_CipherOp(prg->ctx, bytes, &outlen, len, in, len));
+  P_CHECKC(
+    prioGlobalNSS->PK11_CipherOp(prg->ctx, bytes, &outlen, len, in, len));
   P_CHECKCB((size_t)outlen == len);
 
 cleanup:

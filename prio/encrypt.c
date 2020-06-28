@@ -15,6 +15,8 @@
 #include "prio/rand.h"
 #include "prio/util.h"
 
+extern PrioNSSCtx* prioGlobalNSS;
+
 // Use curve25519
 #define CURVE_OID_TAG SEC_OID_CURVE25519
 
@@ -198,6 +200,8 @@ int_to_hex(uint8_t i)
 static SECStatus
 derive_dh_secret(PK11SymKey** shared_secret, PrivateKey priv, PublicKey pub)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (priv == NULL)
     return SECFailure;
   if (pub == NULL)
@@ -208,7 +212,8 @@ derive_dh_secret(PK11SymKey** shared_secret, PrivateKey priv, PublicKey pub)
   SECStatus rv = SECSuccess;
   *shared_secret = NULL;
 
-  P_CHECKA(*shared_secret = PK11_PubDeriveWithKDF(priv,
+  P_CHECKA(*shared_secret =
+             prioGlobalNSS->PK11_PubDeriveWithKDF(priv,
                                                   pub,
                                                   PR_FALSE,
                                                   NULL,
@@ -228,6 +233,8 @@ cleanup:
 SECStatus
 PublicKey_import(PublicKey* pk, const unsigned char* data, unsigned int dataLen)
 {
+  assert(prioGlobalNSS != NULL);
+
   SECStatus rv = SECSuccess;
   CERTSubjectPublicKeyInfo* pkinfo = NULL;
   *pk = NULL;
@@ -247,8 +254,9 @@ PublicKey_import(PublicKey* pk, const unsigned char* data, unsigned int dataLen)
   SECItem spki_item = { siBuffer, spki_data, spki_len };
 
   // Import the all-zeros curve25519 public key.
-  P_CHECKA(pkinfo = SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_item));
-  P_CHECKA(*pk = SECKEY_ExtractPublicKey(pkinfo));
+  P_CHECKA(pkinfo =
+             prioGlobalNSS->SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_item));
+  P_CHECKA(*pk = prioGlobalNSS->SECKEY_ExtractPublicKey(pkinfo));
 
   // Overwrite the all-zeros public key with the 32-byte curve25519 public key
   // given as input.
@@ -260,7 +268,7 @@ cleanup:
   if (spki_data)
     free(spki_data);
   if (pkinfo)
-    SECKEY_DestroySubjectPublicKeyInfo(pkinfo);
+    prioGlobalNSS->SECKEY_DestroySubjectPublicKeyInfo(pkinfo);
 
   if (rv != SECSuccess)
     PublicKey_clear(*pk);
@@ -274,6 +282,8 @@ PrivateKey_import(PrivateKey* sk,
                   const unsigned char* pk_data,
                   unsigned int pk_data_len)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (sk_data_len != CURVE25519_KEY_LEN || !sk_data) {
     return SECFailure;
   }
@@ -288,7 +298,7 @@ PrivateKey_import(PrivateKey* sk,
   *sk = NULL;
   const int zero_priv_len = sizeof(curve25519_priv_zeros);
 
-  P_CHECKA(slot = PK11_GetInternalSlot());
+  P_CHECKA(slot = prioGlobalNSS->PK11_GetInternalSlot());
 
   P_CHECKA(zero_priv_data = calloc(zero_priv_len, sizeof(uint8_t)));
   SECItem zero_priv_item = { siBuffer, zero_priv_data, zero_priv_len };
@@ -300,12 +310,12 @@ PrivateKey_import(PrivateKey* sk,
   // Copy private key into bytes beginning at index `curve25519_priv_pk_offset`.
   memcpy(zero_priv_data + curve25519_priv_pk_offset, pk_data, pk_data_len);
 
-  P_CHECKC(PK11_ImportDERPrivateKeyInfoAndReturnKey(
+  P_CHECKC(prioGlobalNSS->PK11_ImportDERPrivateKeyInfoAndReturnKey(
     slot, &zero_priv_item, NULL, NULL, PR_FALSE, PR_FALSE, KU_ALL, sk, NULL));
 
 cleanup:
   if (slot) {
-    PK11_FreeSlot(slot);
+    prioGlobalNSS->PK11_FreeSlot(slot);
   }
   if (zero_priv_data) {
     free(zero_priv_data);
@@ -380,6 +390,8 @@ PublicKey_export(const_PublicKey pk, unsigned char* data, unsigned int dataLen)
 SECStatus
 PrivateKey_export(PrivateKey sk, unsigned char* data, unsigned int dataLen)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (sk == NULL || dataLen != CURVE25519_KEY_LEN) {
     return SECFailure;
   }
@@ -387,7 +399,8 @@ PrivateKey_export(PrivateKey sk, unsigned char* data, unsigned int dataLen)
   SECStatus rv = SECSuccess;
   SECItem item = { siBuffer, NULL, 0 };
 
-  P_CHECKC(PK11_ReadRawAttribute(PK11_TypePrivKey, sk, CKA_VALUE, &item));
+  P_CHECKC(prioGlobalNSS->PK11_ReadRawAttribute(
+    PK11_TypePrivKey, sk, CKA_VALUE, &item));
 
   // If the leading bytes of the key are '\0', then this string can be
   // shorter than `CURVE25519_KEY_LEN` bytes.
@@ -400,7 +413,7 @@ PrivateKey_export(PrivateKey sk, unsigned char* data, unsigned int dataLen)
 
 cleanup:
   if (item.data != NULL) {
-    SECITEM_ZfreeItem(&item, PR_FALSE);
+    prioGlobalNSS->SECITEM_ZfreeItem(&item, PR_FALSE);
   }
 
   return rv;
@@ -479,6 +492,8 @@ PrivateKey_export_hex(PrivateKey sk, unsigned char* data, unsigned int dataLen)
 SECStatus
 Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (pvtkey == NULL)
     return SECFailure;
   if (pubkey == NULL)
@@ -493,7 +508,7 @@ Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey)
   ecp.data = NULL;
   PK11SlotInfo* slot = NULL;
 
-  P_CHECKA(oid_data = SECOID_FindOIDByTag(CURVE_OID_TAG));
+  P_CHECKA(oid_data = prioGlobalNSS->SECOID_FindOIDByTag(CURVE_OID_TAG));
   const int oid_struct_len = 2 + oid_data->oid.len;
 
   P_CHECKA(ecp.data = malloc(oid_struct_len));
@@ -505,17 +520,18 @@ Keypair_new(PrivateKey* pvtkey, PublicKey* pubkey)
   ecp.data[1] = oid_data->oid.len;
   memcpy(&ecp.data[2], oid_data->oid.data, oid_data->oid.len);
 
-  P_CHECKA(slot = PK11_GetInternalSlot());
-  P_CHECKA(*pvtkey = PK11_GenerateKeyPair(slot,
-                                          CKM_EC_KEY_PAIR_GEN,
-                                          &ecp,
-                                          (SECKEYPublicKey**)pubkey,
-                                          PR_FALSE,
-                                          PR_FALSE,
-                                          NULL));
+  P_CHECKA(slot = prioGlobalNSS->PK11_GetInternalSlot());
+  P_CHECKA(*pvtkey =
+             prioGlobalNSS->PK11_GenerateKeyPair(slot,
+                                                 CKM_EC_KEY_PAIR_GEN,
+                                                 &ecp,
+                                                 (SECKEYPublicKey**)pubkey,
+                                                 PR_FALSE,
+                                                 PR_FALSE,
+                                                 NULL));
 cleanup:
   if (slot) {
-    PK11_FreeSlot(slot);
+    prioGlobalNSS->PK11_FreeSlot(slot);
   }
   if (ecp.data) {
     free(ecp.data);
@@ -530,15 +546,19 @@ cleanup:
 void
 PublicKey_clear(PublicKey pubkey)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (pubkey)
-    SECKEY_DestroyPublicKey(pubkey);
+    prioGlobalNSS->SECKEY_DestroyPublicKey(pubkey);
 }
 
 void
 PrivateKey_clear(PrivateKey pvtkey)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (pvtkey)
-    SECKEY_DestroyPrivateKey(pvtkey);
+    prioGlobalNSS->SECKEY_DestroyPrivateKey(pvtkey);
 }
 
 const SECItem*
@@ -592,6 +612,8 @@ PublicKey_encrypt(PublicKey pubkey,
                   const unsigned char* input,
                   unsigned int inputLen)
 {
+  assert(prioGlobalNSS != NULL);
+
   if (pubkey == NULL)
     return SECFailure;
 
@@ -627,21 +649,21 @@ PublicKey_encrypt(PublicKey pubkey,
   memcpy(output + CURVE25519_KEY_LEN, param.pIv, param.ulIvLen);
 
   const int offset = CURVE25519_KEY_LEN + param.ulIvLen;
-  P_CHECKC(PK11_Encrypt(aes_key,
-                        CKM_AES_GCM,
-                        &paramItem,
-                        output + offset,
-                        outputLen,
-                        maxOutputLen - offset,
-                        input,
-                        inputLen));
+  P_CHECKC(prioGlobalNSS->PK11_Encrypt(aes_key,
+                                       CKM_AES_GCM,
+                                       &paramItem,
+                                       output + offset,
+                                       outputLen,
+                                       maxOutputLen - offset,
+                                       input,
+                                       inputLen));
   *outputLen = *outputLen + CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES;
 
 cleanup:
   PublicKey_clear(eph_pub);
   PrivateKey_clear(eph_priv);
   if (aes_key)
-    PK11_FreeSymKey(aes_key);
+    prioGlobalNSS->PK11_FreeSymKey(aes_key);
 
   return rv;
 }
@@ -654,6 +676,8 @@ PrivateKey_decrypt(PrivateKey privkey,
                    const unsigned char* input,
                    unsigned int inputLen)
 {
+  assert(prioGlobalNSS != NULL);
+
   PK11SymKey* aes_key = NULL;
   PublicKey eph_pub = NULL;
   unsigned char aad_buf[AAD_LEN];
@@ -684,18 +708,18 @@ PrivateKey_decrypt(PrivateKey privkey,
   P_CHECKC(derive_dh_secret(&aes_key, privkey, eph_pub));
 
   const int offset = CURVE25519_KEY_LEN + GCM_IV_LEN_BYTES;
-  P_CHECKC(PK11_Decrypt(aes_key,
-                        CKM_AES_GCM,
-                        &paramItem,
-                        output,
-                        outputLen,
-                        maxOutputLen,
-                        input + offset,
-                        inputLen - offset));
+  P_CHECKC(prioGlobalNSS->PK11_Decrypt(aes_key,
+                                       CKM_AES_GCM,
+                                       &paramItem,
+                                       output,
+                                       outputLen,
+                                       maxOutputLen,
+                                       input + offset,
+                                       inputLen - offset));
 
 cleanup:
   PublicKey_clear(eph_pub);
   if (aes_key)
-    PK11_FreeSymKey(aes_key);
+    prioGlobalNSS->PK11_FreeSymKey(aes_key);
   return rv;
 }

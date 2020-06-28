@@ -15,7 +15,9 @@ extern "C"
 #endif
 
 #include <blapit.h>
+#include <keyhi.h>
 #include <msgpack.h>
+#include <nss.h>
 #include <pk11pub.h>
 #include <seccomon.h>
 #include <stdbool.h>
@@ -76,11 +78,114 @@ extern "C"
   typedef const SECKEYPrivateKey* const_PrivateKey;
 
   /*
+   * Type for NSS interface as used by Prio. We don't use these directly
+   * to make it easy for Prio to be sandboxed (without forcintg NSS to
+   * live in the same sandbox).
+   */
+  struct PrioNSSCtx
+  {
+    // NSS interface used by Prio
+    PRBool (*NSS_IsInitialized)(void);
+    NSSInitContext* (*NSS_InitContext)(const char* configdir,
+                                       const char* certPrefix,
+                                       const char* keyPrefix,
+                                       const char* secmodName,
+                                       NSSInitParameters* initParams,
+                                       PRUint32 flags);
+    SECStatus (*NSS_ShutdownContext)(NSSInitContext*);
+    // pk11pub interface used by Prio
+    void (*PK11_FreeSlot)(PK11SlotInfo* slot);
+    PK11SlotInfo* (*PK11_GetInternalSlot)(void);
+    SECStatus (*PK11_GenerateRandom)(unsigned char* data, int len);
+    void (*PK11_FreeSymKey)(PK11SymKey* key);
+    PK11SymKey* (*PK11_ImportSymKey)(PK11SlotInfo* slot,
+                                     CK_MECHANISM_TYPE type,
+                                     PK11Origin origin,
+                                     CK_ATTRIBUTE_TYPE operation,
+                                     SECItem* key,
+                                     void* wincx);
+    PK11SymKey* (*PK11_PubDeriveWithKDF)(SECKEYPrivateKey* privKey,
+                                         SECKEYPublicKey* pubKey,
+                                         PRBool isSender,
+                                         SECItem* randomA,
+                                         SECItem* randomB,
+                                         CK_MECHANISM_TYPE derive,
+                                         CK_MECHANISM_TYPE target,
+                                         CK_ATTRIBUTE_TYPE operation,
+                                         int keySize,
+                                         CK_ULONG kdf,
+                                         SECItem* sharedData,
+                                         void* wincx);
+    SECKEYPrivateKey* (*PK11_GenerateKeyPair)(PK11SlotInfo* slot,
+                                              CK_MECHANISM_TYPE type,
+                                              void* param,
+                                              SECKEYPublicKey** pubk,
+                                              PRBool isPerm,
+                                              PRBool isSensitive,
+                                              void* wincx);
+    SECStatus (*PK11_Decrypt)(PK11SymKey* symkey,
+                              CK_MECHANISM_TYPE mechanism,
+                              SECItem* param,
+                              unsigned char* out,
+                              unsigned int* outLen,
+                              unsigned int maxLen,
+                              const unsigned char* enc,
+                              unsigned int encLen);
+    SECStatus (*PK11_Encrypt)(PK11SymKey* symKey,
+                              CK_MECHANISM_TYPE mechanism,
+                              SECItem* param,
+                              unsigned char* out,
+                              unsigned int* outLen,
+                              unsigned int maxLen,
+                              const unsigned char* data,
+                              unsigned int dataLen);
+    SECStatus (*PK11_ImportDERPrivateKeyInfoAndReturnKey)(
+      PK11SlotInfo* slot,
+      SECItem* derPKI,
+      SECItem* nickname,
+      SECItem* publicValue,
+      PRBool isPerm,
+      PRBool isPrivate,
+      unsigned int usage,
+      SECKEYPrivateKey** privk,
+      void* wincx);
+    void (*PK11_DestroyContext)(PK11Context* context, PRBool freeit);
+    PK11Context* (*PK11_CreateContextBySymKey)(CK_MECHANISM_TYPE type,
+                                               CK_ATTRIBUTE_TYPE operation,
+                                               PK11SymKey* symKey,
+                                               SECItem* param);
+    SECStatus (*PK11_CipherOp)(PK11Context* context,
+                               unsigned char* out,
+                               int* outlen,
+                               int maxout,
+                               const unsigned char* in,
+                               int inlen);
+    SECStatus (*PK11_ReadRawAttribute)(PK11ObjectType type,
+                                       void* object,
+                                       CK_ATTRIBUTE_TYPE attr,
+                                       SECItem* item);
+    // keyhi interface used by Prio
+    void (*SECKEY_DestroyPrivateKey)(SECKEYPrivateKey* privk);
+    void (*SECKEY_DestroyPublicKey)(SECKEYPublicKey* pubk);
+    SECKEYPublicKey* (*SECKEY_ExtractPublicKey)(
+      const CERTSubjectPublicKeyInfo* spki);
+    void (*SECKEY_DestroySubjectPublicKeyInfo)(CERTSubjectPublicKeyInfo* spki);
+    CERTSubjectPublicKeyInfo* (*SECKEY_DecodeDERSubjectPublicKeyInfo)(
+      const SECItem* spkider);
+    // seccommon interface used by Prio
+    void (*SECITEM_ZfreeItem)(SECItem* zap, PRBool freeit);
+    // secoid interface used by Prio
+    SECOidData* (*SECOID_FindOIDByTag)(SECOidTag tagnum);
+  };
+
+  typedef struct PrioNSSCtx PrioNSSCtx;
+
+  /*
    * Initialize and clear random number generator state.
    * You must call Prio_init() before using the library.
    * To avoid memory leaks, call Prio_clear() afterwards.
    */
-  SECStatus Prio_init();
+  SECStatus Prio_init(PrioNSSCtx* pNSS);
   void Prio_clear();
 
   /*
