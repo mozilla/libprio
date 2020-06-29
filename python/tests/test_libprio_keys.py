@@ -18,8 +18,7 @@ def test_publickey_serialize_binary(keypair):
 
 def test_publickey_serialize_hex(keypair):
     private, public = keypair
-    data = PublicKey_export_hex(public)[:-1]
-    # TODO: extra null byte
+    data = PublicKey_export_hex(public)
     assert PublicKey_import_hex(data)
 
     with pytest.raises(RuntimeError):
@@ -35,8 +34,8 @@ def test_private_serialize_binary(keypair):
 
 def test_private_serialize_hex(keypair):
     private, public = keypair
-    private_data = PrivateKey_export_hex(private)[:-1]
-    public_data = PublicKey_export_hex(public)[:-1]
+    private_data = PrivateKey_export_hex(private)
+    public_data = PublicKey_export_hex(public)
     assert PrivateKey_import_hex(private_data, public_data)
 
 
@@ -48,8 +47,7 @@ def test_publickey_export():
 
 
 def test_publickey_export_hex():
-    # TODO: the output includes the null-byte
-    expect = b"102030405060708090A0B0C0D0E0F00000FFEEDDCCBBAA998877665544332211\0"
+    expect = b"102030405060708090A0B0C0D0E0F00000FFEEDDCCBBAA998877665544332211"
     raw_bytes = bytes(
         # fmt:off
         [

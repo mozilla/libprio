@@ -3007,11 +3007,11 @@ PyObject*
 PublicKey_export_wrapper(const_PublicKey key)
 {
   SECStatus rv = SECFailure;
-  unsigned char data[CURVE25519_KEY_LEN];
+  unsigned char data[CURVE25519_KEY_LEN + 0];
 
-  rv = PublicKey_export(key, data, CURVE25519_KEY_LEN);
+  rv = PublicKey_export(key, data, CURVE25519_KEY_LEN + 0);
   if (rv != SECSuccess) {
-    PyErr_SetString(PyExc_RuntimeError, "Error exporting PublicKey");
+    PyErr_SetString(PyExc_RuntimeError, "Error exporting: PublicKey");
     return NULL;
   }
   return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN);
@@ -3025,21 +3025,21 @@ PublicKey_export_hex_wrapper(const_PublicKey key)
 
   rv = PublicKey_export_hex(key, data, CURVE25519_KEY_LEN_HEX + 1);
   if (rv != SECSuccess) {
-    PyErr_SetString(PyExc_RuntimeError, "Error exporting PublicKey");
+    PyErr_SetString(PyExc_RuntimeError, "Error exporting: PublicKey");
     return NULL;
   }
-  return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN_HEX + 1);
+  return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN_HEX);
 }
 
 PyObject*
 PrivateKey_export_wrapper(PrivateKey key)
 {
   SECStatus rv = SECFailure;
-  unsigned char data[CURVE25519_KEY_LEN];
+  unsigned char data[CURVE25519_KEY_LEN + 0];
 
-  rv = PrivateKey_export(key, data, CURVE25519_KEY_LEN);
+  rv = PrivateKey_export(key, data, CURVE25519_KEY_LEN + 0);
   if (rv != SECSuccess) {
-    PyErr_SetString(PyExc_RuntimeError, "Error exporting PrivateKey");
+    PyErr_SetString(PyExc_RuntimeError, "Error exporting: PrivateKey");
     return NULL;
   }
   return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN);
@@ -3053,10 +3053,10 @@ PrivateKey_export_hex_wrapper(PrivateKey key)
 
   rv = PrivateKey_export_hex(key, data, CURVE25519_KEY_LEN_HEX + 1);
   if (rv != SECSuccess) {
-    PyErr_SetString(PyExc_RuntimeError, "Error exporting PrivateKey");
+    PyErr_SetString(PyExc_RuntimeError, "Error exporting: PrivateKey");
     return NULL;
   }
-  return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN_HEX + 1);
+  return PyBytes_FromStringAndSize((char*)data, CURVE25519_KEY_LEN_HEX);
 }
 
 /// This wrapper exists because config is now a leaky abstraction.

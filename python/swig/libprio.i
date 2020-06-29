@@ -26,9 +26,11 @@
 }
 
 
-// We need to redefine the function so we can fix the buffer size at
-// compile time, using the Python object
-%define EXPORT_KEY(TYPE, ARGTYPE, FUNC, BUFSIZE)
+// We need to define a wrapper so we can fix the buffer size at compile time, so
+// it can be copied into a Python object. The buffer may need to include padding
+// that is not included in the Python bytestring. Padding size is either 0 or 1,
+// depending if space for the null byte should be allocated.
+%define EXPORT_KEY(TYPE, ARGTYPE, FUNC, BUFSIZE, PADDING_SIZE)
 
     // Ignore the mprio.h functions
     %ignore TYPE ## _ ## FUNC;
@@ -40,11 +42,11 @@
     %inline {
         PyObject* TYPE ## _ ## FUNC ## _wrapper(ARGTYPE key) {
             SECStatus rv = SECFailure;
-            unsigned char data[BUFSIZE];
+            unsigned char data[BUFSIZE+PADDING_SIZE];
 
-            rv = TYPE ## _ ## FUNC(key, data, BUFSIZE);
+            rv = TYPE ## _ ## FUNC(key, data, BUFSIZE+PADDING_SIZE);
             if (rv != SECSuccess) {
-                PyErr_SetString(PyExc_RuntimeError, "Error exporting TYPE");
+                PyErr_SetString(PyExc_RuntimeError, "Error exporting: TYPE");
                 return NULL;
             }
             return PyBytes_FromStringAndSize((char *)data, BUFSIZE);
@@ -253,10 +255,10 @@ OPAQUE_POINTER(PrioTotalShare)
 OPAQUE_POINTER(PublicKey)
 OPAQUE_POINTER(PrivateKey)
 
-EXPORT_KEY(PublicKey, const_PublicKey, export, CURVE25519_KEY_LEN)
-EXPORT_KEY(PublicKey, const_PublicKey, export_hex, CURVE25519_KEY_LEN_HEX+1)
-EXPORT_KEY(PrivateKey, PrivateKey, export, CURVE25519_KEY_LEN)
-EXPORT_KEY(PrivateKey, PrivateKey, export_hex, CURVE25519_KEY_LEN_HEX+1)
+EXPORT_KEY(PublicKey, const_PublicKey, export, CURVE25519_KEY_LEN, 0)
+EXPORT_KEY(PublicKey, const_PublicKey, export_hex, CURVE25519_KEY_LEN_HEX, 1)
+EXPORT_KEY(PrivateKey, PrivateKey, export, CURVE25519_KEY_LEN, 0)
+EXPORT_KEY(PrivateKey, PrivateKey, export_hex, CURVE25519_KEY_LEN_HEX, 1)
 
 PRG_SEED()
 EXPORT_PYTHON_DATA()
