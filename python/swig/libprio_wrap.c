@@ -6446,9 +6446,6 @@ void
 
   SWIG_InstallConstants(d, swig_const_table);
 
-  Prio_init();
-  atexit(Prio_clear);
-
   SWIG_Python_SetConstant(
     d, "BBIT_PREC_MAX", SWIG_From_int((int)(BBIT_PREC_MAX)));
   SWIG_Python_SetConstant(d, "CURVE25519_KEY_LEN", SWIG_From_int((int)(32)));

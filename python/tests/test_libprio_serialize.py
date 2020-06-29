@@ -1,4 +1,5 @@
 import pytest
+from prio import PrioContext
 from prio.libprio import *
 from array import array
 
@@ -75,18 +76,21 @@ def _exchange_with_serialization():
     yield "totalshare"
 
 
+@PrioContext()
 def test_prio_packet_verify1_serialize():
     # set/write/read data for verify1, and set data for verify2
     exchange = _exchange_with_serialization()
     assert "verify1" == next(exchange)
 
 
+@PrioContext()
 def test_prio_packet_verify2_serialize():
     exchange = _exchange_with_serialization()
     assert "verify1" == next(exchange)
     assert "verify2" == next(exchange)
 
 
+@PrioContext()
 def test_prio_packet_totalshare_serialize():
     exchange = _exchange_with_serialization()
     assert "verify1" == next(exchange)

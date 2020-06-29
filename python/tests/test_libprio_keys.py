@@ -1,14 +1,11 @@
 import pytest
+from prio import PrioContext
 from prio.libprio import *
 
 
-@pytest.fixture()
-def keypair():
-    return Keypair_new()
-
-
-def test_publickey_serialize_binary(keypair):
-    private, public = keypair
+@PrioContext()
+def test_publickey_serialize_binary():
+    private, public = Keypair_new()
     data = PublicKey_export(public)
     assert PublicKey_import(data)
 
@@ -16,8 +13,9 @@ def test_publickey_serialize_binary(keypair):
         PublicKey_export(private)
 
 
-def test_publickey_serialize_hex(keypair):
-    private, public = keypair
+@PrioContext()
+def test_publickey_serialize_hex():
+    private, public = Keypair_new()
     data = PublicKey_export_hex(public)
     assert PublicKey_import_hex(data)
 
@@ -25,20 +23,23 @@ def test_publickey_serialize_hex(keypair):
         PublicKey_export_hex(private)
 
 
-def test_private_serialize_binary(keypair):
-    private, public = keypair
+@PrioContext()
+def test_private_serialize_binary():
+    private, public = Keypair_new()
     private_data = PrivateKey_export(private)
     public_data = PublicKey_export(public)
     assert PrivateKey_import(private_data, public_data)
 
 
-def test_private_serialize_hex(keypair):
-    private, public = keypair
+@PrioContext()
+def test_private_serialize_hex():
+    private, public = Keypair_new()
     private_data = PrivateKey_export_hex(private)
     public_data = PublicKey_export_hex(public)
     assert PrivateKey_import_hex(private_data, public_data)
 
 
+@PrioContext()
 def test_publickey_export():
     raw_bytes = bytes((3 * x + 7) % 0xFF for x in range(CURVE25519_KEY_LEN))
     pubkey = PublicKey_import(raw_bytes)
@@ -46,6 +47,7 @@ def test_publickey_export():
     assert raw_bytes == raw_bytes2
 
 
+@PrioContext()
 def test_publickey_export_hex():
     expect = b"102030405060708090A0B0C0D0E0F00000FFEEDDCCBBAA998877665544332211"
     raw_bytes = bytes(
@@ -62,6 +64,7 @@ def test_publickey_export_hex():
     assert bytes(hex_bytes) == expect
 
 
+@PrioContext()
 @pytest.mark.parametrize(
     "hex_bytes",
     [
@@ -85,6 +88,7 @@ def test_publickey_import_hex(hex_bytes):
     assert raw_bytes == expect
 
 
+@PrioContext()
 def test_publickey_import_hex_bad_length_raises_exception():
     hex_bytes = b"102030405060708090A"
     with pytest.raises(RuntimeError):

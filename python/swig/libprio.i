@@ -11,10 +11,6 @@
 %include "pointer.i"
 %include "msgpack.i"
 
-%init %{
-    Prio_init();
-    atexit(Prio_clear);
-%}
 
 // Handle SECStatus.
 %typemap(out) SECStatus {

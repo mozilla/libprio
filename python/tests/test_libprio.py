@@ -4,9 +4,11 @@
 
 import pytest
 from prio.libprio import *
+from prio import PrioContext
 import array
 
 
+@PrioContext()
 def test_config_new_test():
     max_fields = PrioConfig_maxDataFields()
 
@@ -25,6 +27,7 @@ def test_config_new_test():
     assert PrioConfig_numDataFields(new_config(42)) == 42
 
 
+@PrioContext()
 def test_config():
     _, pkA = Keypair_new()
     _, pkB = Keypair_new()
@@ -49,6 +52,7 @@ def test_config():
     assert PrioConfig_numDataFields(new_config(42)) == 42
 
 
+@PrioContext()
 def test_config_uint():
     _, pkA = Keypair_new()
     _, pkB = Keypair_new()
@@ -73,6 +77,7 @@ def test_config_uint():
     assert raises_error(max_entries, -1)
 
 
+@PrioContext()
 @pytest.mark.parametrize("n_clients", [1, 2, 10])
 def test_client_aggregation(n_clients):
     """Run a test of the binary circuit to ensure the main path works as expected
@@ -111,6 +116,7 @@ def test_client_aggregation(n_clients):
     assert list(output) == expected
 
 
+@PrioContext()
 @pytest.mark.parametrize(
     "n_clients,precision,num_uint_entries", [(1, 8, 5), (2, 32, 10)]
 )
