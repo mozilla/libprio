@@ -7,6 +7,24 @@ from prio.libprio import *
 import array
 
 
+def test_config_new_test():
+    max_fields = PrioConfig_maxDataFields()
+
+    def new_config(fields):
+        return PrioConfig_newTest(fields)
+
+    def raises_error(fields):
+        with pytest.raises(ValueError, match=".*null pointer.*"):
+            new_config(fields)
+        return True
+
+    assert new_config(0)
+    assert new_config(-1)
+    assert new_config(max_fields)
+    assert raises_error(max_fields + 1)
+    assert PrioConfig_numDataFields(new_config(42)) == 42
+
+
 def test_config():
     _, pkA = Keypair_new()
     _, pkB = Keypair_new()
@@ -21,12 +39,14 @@ def test_config():
         # ValueError: PyCapsule_New called with null pointer
         with pytest.raises(ValueError, match=".*null pointer.*"):
             new_config(fields)
+        return True
 
-    assert new_config(max_fields)
     assert new_config(0)
     assert new_config(-1)
-    raises_error(max_fields + 1)
+    assert new_config(max_fields)
+    assert raises_error(max_fields + 1)
     assert new_config(max_fields, ("?" * int(1e6)).encode())
+    assert PrioConfig_numDataFields(new_config(42)) == 42
 
 
 def test_config_uint():
@@ -42,14 +62,15 @@ def test_config_uint():
     def raises_error(entries, precision):
         with pytest.raises(ValueError, match=".*null pointer.*"):
             new_config(entries, precision)
+        return True
 
-    assert new_config(max_entries, max_precision)
     assert new_config(0, max_precision)
     assert new_config(-1, max_precision)
-    raises_error(max_entries + 1, max_precision)
-    raises_error(max_entries, max_precision + 1)
-    raises_error(max_entries, 0)
-    raises_error(max_entries, -1)
+    assert new_config(max_entries, max_precision)
+    assert raises_error(max_entries + 1, max_precision)
+    assert raises_error(max_entries, max_precision + 1)
+    assert raises_error(max_entries, 0)
+    assert raises_error(max_entries, -1)
 
 
 @pytest.mark.parametrize("n_clients", [1, 2, 10])
