@@ -31,4 +31,3 @@ clean:
 	rm -rf build
 	rm -rf libprio
 	rm -rf dist
-	rm MANIFEST
