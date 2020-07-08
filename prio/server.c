@@ -83,6 +83,14 @@ PrioServer_aggregate(PrioServer s, PrioVerifier v)
   return MPArray_addmod(s->data_shares, arr, &s->cfg->modulus);
 }
 
+SECStatus
+PrioServer_merge(PrioServer s, const_PrioServer s_i)
+{
+  // TODO: check that the configuration files are exactly the same
+  return MPArray_addmod(s->data_shares, s_i->data_shares, &s->cfg->modulus);
+}
+
+
 PrioTotalShare
 PrioTotalShare_new(void)
 {
