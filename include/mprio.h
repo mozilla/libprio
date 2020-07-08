@@ -274,6 +274,11 @@ extern "C"
                             const PrioPRGSeed serverSharedSecret);
   void PrioServer_clear(PrioServer s);
 
+  SECStatus PrioServer_write(const_PrioServer s, msgpack_packer *pk);
+  SECStatus PrioServer_read(PrioServer s,
+                            msgpack_unpacker *upk,
+                            const_PrioConfig cfg);
+
   /*
    * After receiving a client packet, each of the servers generate
    * a PrioVerifier object that they use to check whether the client's
@@ -345,6 +350,13 @@ extern "C"
    * above before aggregating any client data.
    */
   SECStatus PrioServer_aggregate(PrioServer s, PrioVerifier v);
+
+  /*
+   * Server state can be aggregated across multiple servers. This may be useful
+   * when aggregation for a batch is fanned out across multiple servers with the
+   * same configuration.
+   */
+  SECStatus PrioServer_merge(PrioServer s, const_PrioServer s_i);
 
   /*
    * After the servers have aggregated data packets from "enough" clients
