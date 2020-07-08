@@ -3236,6 +3236,27 @@ SWIG_AsVal_int(PyObject* obj, int* val)
 }
 
 PyObject*
+PrioServer_write_wrapper(const_PrioServer p)
+{
+  PyObject* data = NULL;
+  msgpack_sbuffer sbuf;
+  msgpack_packer pk;
+  msgpack_sbuffer_init(&sbuf);
+  msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
+
+  SECStatus rv = PrioServer_write(p, &pk);
+  if (rv == SECSuccess) {
+    // move the data outside of this wrapper
+    data = PyBytes_FromStringAndSize(sbuf.data, sbuf.size);
+  }
+
+  // free msgpacker buffer
+  msgpack_sbuffer_destroy(&sbuf);
+
+  return data;
+}
+
+PyObject*
 PrioPacketVerify1_write_wrapper(const_PrioPacketVerify1 p)
 {
   PyObject* data = NULL;
@@ -3299,10 +3320,10 @@ PrioTotalShare_write_wrapper(const_PrioTotalShare p)
 }
 
 SECStatus
-PrioPacketVerify1_read_wrapper(PrioPacketVerify1 p,
-                               const unsigned char* data,
-                               unsigned int len,
-                               const_PrioConfig cfg)
+PrioServer_read_wrapper(PrioServer p,
+                        const unsigned char* data,
+                        unsigned int len,
+                        const_PrioConfig cfg)
 {
   SECStatus rv = SECFailure;
   msgpack_unpacker upk;
@@ -3317,7 +3338,7 @@ PrioPacketVerify1_read_wrapper(PrioPacketVerify1 p,
     if (result) {
       memcpy(msgpack_unpacker_buffer(&upk), data, len);
       msgpack_unpacker_buffer_consumed(&upk, len);
-      rv = PrioPacketVerify1_read(p, &upk, cfg);
+      rv = PrioServer_read(p, &upk, cfg);
     }
   }
   msgpack_unpacker_destroy(&upk);
@@ -3389,6 +3410,32 @@ SWIG_AsVal_unsigned_SS_int(PyObject* obj, unsigned int* val)
     }
   }
   return res;
+}
+
+SECStatus
+PrioPacketVerify1_read_wrapper(PrioPacketVerify1 p,
+                               const unsigned char* data,
+                               unsigned int len,
+                               const_PrioConfig cfg)
+{
+  SECStatus rv = SECFailure;
+  msgpack_unpacker upk;
+  // Initialize the unpacker with a reasonably sized initial buffer.
+  // The unpacker will eat into the initially reserved space for
+  // counting and may need to be reallocated.
+  bool result = msgpack_unpacker_init(&upk, MSGPACK_INIT_BUFFER_SIZE);
+  if (result) {
+    if (msgpack_unpacker_buffer_capacity(&upk) < len) {
+      result = msgpack_unpacker_reserve_buffer(&upk, len);
+    }
+    if (result) {
+      memcpy(msgpack_unpacker_buffer(&upk), data, len);
+      msgpack_unpacker_buffer_consumed(&upk, len);
+      rv = PrioPacketVerify1_read(p, &upk, cfg);
+    }
+  }
+  msgpack_unpacker_destroy(&upk);
+  return rv;
 }
 
 SECStatus
@@ -3605,6 +3652,28 @@ extern "C"
     return NULL;
   }
 
+  SWIGINTERN PyObject* _wrap_PrioServer_write(PyObject* SWIGUNUSEDPARM(self),
+                                              PyObject* args)
+  {
+    PyObject* resultobj = 0;
+    const_PrioServer arg1 = (const_PrioServer)0;
+    PyObject* swig_obj[1];
+    PyObject* result = 0;
+
+    if (!args)
+      SWIG_fail;
+    swig_obj[0] = args;
+    {
+      arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioServer");
+    }
+    result =
+      (PyObject*)PrioServer_write_wrapper((struct prio_server const*)arg1);
+    resultobj = result;
+    return resultobj;
+  fail:
+    return NULL;
+  }
+
   SWIGINTERN PyObject* _wrap_PrioPacketVerify1_write(
     PyObject* SWIGUNUSEDPARM(self),
     PyObject* args)
@@ -3669,6 +3738,48 @@ extern "C"
     result = (PyObject*)PrioTotalShare_write_wrapper(
       (struct prio_total_share const*)arg1);
     resultobj = result;
+    return resultobj;
+  fail:
+    return NULL;
+  }
+
+  SWIGINTERN PyObject* _wrap_PrioServer_read(PyObject* SWIGUNUSEDPARM(self),
+                                             PyObject* args)
+  {
+    PyObject* resultobj = 0;
+    PrioServer arg1 = (PrioServer)0;
+    unsigned char* arg2 = (unsigned char*)0;
+    unsigned int arg3;
+    const_PrioConfig arg4 = (const_PrioConfig)0;
+    PyObject* swig_obj[3];
+    SECStatus result;
+
+    if (!SWIG_Python_UnpackTuple(args, "PrioServer_read", 3, 3, swig_obj))
+      SWIG_fail;
+    {
+      arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioServer");
+    }
+    {
+      if (!PyBytes_Check(swig_obj[1])) {
+        PyErr_SetString(PyExc_ValueError, "Expecting a byte string");
+        SWIG_fail;
+      }
+      arg2 = (unsigned char*)PyBytes_AsString(swig_obj[1]);
+      arg3 = (unsigned int)PyBytes_Size(swig_obj[1]);
+    }
+    {
+      arg4 = PyCapsule_GetPointer(swig_obj[2], "PrioConfig");
+    }
+    result = PrioServer_read_wrapper(
+      arg1, (unsigned char const*)arg2, arg3, (struct prio_config const*)arg4);
+    {
+      if (result != SECSuccess) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "PrioServer_read was not successful.");
+        SWIG_fail;
+      }
+      resultobj = Py_BuildValue("");
+    }
     return resultobj;
   fail:
     return NULL;
@@ -4836,6 +4947,37 @@ extern "C"
     return NULL;
   }
 
+  SWIGINTERN PyObject* _wrap_PrioServer_merge(PyObject* SWIGUNUSEDPARM(self),
+                                              PyObject* args)
+  {
+    PyObject* resultobj = 0;
+    PrioServer arg1 = (PrioServer)0;
+    const_PrioServer arg2 = (const_PrioServer)0;
+    PyObject* swig_obj[2];
+    SECStatus result;
+
+    if (!SWIG_Python_UnpackTuple(args, "PrioServer_merge", 2, 2, swig_obj))
+      SWIG_fail;
+    {
+      arg1 = PyCapsule_GetPointer(swig_obj[0], "PrioServer");
+    }
+    {
+      arg2 = PyCapsule_GetPointer(swig_obj[1], "PrioServer");
+    }
+    result = PrioServer_merge(arg1, (struct prio_server const*)arg2);
+    {
+      if (result != SECSuccess) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "PrioServer_merge was not successful.");
+        SWIG_fail;
+      }
+      resultobj = Py_BuildValue("");
+    }
+    return resultobj;
+  fail:
+    return NULL;
+  }
+
   SWIGINTERN PyObject* _wrap_PrioTotalShare_new(PyObject* SWIGUNUSEDPARM(self),
                                                 PyObject* args)
   {
@@ -5049,6 +5191,17 @@ extern "C"
       "tB: const_PrioTotalShare\n"
       "\n"
       "" },
+    { "PrioServer_write",
+      _wrap_PrioServer_write,
+      METH_O,
+      "\n"
+      "PrioServer_write(const_PrioServer p) -> PyObject *\n"
+      "\n"
+      "Parameters\n"
+      "----------\n"
+      "p: const_PrioServer\n"
+      "\n"
+      "" },
     { "PrioPacketVerify1_write",
       _wrap_PrioPacketVerify1_write,
       METH_O,
@@ -5080,6 +5233,20 @@ extern "C"
       "Parameters\n"
       "----------\n"
       "p: const_PrioTotalShare\n"
+      "\n"
+      "" },
+    { "PrioServer_read",
+      _wrap_PrioServer_read,
+      METH_VARARGS,
+      "\n"
+      "PrioServer_read(PrioServer p, unsigned char const * data, "
+      "const_PrioConfig cfg) -> SECStatus\n"
+      "\n"
+      "Parameters\n"
+      "----------\n"
+      "p: PrioServer\n"
+      "data: unsigned char const *\n"
+      "cfg: const_PrioConfig\n"
       "\n"
       "" },
     { "PrioPacketVerify1_read",
@@ -5390,6 +5557,18 @@ extern "C"
       "v: PrioVerifier\n"
       "\n"
       "" },
+    { "PrioServer_merge",
+      _wrap_PrioServer_merge,
+      METH_VARARGS,
+      "\n"
+      "PrioServer_merge(PrioServer s, const_PrioServer s_i) -> SECStatus\n"
+      "\n"
+      "Parameters\n"
+      "----------\n"
+      "s: PrioServer\n"
+      "s_i: const_PrioServer\n"
+      "\n"
+      "" },
     { "PrioTotalShare_new",
       _wrap_PrioTotalShare_new,
       METH_NOARGS,
@@ -5508,7 +5687,7 @@ extern "C"
   };
   static swig_type_info _swigt__p_prio_server = {
     "_p_prio_server",
-    "PrioServer|const_PrioServer|struct prio_server *",
+    "const_PrioServer|PrioServer|struct prio_server *",
     0,
     0,
     (void*)0,
