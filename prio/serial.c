@@ -410,6 +410,35 @@ cleanup:
 }
 
 SECStatus
+PrioServer_write(const_PrioServer s, msgpack_packer* pk)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(pk != NULL);
+  P_CHECKCB(s != NULL);
+
+  P_CHECKC(serial_write_mp_array(pk, s->data_shares));
+
+cleanup:
+  return rv;
+}
+
+SECStatus
+PrioServer_read(PrioServer s,
+                msgpack_unpacker* upk,
+                const_PrioConfig cfg)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(upk != NULL);
+  P_CHECKCB(s != NULL);
+
+  P_CHECKC(serial_read_mp_array(
+    upk, s->data_shares, cfg->num_data_fields, &cfg->modulus));
+
+cleanup:
+  return rv;
+}
+
+SECStatus
 PrioPacketVerify2_write(const_PrioPacketVerify2 p, msgpack_packer* pk)
 {
   SECStatus rv = SECSuccess;
