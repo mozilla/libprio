@@ -59,6 +59,14 @@ def _exchange_with_serialization():
     PrioServer_aggregate(sA, vA)
     PrioServer_aggregate(sB, vB)
 
+    sA_data = PrioServer_write(sA)
+    sB_data = PrioServer_write(sB)
+    sA = PrioServer_new(cfg, PRIO_SERVER_A, skA, server_secret)
+    sB = PrioServer_new(cfg, PRIO_SERVER_B, skB, server_secret)
+    PrioServer_read(sA, sA_data, cfg)
+    PrioServer_read(sB, sB_data, cfg)
+    yield "aggregate"
+
     # Collect from many clients and share data
     PrioTotalShare_set_data(tA, sA)
     PrioTotalShare_set_data(tB, sB)
@@ -91,8 +99,17 @@ def test_prio_packet_verify2_serialize():
 
 
 @PrioContext()
+def test_prio_aggregate_state_serialize():
+    exchange = _exchange_with_serialization()
+    assert "verify1" == next(exchange)
+    assert "verify2" == next(exchange)
+    assert "aggregate" == next(exchange)
+
+
+@PrioContext()
 def test_prio_packet_totalshare_serialize():
     exchange = _exchange_with_serialization()
     assert "verify1" == next(exchange)
     assert "verify2" == next(exchange)
+    assert "aggregate" == next(exchange)
     assert "totalshare" == next(exchange)
