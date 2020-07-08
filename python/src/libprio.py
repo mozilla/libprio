@@ -138,6 +138,18 @@ def PrioTotalShare_final_uint(cfg, prec, tA, tB):
     return _libprio.PrioTotalShare_final_uint(cfg, prec, tA, tB)
 
 
+def PrioServer_write(p):
+    r"""
+    PrioServer_write(const_PrioServer p) -> PyObject *
+
+    Parameters
+    ----------
+    p: const_PrioServer
+
+    """
+    return _libprio.PrioServer_write(p)
+
+
 def PrioPacketVerify1_write(p):
     r"""
     PrioPacketVerify1_write(const_PrioPacketVerify1 p) -> PyObject *
@@ -172,6 +184,20 @@ def PrioTotalShare_write(p):
 
     """
     return _libprio.PrioTotalShare_write(p)
+
+
+def PrioServer_read(p, data, cfg):
+    r"""
+    PrioServer_read(PrioServer p, unsigned char const * data, const_PrioConfig cfg) -> SECStatus
+
+    Parameters
+    ----------
+    p: PrioServer
+    data: unsigned char const *
+    cfg: const_PrioConfig
+
+    """
+    return _libprio.PrioServer_read(p, data, cfg)
 
 
 def PrioPacketVerify1_read(p, data, cfg):
@@ -510,6 +536,19 @@ def PrioServer_aggregate(s, v):
 
     """
     return _libprio.PrioServer_aggregate(s, v)
+
+
+def PrioServer_merge(s, s_i):
+    r"""
+    PrioServer_merge(PrioServer s, const_PrioServer s_i) -> SECStatus
+
+    Parameters
+    ----------
+    s: PrioServer
+    s_i: const_PrioServer
+
+    """
+    return _libprio.PrioServer_merge(s, s_i)
 
 
 def PrioTotalShare_new():

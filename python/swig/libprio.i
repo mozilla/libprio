@@ -263,9 +263,11 @@ VERIFIER_SET_DATA()
 TOTAL_SHARE_FINAL()
 
 // depends on typemap defined in EXPORT_PYTHON_DATA
+MSGPACK_WRITE(PrioServer)
 MSGPACK_WRITE(PrioPacketVerify1)
 MSGPACK_WRITE(PrioPacketVerify2)
 MSGPACK_WRITE(PrioTotalShare)
+MSGPACK_READ(PrioServer)
 MSGPACK_READ(PrioPacketVerify1)
 MSGPACK_READ(PrioPacketVerify2)
 MSGPACK_READ(PrioTotalShare)
