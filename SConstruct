@@ -37,19 +37,27 @@ if env["SANITIZE"]:
     env.Append(CCFLAGS=sanitizers, LINKFLAGS=sanitizers)
 
 if env["FUZZING"]:
-    fuzzing = [
-        "-fsanitize=fuzzer-no-link",
-    ]
+    fuzzing = ["-fsanitize=fuzzer-no-link"]
     if not env["DEBUG"]:
         fuzzing += ["-gline-tables-only"]
     env.Append(CCFLAGS=fuzzing, LINKFLAGS=fuzzing)
 
 if sys.platform == "darwin":
-    env.Append(LINKFLAGS=["-L/usr/local/opt/nss/lib"])
+    env.Append(
+        LINKFLAGS=[
+            "-L/usr/local/opt/nss/lib",
+            "-L/usr/local/opt/nspr/lib",
+            "-L/usr/local/opt/msgpack/lib",
+        ],
+        # NOTE: this may be necessary on other platforms
+        CFLAGS=["-I/usr/local/opt/msgpack/include"],
+    )
     include_pattern = "-I/usr/local/opt/{0}/include/{0}"
-elif sys.platform.startswith("dragonfly") or \
-     sys.platform.startswith("freebsd") or \
-     sys.platform.startswith("openbsd"):
+elif (
+    sys.platform.startswith("dragonfly")
+    or sys.platform.startswith("freebsd")
+    or sys.platform.startswith("openbsd")
+):
     env.Append(LINKFLAGS=["-L/usr/local/lib"])
     env.Append(CFLAGS=["-isystem/usr/local/include"])
     include_pattern = "-isystem/usr/local/include/{0}"

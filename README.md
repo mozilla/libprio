@@ -106,6 +106,12 @@ To clean up the object and binary files, run:
 
     $ scons -c
 
+The library can be built and tested with docker.
+
+    $ docker-compose build
+    $ docker-compose run libprio
+
+
 The files in this directory are:
 ````
 /build      - Binaries, object files, etc.

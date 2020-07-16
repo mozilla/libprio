@@ -14,8 +14,8 @@ before_install:
       sudo pkg install -y scons msgpack nss;
     elif [[ "$TRAVIS_OS_NAME" = "osx" ]]; then
       brew update;
-      brew upgrade nspr nss;
-      brew install scons msgpack;
+      brew upgrade nspr nss msgpack;
+      brew install scons;
     fi
 
 addons:
