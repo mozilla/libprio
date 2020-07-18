@@ -11,7 +11,8 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       ./scripts/clang-format.sh;
     elif [[ "$TRAVIS_OS_NAME" = "freebsd" ]]; then
-      sudo pkg install -y scons msgpack nss;
+      sudo pkg install -y msgpack nss;
+      sudo pkg install -yx \^scons-py3;
     elif [[ "$TRAVIS_OS_NAME" = "osx" ]]; then
       brew update;
       brew upgrade nspr nss msgpack;
