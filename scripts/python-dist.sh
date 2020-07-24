@@ -36,7 +36,7 @@ function ensure_pyenv() {
 }
 
 function build_dist() {
-    pip install pytest scons
+    pip install --upgrade setuptools scons pytest
     make install
     python -m pytest tests -v
     make dist
@@ -59,11 +59,11 @@ function manylinux_main {
     done
     mkdir wheelhouse
     for wheel in dist/*.whl; do
-        # Retag the binary wheel as manylinux2014 for acceptance into pypi,
+        # Retag the binary wheel as manylinux1 for acceptance into pypi,
         # however this is not actually manylinux compatible. Note that
         # `auditwheel repair` will cause Prio_init due to NSS incompatibilities.
         # auditwheel repair "$wheel"
-        cp "$wheel" wheelhouse/"$(basename "${wheel/-linux_/-manylinux2014_}")"
+        cp "$wheel" wheelhouse/"$(basename "${wheel/-linux_/-manylinux1_}")"
     done;
 }
 

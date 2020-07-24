@@ -43,7 +43,7 @@ extension_mod = Extension(
 
 setup(
     name="prio",
-    version="1.0.2",
+    version="1.0.3",
     description="An interface to libprio",
     long_description=readme(),
     long_description_content_type="text/markdown",
