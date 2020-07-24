@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build binary wheels of prio and upload them to pypi.
 #
-# INSTALL_PYTHON_ENV: install the corresponding python versions via pyenv
+# INSTALL_PYENV_VERSION: install the corresponding python versions via pyenv
 # SKIP_UPLOAD: if set, do not run twine for uploading packages
 # SKIP_WHEEL: if set, do not upload wheels to pypi due to manylinux non-conformance
 #
@@ -14,60 +14,88 @@
 set -e
 
 export TWINE_NON_INTERACTIVE=${TWINE_NON_INTERACTIVE:-true}
-INSTALL_PYTHON_ENV=${INSTALL_PYTHON_ENV:-false}
 SKIP_UPLOAD=${SKIP_UPLOAD:-false}
-VERSIONS="
+INSTALL_PYENV_VERSION=${INSTALL_PYENV_VERSION:-false}
+PYENV_VERSIONS="
     3.6.0
     3.7.0
     3.8.0
 "
 
-function ensure_environment {
+function ensure_pyenv() {
     # check pyenv exists and enable the shell
-    pyenv --version
-    eval "$(pyenv init -)"
-
-    if [[ $INSTALL_PYTHON_ENV != "false" ]]; then
-        for version in $VERSIONS; do
-            pyenv install $version --skip-existing
-        done
+    local version=$1
+    if [[ $INSTALL_PYENV_VERSION != "false" ]]; then
+        pyenv install "$version" --skip-existing
     fi
-    local error=0
-    for version in $VERSIONS; do
-        if ! pyenv shell "$version"; then
-            error=$((error + 1))
-        fi
-    done
-    pyenv shell system
-    if ((error > 0)); then
+    if ! pyenv shell "$version"; then
         echo "missing installation of python versions"
+        exit
     fi
+    pyenv shell system
 }
 
-function build_dist {
-    local version=$1
-    pyenv shell "$version"
+function build_dist() {
     pip install pytest scons
     make install
     python -m pytest tests -v
     make dist
 }
 
-cd "$(dirname "$0")/../python"
+function manylinux_main {
+    # assume that python3 and pip3 are already set up
+    python3 --version
+    pip3 --version
+    for version in /opt/python/*; do
+        # only >= 3.6 is supported due to f-strings
+        if [[ $version == *35* ]]; then
+            continue
+        fi
+        tmp_venv=$(mktemp -d)
+        "$version/bin/python3" -m venv "$tmp_venv"
+        source "$tmp_venv/bin/activate"
+        build_dist
+        deactivate
+    done
+    mkdir wheelhouse
+    for wheel in dist/*.whl; do
+        # Retag the binary wheel as manylinux2014 for acceptance into pypi,
+        # however this is not actually manylinux compatible. Note that
+        # `auditwheel repair` will cause Prio_init due to NSS incompatibilities.
+        # auditwheel repair "$wheel"
+        cp "$wheel" wheelhouse/"$(basename "${wheel/-linux_/-manylinux2014_}")"
+    done;
+}
 
-ensure_environment
+function macos_main {
+    pyenv --version
+    eval "$(pyenv init -)"
+    for version in $PYENV_VERSIONS; do
+        ensure_pyenv $version
+    done
+    for version in $PYENV_VERSIONS; do
+        pyenv shell "$version"
+        build_dist "$version"
+    done
+    mkdir wheelhouse
+    cp dist/*.whl wheelhouse/
+    pyenv shell system
+}
+
+cd "$(dirname "$0")/../python"
 make clean
 
-for version in $VERSIONS; do
-    build_dist "$version"
-done
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # assumes manylinux2014 docker image
+    manylinux_main;
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    macos_main;
+else
+    echo "unsupported environment"
+fi
 ls dist
 
 if [[ $SKIP_UPLOAD == "false" ]]; then
-    pyenv shell "3.8.0"
     pip install twine
-    # NOTE:the wheel is not manylinux compatible.
-    # > Binary wheel 'prio-1.0-cp36-cp36m-linux_x86_64.whl' has an unsupported platform tag 'linux_x86_64'.
-    # TODO: lie about being manylinux1 compliant, and note this in the README
-    twine upload --skip-existing "dist/*"
+    twine upload --skip-existing "wheelhouse/*"
 fi

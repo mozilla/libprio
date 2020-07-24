@@ -1,36 +1,24 @@
-FROM centos:8
+FROM quay.io/pypa/manylinux2014_x86_64
 
 ENV LANG en_US.utf8
 
-RUN dnf install -y epel-release \
-    && dnf install -y \
+RUN yum install -y \
         which \
         make \
         gcc \
         clang \
         swig \
-        python36-devel \
-        python36 \
         nss-devel \
         msgpack-devel \
-    && dnf clean all
+    && yum clean all
 
 # set a default python binary and install scons
-RUN alternatives --set python /usr/bin/python3
-RUN python -m pip install --upgrade pip && pip3 install scons pytest
+ENV PATH=$PATH:/opt/python/cp38-cp38/bin
+RUN pip3 install scons pytest
 
 # symbolically link to name without version suffix for libprio
 RUN ln -s /usr/include/nspr4 /usr/include/nspr \
     && ln -s /usr/include/nss3 /usr/include/nss
-
-RUN dnf install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-    sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
-
-RUN curl https://pyenv.run | bash
-ENV PATH "/root/.pyenv/bin:$PATH"
-RUN pyenv install 3.6.0
-RUN pyenv install 3.7.0
-RUN pyenv install 3.8.0
 
 WORKDIR /app
 ADD . /app

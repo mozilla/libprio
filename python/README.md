@@ -28,9 +28,7 @@ and Linux. From the project root, run the following command to distribute the
 wheels for macOS.
 
 ```bash
-# optional: for testing
-export TWINE_REPOSITORY=testpypi
-
+export TWINE_REPOSITORY=testpypi  # optional: for testing
 export TWINE_USERNAME=__token__
 export TWINE_PASSWORD=<API_KEY>
 ./scripts/python-dist.sh
@@ -46,12 +44,12 @@ docker-compose run -e TWINE_USERNAME -e TWINE_PASSWORD libprio-dist
 ```
 
 The binary distributions can be tested from a variety of docker images, which
-are the primary target for use. Here is an example on an Ubuntu 20.04 image.
+are the primary target for use.
 
 ```bash
-docker run -it ubuntu:20.04 bash
-apt update && apt install python3 python3-pip libmsgpackc2 libnspr4 libnss3
-pip3 install -i https://test.pypi.org/simple/ prio
+docker run -it python:3 bash
+apt update && apt install libmsgpackc2 libnspr4 libnss3
+pip install prio
 python3 -c "from prio.libprio import *; Prio_init(); print(PrioPRGSeed_randomize())"
 ```
 
