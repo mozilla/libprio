@@ -27,6 +27,13 @@ addons:
     - libnss3-dev
     - clang-format-9
 
-script:
-  - scons DEBUG=1 SANITIZE=1
-  - ./build/ptest/ptest -vvv
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - scons DEBUG=1 SANITIZE=1
+        - ./build/ptest/ptest -vvv
+
+stages:
+  - test
