@@ -17,3 +17,5 @@ services:
       context: .
       dockerfile: Dockerfile.dist
     image: libprio:dist
+    volumes:
+      - $PWD:/app

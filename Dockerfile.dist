@@ -28,8 +28,9 @@ RUN dnf install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqli
 
 RUN curl https://pyenv.run | bash
 ENV PATH "/root/.pyenv/bin:$PATH"
-RUN pyenv install 3.7.8
-RUN pyenv install 3.8.3
+RUN pyenv install 3.6.0
+RUN pyenv install 3.7.0
+RUN pyenv install 3.8.0
 
 WORKDIR /app
 ADD . /app
@@ -38,6 +39,4 @@ ADD . /app
 WORKDIR /app/python
 RUN make
 
-RUN eval "$(pyenv init -)" && pyenv shell 3.8.3 && python setup.py bdist_wheel
-
-# libmsgpackc2 libnspr4 libnss3
+CMD /app/scripts/python-dist.sh
