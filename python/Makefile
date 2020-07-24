@@ -12,7 +12,7 @@ install: all
 
 dist: all
 	pip3 install wheel
-	python3 setup.py bdist_egg bdist_wheel
+	python3 setup.py bdist_wheel
 
 format:
 	clang-format -style=Mozilla -i swig/libprio_wrap.c

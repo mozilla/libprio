@@ -21,6 +21,40 @@ pip install pytest-cov
 python -m pytest --cov-report=html --cov-report=term --cov=prio tests
 ```
 
+## Distribute
+
+Binary eggs and wheels are built for Python 3.6, 3.7, and 3.8 for macOS 10.15
+and Linux. From the project root, run the following command to distribute the
+wheels for macOS.
+
+```bash
+# optional: for testing
+export TWINE_REPOSITORY=testpypi
+
+export TWINE_USERNAME=__token__
+export TWINE_PASSWORD=<API_KEY>
+./scripts/python-dist.sh
+```
+
+Run the docker container for distributing the linux wheels.
+
+```bash
+docker-compose build libprio-dist
+export TWINE_USERNAME=__token__
+export TWINE_PASSWORD=<API_KEY>
+docker-compose run -e TWINE_USERNAME -e TWINE_PASSWORD libprio-dist
+```
+
+The binary distributions can be tested from a variety of docker images, which
+are the primary target for use. Here is an example on an Ubuntu 20.04 image.
+
+```bash
+docker run -it ubuntu:20.04 bash
+apt update && apt install python3 python3-pip libmsgpackc2 libnspr4 libnss3
+pip3 install -i https://test.pypi.org/simple/ prio
+python3 -c "from prio.libprio import *; Prio_init(); print(PrioPRGSeed_randomize())"
+```
+
 ## Build Process
 
 There are issues running an installation of the extension module inside of the
