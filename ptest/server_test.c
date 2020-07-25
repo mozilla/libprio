@@ -461,3 +461,78 @@ mu_test__verify_full_uint_bad5(void)
 {
   verify_full_uint(5);
 }
+
+
+void
+test_server_merge(int bad)
+{
+  SECStatus rv = SECSuccess;
+  PublicKey pkA = NULL;
+  PrivateKey skA = NULL;
+  PrioServer s1 = NULL;
+  PrioServer s2 = NULL;
+  PrioConfig cfg1 = NULL;
+  PrioConfig cfg2 = NULL;
+  PrioPRGSeed seed;
+
+  PT_CHECKC(PrioPRGSeed_randomize(&seed));
+  PT_CHECKC(Keypair_new(&skA, &pkA));
+
+  if (bad == 1) {
+    PT_CHECKA(cfg1 = PrioConfig_newTest(99));
+  } else {
+    PT_CHECKA(cfg1 = PrioConfig_newTest(2));
+  }
+  if (bad == 2) {
+    mp_set(&cfg1->modulus, 6);
+  }
+  if (bad == 3) {
+    PT_CHECKA(cfg2 = PrioConfig_new(2, NULL, NULL, (const unsigned char*)"bad", 3));
+  } else {
+    PT_CHECKA(cfg2 = PrioConfig_newTest(2));
+  }
+  
+  PT_CHECKA(s1 = PrioServer_new(cfg1, 0, skA, seed));
+  PT_CHECKA(s2 = PrioServer_new(cfg2, 0, skA, seed));
+
+  mp_set(&s1->data_shares->data[0], 4);
+  mp_set(&s2->data_shares->data[1], 10);
+
+  P_CHECKC(PrioServer_merge(s1, s2));
+
+  mu_check(!mp_cmp_d(&s1->data_shares->data[0], 4));
+  mu_check(!mp_cmp_d(&s1->data_shares->data[1], 10));
+  mu_check(!mp_cmp_d(&s2->data_shares->data[0], 0));
+  mu_check(!mp_cmp_d(&s2->data_shares->data[1], 10));
+
+cleanup:
+  mu_check(bad ? rv == SECFailure : rv == SECSuccess);
+  PrioConfig_clear(cfg1);
+  PrioConfig_clear(cfg2);
+  PrioServer_clear(s1);
+  PrioServer_clear(s2);
+}
+
+void
+mu_test_server_merge_good(void)
+{
+  test_server_merge(0);
+}
+
+void
+mu_test_server_merge_bad_num_fields(void)
+{
+  test_server_merge(1);
+}
+
+void
+mu_test_server_merge_bad_modulus(void)
+{
+  test_server_merge(2);
+}
+
+void
+mu_test_server_merge_bad_batch_id(void)
+{
+  test_server_merge(3);
+}

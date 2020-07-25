@@ -393,9 +393,7 @@ cleanup:
 }
 
 SECStatus
-PrioServer_read(PrioServer s,
-                msgpack_unpacker* upk,
-                const_PrioConfig cfg)
+PrioServer_read(PrioServer s, msgpack_unpacker* upk, const_PrioConfig cfg)
 {
   SECStatus rv = SECSuccess;
   P_CHECKCB(upk != NULL);
@@ -407,7 +405,6 @@ PrioServer_read(PrioServer s,
 cleanup:
   return rv;
 }
-
 
 SECStatus
 PrioPacketVerify1_write(const_PrioPacketVerify1 p, msgpack_packer* pk)
