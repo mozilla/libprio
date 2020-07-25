@@ -380,6 +380,36 @@ cleanup:
 }
 
 SECStatus
+PrioServer_write(const_PrioServer s, msgpack_packer* pk)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(pk != NULL);
+  P_CHECKCB(s != NULL);
+
+  P_CHECKC(serial_write_mp_array(pk, s->data_shares));
+
+cleanup:
+  return rv;
+}
+
+SECStatus
+PrioServer_read(PrioServer s,
+                msgpack_unpacker* upk,
+                const_PrioConfig cfg)
+{
+  SECStatus rv = SECSuccess;
+  P_CHECKCB(upk != NULL);
+  P_CHECKCB(s != NULL);
+
+  P_CHECKC(serial_read_mp_array(
+    upk, s->data_shares, cfg->num_data_fields, &cfg->modulus));
+
+cleanup:
+  return rv;
+}
+
+
+SECStatus
 PrioPacketVerify1_write(const_PrioPacketVerify1 p, msgpack_packer* pk)
 {
   SECStatus rv = SECSuccess;
@@ -404,35 +434,6 @@ PrioPacketVerify1_read(PrioPacketVerify1 p,
 
   P_CHECKC(serial_read_mp_int(upk, &p->share_d, &cfg->modulus));
   P_CHECKC(serial_read_mp_int(upk, &p->share_e, &cfg->modulus));
-
-cleanup:
-  return rv;
-}
-
-SECStatus
-PrioServer_write(const_PrioServer s, msgpack_packer* pk)
-{
-  SECStatus rv = SECSuccess;
-  P_CHECKCB(pk != NULL);
-  P_CHECKCB(s != NULL);
-
-  P_CHECKC(serial_write_mp_array(pk, s->data_shares));
-
-cleanup:
-  return rv;
-}
-
-SECStatus
-PrioServer_read(PrioServer s,
-                msgpack_unpacker* upk,
-                const_PrioConfig cfg)
-{
-  SECStatus rv = SECSuccess;
-  P_CHECKCB(upk != NULL);
-  P_CHECKCB(s != NULL);
-
-  P_CHECKC(serial_read_mp_array(
-    upk, s->data_shares, cfg->num_data_fields, &cfg->modulus));
 
 cleanup:
   return rv;
