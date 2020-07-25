@@ -212,6 +212,8 @@ test_server(int bad)
 
 cleanup:
   mu_check(bad ? rv == SECFailure : rv == SECSuccess);
+  PublicKey_clear(pkA);
+  PrivateKey_clear(skA);
   PrioConfig_clear(cfg);
   PrioServer_clear(s1);
   PrioServer_clear(s2);
