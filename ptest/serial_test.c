@@ -165,6 +165,74 @@ mu_test__serial_client_bad4(void)
 }
 
 void
+test_server(int bad)
+{
+  SECStatus rv = SECSuccess;
+  PublicKey pkA = NULL;
+  PrivateKey skA = NULL;
+  PrioServer s1 = NULL;
+  PrioServer s2 = NULL;
+  PrioConfig cfg = NULL;
+  PrioPRGSeed seed;
+
+  PT_CHECKC(PrioPRGSeed_randomize(&seed));
+  PT_CHECKC(Keypair_new(&skA, &pkA));
+
+  PT_CHECKA(cfg = PrioConfig_newTest(2));
+  PT_CHECKA(s1 = PrioServer_new(cfg, 0, skA, seed));
+  PT_CHECKA(s2 = PrioServer_new(cfg, 0, skA, seed));
+
+  mp_set(&s1->data_shares->data[0], 4);
+  mp_set(&s1->data_shares->data[1], 10);
+
+  msgpack_sbuffer sbuf;
+  msgpack_packer pk;
+  msgpack_unpacker upk;
+
+  msgpack_sbuffer_init(&sbuf);
+  msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
+
+  PT_CHECKC(PrioServer_write(s1, &pk));
+
+  if (bad == 1) {
+    mp_set(&cfg->modulus, 6);
+  }
+
+  PT_CHECKCB(msgpack_unpacker_init(&upk, 0));
+  PT_CHECKCB(msgpack_unpacker_reserve_buffer(&upk, sbuf.size));
+  memcpy(msgpack_unpacker_buffer(&upk), sbuf.data, sbuf.size);
+  msgpack_unpacker_buffer_consumed(&upk, sbuf.size);
+
+  P_CHECKC(PrioServer_read(s2, &upk, cfg));
+
+  mu_check(!mp_cmp(&s1->data_shares->data[0], &s2->data_shares->data[0]));
+  mu_check(!mp_cmp(&s1->data_shares->data[1], &s2->data_shares->data[1]));
+  mu_check(!mp_cmp_d(&s2->data_shares->data[0], 4));
+  // the rest of the array is set with 0s
+  mu_check(!mp_cmp_d(&s2->data_shares->data[1], 0));
+
+cleanup:
+  mu_check(bad ? rv == SECFailure : rv == SECSuccess);
+  PrioConfig_clear(cfg);
+  PrioServer_clear(s1);
+  PrioServer_clear(s2);
+  msgpack_unpacker_destroy(&upk);
+  msgpack_sbuffer_destroy(&sbuf);
+}
+
+void
+mu_test_server_good(void)
+{
+  test_server(0);
+}
+
+void
+mu_test_server_bad(void)
+{
+  test_server(1);
+}
+
+void
 test_verify1(int bad)
 {
   SECStatus rv = SECSuccess;
