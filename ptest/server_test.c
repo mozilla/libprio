@@ -507,6 +507,8 @@ test_server_merge(int bad)
 
 cleanup:
   mu_check(bad ? rv == SECFailure : rv == SECSuccess);
+  PublicKey_clear(pkA);
+  PrivateKey_clear(skA);
   PrioConfig_clear(cfg1);
   PrioConfig_clear(cfg2);
   PrioServer_clear(s1);
