@@ -205,11 +205,10 @@ test_server(int bad)
 
   P_CHECKC(PrioServer_read(s2, &upk, cfg));
 
-  mu_check(!mp_cmp(&s1->data_shares->data[0], &s2->data_shares->data[0]));
-  mu_check(!mp_cmp(&s1->data_shares->data[1], &s2->data_shares->data[1]));
+  mu_check(!mp_cmp(&s2->data_shares->data[0], &s1->data_shares->data[0]));
+  mu_check(!mp_cmp(&s2->data_shares->data[1], &s1->data_shares->data[1]));
   mu_check(!mp_cmp_d(&s2->data_shares->data[0], 4));
-  // the rest of the array is set with 0s
-  mu_check(!mp_cmp_d(&s2->data_shares->data[1], 0));
+  mu_check(!mp_cmp_d(&s2->data_shares->data[1], 10));
 
 cleanup:
   mu_check(bad ? rv == SECFailure : rv == SECSuccess);

@@ -86,10 +86,15 @@ PrioServer_aggregate(PrioServer s, PrioVerifier v)
 SECStatus
 PrioServer_merge(PrioServer s, const_PrioServer s_i)
 {
-  // TODO: check that the configuration files are exactly the same
+  if (s->cfg->num_data_fields != s_i->cfg->num_data_fields ||
+      mp_cmp(&s->cfg->modulus, &s_i->cfg->modulus) ||
+      strncmp((const char*)s->cfg->batch_id,
+              (const char*)s_i->cfg->batch_id,
+              s->cfg->batch_id_len)) {
+    return SECFailure;
+  }
   return MPArray_addmod(s->data_shares, s_i->data_shares, &s->cfg->modulus);
 }
-
 
 PrioTotalShare
 PrioTotalShare_new(void)
