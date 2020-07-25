@@ -462,7 +462,6 @@ mu_test__verify_full_uint_bad5(void)
   verify_full_uint(5);
 }
 
-
 void
 test_server_merge(int bad)
 {
@@ -487,11 +486,12 @@ test_server_merge(int bad)
     mp_set(&cfg1->modulus, 6);
   }
   if (bad == 3) {
-    PT_CHECKA(cfg2 = PrioConfig_new(2, NULL, NULL, (const unsigned char*)"bad", 3));
+    PT_CHECKA(cfg2 =
+                PrioConfig_new(2, NULL, NULL, (const unsigned char*)"bad", 3));
   } else {
     PT_CHECKA(cfg2 = PrioConfig_newTest(2));
   }
-  
+
   PT_CHECKA(s1 = PrioServer_new(cfg1, 0, skA, seed));
   PT_CHECKA(s2 = PrioServer_new(cfg2, 0, skA, seed));
 
