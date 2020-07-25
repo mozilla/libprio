@@ -274,9 +274,9 @@ extern "C"
                             const PrioPRGSeed serverSharedSecret);
   void PrioServer_clear(PrioServer s);
 
-  SECStatus PrioServer_write(const_PrioServer s, msgpack_packer *pk);
+  SECStatus PrioServer_write(const_PrioServer s, msgpack_packer* pk);
   SECStatus PrioServer_read(PrioServer s,
-                            msgpack_unpacker *upk,
+                            msgpack_unpacker* upk,
                             const_PrioConfig cfg);
 
   /*
