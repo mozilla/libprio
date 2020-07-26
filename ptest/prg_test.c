@@ -19,13 +19,17 @@ mu_test__prg_simple(void)
   SECStatus rv = SECSuccess;
   PrioPRGSeed key;
   PRG prg = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg = PRG_new(key));
+  PT_CHECKA(prg = PRG_new(cfg, key));
 
 cleanup:
   mu_check(rv == SECSuccess);
   PRG_clear(prg);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -39,10 +43,13 @@ mu_test__prg_repeat(void)
   PrioPRGSeed key;
   PRG prg1 = NULL;
   PRG prg2 = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg1 = PRG_new(key));
-  PT_CHECKA(prg2 = PRG_new(key));
+  PT_CHECKA(prg1 = PRG_new(cfg, key));
+  PT_CHECKA(prg2 = PRG_new(cfg, key));
   PT_CHECKA(buf1 = calloc(buflen, sizeof(unsigned char)));
   PT_CHECKA(buf2 = calloc(buflen, sizeof(unsigned char)));
 
@@ -68,6 +75,7 @@ cleanup:
     free(buf2);
   PRG_clear(prg1);
   PRG_clear(prg2);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -85,10 +93,13 @@ mu_test__prg_repeat_int(void)
   PrioPRGSeed key;
   PRG prg1 = NULL;
   PRG prg2 = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg1 = PRG_new(key));
-  PT_CHECKA(prg2 = PRG_new(key));
+  PT_CHECKA(prg1 = PRG_new(cfg, key));
+  PT_CHECKA(prg2 = PRG_new(cfg, key));
 
   MPT_CHECKC(mp_init(&max));
   MPT_CHECKC(mp_init(&out1));
@@ -108,6 +119,7 @@ cleanup:
   mp_clear(&max);
   mp_clear(&out1);
   mp_clear(&out2);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -121,9 +133,12 @@ test_prg_once(int limit)
 
   MP_DIGITS(&max) = NULL;
   MP_DIGITS(&out) = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg = PRG_new(key));
+  PT_CHECKA(prg = PRG_new(cfg, key));
 
   MPT_CHECKC(mp_init(&max));
   MPT_CHECKC(mp_init(&out));
@@ -139,6 +154,7 @@ cleanup:
   mp_clear(&max);
   mp_clear(&out);
   PRG_clear(prg);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -189,9 +205,12 @@ test_prg_distribution(int limit)
 
   MP_DIGITS(&max) = NULL;
   MP_DIGITS(&out) = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg = PRG_new(key));
+  PT_CHECKA(prg = PRG_new(cfg, key));
   PT_CHECKA(bins = calloc(limit, sizeof(int)));
 
   MPT_CHECKC(mp_init(&max));
@@ -228,6 +247,7 @@ cleanup:
   mp_clear(&max);
   mp_clear(&out);
   PRG_clear(prg);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -259,9 +279,12 @@ test_prg_distribution_large(mp_int* max)
   PRG prg = NULL;
 
   MP_DIGITS(&out) = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg = PRG_new(key));
+  PT_CHECKA(prg = PRG_new(cfg, key));
   PT_CHECKA(bins = calloc(limit, sizeof(int)));
 
   MPT_CHECKC(mp_init(&out));
@@ -290,6 +313,7 @@ cleanup:
     free(bins);
   mp_clear(&out);
   PRG_clear(prg);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -323,7 +347,7 @@ mu_test__prg_share_arr(void)
   PT_CHECKC(PrioPRGSeed_randomize(&seed));
   PT_CHECKA(arr = MPArray_new(10));
   PT_CHECKA(arr_share = MPArray_new(10));
-  PT_CHECKA(prg = PRG_new(seed));
+  PT_CHECKA(prg = PRG_new(cfg, seed));
 
   for (int i = 0; i < 10; i++) {
     mp_set(&arr->data[i], i);
@@ -333,7 +357,7 @@ mu_test__prg_share_arr(void)
 
   // Reset PRG
   PRG_clear(prg);
-  PT_CHECKA(prg = PRG_new(seed));
+  PT_CHECKA(prg = PRG_new(cfg, seed));
 
   // Read pseudorandom values into arr
   PT_CHECKC(PRG_get_array(prg, arr, &cfg->modulus));
@@ -366,9 +390,12 @@ test_prg_range_once(int bot, int limit)
   MP_DIGITS(&lower) = NULL;
   MP_DIGITS(&max) = NULL;
   MP_DIGITS(&out) = NULL;
+  PrioConfig cfg = NULL;
+
+  PT_CHECKA(cfg = PrioConfig_newTest(1));
 
   PT_CHECKC(PrioPRGSeed_randomize(&key));
-  PT_CHECKA(prg = PRG_new(key));
+  PT_CHECKA(prg = PRG_new(cfg, key));
 
   MPT_CHECKC(mp_init(&max));
   MPT_CHECKC(mp_init(&out));
@@ -390,6 +417,7 @@ cleanup:
   mp_clear(&max);
   mp_clear(&out);
   PRG_clear(prg);
+  PrioConfig_clear(cfg);
 }
 
 void
@@ -412,4 +440,47 @@ mu_test_prg_range__odd(void)
   test_prg_range_once(23, 39);
   test_prg_range_once(7, 123);
   test_prg_range_once(99000, 993123);
+}
+
+void
+mu_test_prg_uses_batch_id(void)
+{
+  SECStatus rv = SECSuccess;
+  PrioPRGSeed key;
+  mp_int out1;
+  mp_int out2;
+  PRG prg1 = NULL;
+  PRG prg2 = NULL;
+
+  MP_DIGITS(&out1) = NULL;
+  MP_DIGITS(&out2) = NULL;
+  PrioConfig cfg1 = NULL;
+  PrioConfig cfg2 = NULL;
+
+  PT_CHECKA(cfg1 = PrioConfig_newTest(1));
+  PT_CHECKA(cfg2 = PrioConfig_newTest(1));
+
+  // Two batch IDs are different. Check that
+  // PRG outputs are actually different.
+  cfg2->batch_id[0] = '\0';
+
+  PT_CHECKC(PrioPRGSeed_randomize(&key));
+  PT_CHECKA(prg1 = PRG_new(cfg1, key));
+  PT_CHECKA(prg2 = PRG_new(cfg2, key));
+
+  MPT_CHECKC(mp_init(&out1));
+  MPT_CHECKC(mp_init(&out2));
+
+  PT_CHECKC(PRG_get_int(prg1, &out1, &cfg1->modulus));
+  PT_CHECKC(PRG_get_int(prg2, &out2, &cfg1->modulus));
+  mu_check(mp_cmp(&out1, &out2) != 0);
+
+cleanup:
+  mu_check(rv == SECSuccess);
+  mp_clear(&out1);
+  mp_clear(&out2);
+  PRG_clear(prg1);
+  PRG_clear(prg2);
+  PrioConfig_clear(cfg1);
+  PrioConfig_clear(cfg2);
 }

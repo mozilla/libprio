@@ -22,7 +22,7 @@ typedef const struct prg* const_PRG;
  * Initialize or destroy a pseudo-random generator.
  */
 PRG
-PRG_new(const PrioPRGSeed key);
+PRG_new(const_PrioConfig cfg, const PrioPRGSeed shared_secret);
 void
 PRG_clear(PRG prg);
 
