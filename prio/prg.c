@@ -9,6 +9,7 @@
 #include <blapit.h>
 #include <mprio.h>
 #include <pk11pub.h>
+#include <sechash.h>
 #include <string.h>
 
 #include "prg.h"
@@ -29,8 +30,44 @@ PrioPRGSeed_randomize(PrioPRGSeed* key)
   return rand_bytes((unsigned char*)key, PRG_SEED_LENGTH);
 }
 
+SECStatus
+prg_seed_from_config_and_shared_secret(PrioPRGSeed key_out,
+                                       const_PrioConfig cfg,
+                                       const PrioPRGSeed shared_secret)
+{
+  SECStatus rv = SECSuccess;
+  HASHContext* ctx = NULL;
+  const HASH_HashType hashType = HASH_GetHashTypeByOidTag(SEC_OID_SHA256);
+
+  P_CHECKA(ctx = HASH_Create(hashType));
+
+  HASH_Begin(ctx);
+
+  // Hash the shared_secret with the batch ID to
+  // get the PRG seed. We might also want to
+  // hash `num_data_fields` here, but since the
+  // batch ID should be distinct per batch, this
+  // should be enough.
+  HASH_Update(ctx, shared_secret, PRG_SEED_LENGTH);
+  HASH_Update(ctx, cfg->batch_id, cfg->batch_id_len);
+
+  unsigned int len;
+  HASH_End(ctx, key_out, &len, PRG_SEED_LENGTH);
+
+  // Ensure that hash routine wrote out the
+  // correct number of bytes.
+  P_CHECKCB(len == PRG_SEED_LENGTH);
+
+cleanup:
+  if (ctx) {
+    HASH_Destroy(ctx);
+  }
+
+  return rv;
+}
+
 PRG
-PRG_new(const PrioPRGSeed key_in)
+PRG_new(const_PrioConfig cfg, const PrioPRGSeed shared_secret)
 {
   PRG prg = malloc(sizeof(struct prg));
   if (!prg)
@@ -44,9 +81,10 @@ PRG_new(const PrioPRGSeed key_in)
 
   P_CHECKA(prg->slot = PK11_GetInternalSlot());
 
-  // Create a mutable copy of the key.
+  // Create the per-batch PRG key from the shared
+  // secret and the PrioConfig.
   PrioPRGSeed key_mut;
-  memcpy(key_mut, key_in, PRG_SEED_LENGTH);
+  prg_seed_from_config_and_shared_secret(key_mut, cfg, shared_secret);
 
   SECItem keyItem = { siBuffer, key_mut, PRG_SEED_LENGTH };
 
