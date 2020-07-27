@@ -462,12 +462,27 @@ mu_test__verify_full_uint_bad5(void)
   verify_full_uint(5);
 }
 
+enum test_server_merge_tweaks
+{
+  GOOD,
+  GOOD_PUBKEY_A_BOTH_NULL,
+  BAD_SERVER_IDX,
+  BAD_NUM_FIELDS,
+  BAD_MODULUS,
+  BAD_BATCH_ID,
+  BAD_PUBKEY_A_ONE_NULL,
+  BAD_PUBKEY_A_MISMATCH,
+  BAD_PUBKEY_B_MISMATCH,
+};
+
 void
-test_server_merge(int bad)
+test_server_merge(int tweak)
 {
   SECStatus rv = SECSuccess;
   PublicKey pkA = NULL;
   PrivateKey skA = NULL;
+  PublicKey pkB = NULL;
+  PrivateKey skB = NULL;
   PrioServer s1 = NULL;
   PrioServer s2 = NULL;
   PrioConfig cfg1 = NULL;
@@ -476,24 +491,32 @@ test_server_merge(int bad)
 
   PT_CHECKC(PrioPRGSeed_randomize(&seed));
   PT_CHECKC(Keypair_new(&skA, &pkA));
+  PT_CHECKC(Keypair_new(&skB, &pkB));
 
-  if (bad == 1) {
-    PT_CHECKA(cfg1 = PrioConfig_newTest(99));
-  } else {
-    PT_CHECKA(cfg1 = PrioConfig_newTest(2));
-  }
-  if (bad == 2) {
+  const unsigned char* batch_id = (const unsigned char*)"test";
+  const int batch_id_len = 4;
+
+  PT_CHECKA(cfg1 = PrioConfig_new(tweak == BAD_NUM_FIELDS ? 99 : 2,
+                                  (tweak == BAD_PUBKEY_A_ONE_NULL ||
+                                   tweak == GOOD_PUBKEY_A_BOTH_NULL)
+                                    ? NULL
+                                    : pkA,
+                                  pkB,
+                                  batch_id,
+                                  batch_id_len));
+  PT_CHECKA(
+    cfg2 = PrioConfig_new(
+      2,
+      BAD_PUBKEY_A_MISMATCH ? pkB : (GOOD_PUBKEY_A_BOTH_NULL ? NULL : pkA),
+      BAD_PUBKEY_B_MISMATCH ? pkA : pkB,
+      tweak == BAD_BATCH_ID ? (const unsigned char*)"badb" : batch_id,
+      batch_id_len));
+  if (tweak == BAD_MODULUS) {
     mp_set(&cfg1->modulus, 6);
   }
-  if (bad == 3) {
-    PT_CHECKA(cfg2 =
-                PrioConfig_new(2, NULL, NULL, (const unsigned char*)"bad", 3));
-  } else {
-    PT_CHECKA(cfg2 = PrioConfig_newTest(2));
-  }
-
   PT_CHECKA(s1 = PrioServer_new(cfg1, 0, skA, seed));
-  PT_CHECKA(s2 = PrioServer_new(cfg2, 0, skA, seed));
+  PT_CHECKA(s2 =
+              PrioServer_new(cfg2, tweak == BAD_SERVER_IDX ? 1 : 0, skA, seed));
 
   mp_set(&s1->data_shares->data[0], 4);
   mp_set(&s2->data_shares->data[1], 10);
@@ -506,9 +529,13 @@ test_server_merge(int bad)
   mu_check(!mp_cmp_d(&s2->data_shares->data[1], 10));
 
 cleanup:
-  mu_check(bad ? rv == SECFailure : rv == SECSuccess);
+  mu_check((tweak != GOOD || tweak != GOOD_PUBKEY_A_BOTH_NULL)
+             ? rv == SECFailure
+             : rv == SECSuccess);
   PublicKey_clear(pkA);
   PrivateKey_clear(skA);
+  PublicKey_clear(pkB);
+  PrivateKey_clear(skB);
   PrioConfig_clear(cfg1);
   PrioConfig_clear(cfg2);
   PrioServer_clear(s1);
@@ -518,23 +545,53 @@ cleanup:
 void
 mu_test_server_merge_good(void)
 {
-  test_server_merge(0);
+  test_server_merge(GOOD);
+}
+
+void
+mu_test_server_merge_good_pubkey_a_both_null(void)
+{
+  test_server_merge(GOOD_PUBKEY_A_BOTH_NULL);
+}
+
+void
+mu_test_server_merge_bad_server_idx(void)
+{
+  test_server_merge(BAD_SERVER_IDX);
 }
 
 void
 mu_test_server_merge_bad_num_fields(void)
 {
-  test_server_merge(1);
+  test_server_merge(BAD_NUM_FIELDS);
 }
 
 void
 mu_test_server_merge_bad_modulus(void)
 {
-  test_server_merge(2);
+  test_server_merge(BAD_MODULUS);
 }
 
 void
 mu_test_server_merge_bad_batch_id(void)
 {
-  test_server_merge(3);
+  test_server_merge(BAD_BATCH_ID);
+}
+
+void
+mu_test_server_merge_bad_public_key_a_one_null(void)
+{
+  test_server_merge(BAD_PUBKEY_A_ONE_NULL);
+}
+
+void
+mu_test_server_merge_bad_public_key_a_mismatch(void)
+{
+  test_server_merge(BAD_PUBKEY_A_MISMATCH);
+}
+
+void
+mu_test_server_merge_bad_public_key_b_mismatch(void)
+{
+  test_server_merge(BAD_PUBKEY_B_MISMATCH);
 }
