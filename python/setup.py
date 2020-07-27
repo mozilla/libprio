@@ -8,6 +8,11 @@ from os import path
 from sys import platform
 
 
+def readme():
+    with open("README.md") as fp:
+        return fp.read()
+
+
 # Add platform specific settings for building the extension module
 if platform == "darwin":
     # macOS
@@ -38,8 +43,10 @@ extension_mod = Extension(
 
 setup(
     name="prio",
-    version="1.0",
+    version="1.0.3",
     description="An interface to libprio",
+    long_description=readme(),
+    long_description_content_type="text/markdown",
     author="Anthony Miyaguchi",
     author_email="amiyaguchi@mozilla.com",
     url="https://github.com/mozilla/libprio",

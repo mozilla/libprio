@@ -1,0 +1,30 @@
+FROM quay.io/pypa/manylinux2014_x86_64
+
+ENV LANG en_US.utf8
+
+RUN yum install -y \
+        which \
+        make \
+        gcc \
+        clang \
+        swig \
+        nss-devel \
+        msgpack-devel \
+    && yum clean all
+
+# set a default python binary and install scons
+ENV PATH=$PATH:/opt/python/cp38-cp38/bin
+RUN pip3 install scons pytest
+
+# symbolically link to name without version suffix for libprio
+RUN ln -s /usr/include/nspr4 /usr/include/nspr \
+    && ln -s /usr/include/nss3 /usr/include/nss
+
+WORKDIR /app
+ADD . /app
+
+# first build the python wrapper with -fPIC
+WORKDIR /app/python
+RUN make
+
+CMD /app/scripts/python-dist.sh

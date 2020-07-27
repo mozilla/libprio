@@ -5,3 +5,17 @@ services:
       context: .
       dockerfile: Dockerfile
     image: libprio:${TAG:-latest}
+  libprio-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: libprio:${TAG:-latest}
+    volumes:
+      - $PWD:/app
+  libprio-dist:
+    build:
+      context: .
+      dockerfile: Dockerfile.dist
+    image: libprio:dist
+    volumes:
+      - $PWD:/app

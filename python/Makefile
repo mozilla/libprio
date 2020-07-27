@@ -10,6 +10,10 @@ all:
 install: all
 	pip3 install .
 
+dist: all
+	pip3 install wheel
+	python3 setup.py bdist_wheel
+
 format:
 	clang-format -style=Mozilla -i swig/libprio_wrap.c
 	black setup.py src tests
@@ -31,3 +35,4 @@ clean:
 	rm -rf build
 	rm -rf libprio
 	rm -rf dist
+	rm -rf wheelhouse

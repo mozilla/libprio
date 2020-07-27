@@ -4,6 +4,41 @@ This module contains a Python wrapper around libprio.
 
 ## Quickstart
 
+Install the required dependencies via the system package manager and install the
+package from pip. The shared libraries for msgpack and NSS must be available for
+the module to initialize properly.
+
+On an image derived from Ubuntu:
+
+```bash
+docker run -it python:3 bash
+apt update && apt install libmsgpackc2 libnss3
+```
+
+On Centos:
+
+```bash
+docker run -it centos:8 bash
+dnf update && dnf install epel-release && dnf install python36 msgpack nss
+```
+
+On macOS:
+
+```bash
+brew install msgpack nss
+```
+
+To test the package:
+
+```bash
+pip3 install prio
+python3 -c "from prio.libprio import *; Prio_init(); print(PrioPRGSeed_randomize())"
+```
+
+## Building from source
+
+Ensure all of the libprio build tools are available, such as `scons` and `clang`
+
 ```python
 python3 -m venv venv
 source venv/bin/activate
@@ -19,6 +54,28 @@ To run a coverage report:
 ```bash
 pip install pytest-cov
 python -m pytest --cov-report=html --cov-report=term --cov=prio tests
+```
+
+## Distributing
+
+Binary eggs and wheels are built for Python 3.6, 3.7, and 3.8 for macOS 10.15
+and Linux. From the project root, run the following command to distribute the
+wheels for macOS.
+
+```bash
+export TWINE_REPOSITORY=testpypi  # optional: for testing
+export TWINE_USERNAME=__token__
+export TWINE_PASSWORD=<API_KEY>
+./scripts/python-dist.sh
+```
+
+Run the docker container for distributing the linux wheels.
+
+```bash
+docker-compose build libprio-dist
+export TWINE_USERNAME=__token__
+export TWINE_PASSWORD=<API_KEY>
+docker-compose run -e TWINE_USERNAME -e TWINE_PASSWORD libprio-dist
 ```
 
 ## Build Process
