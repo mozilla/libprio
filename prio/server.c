@@ -83,14 +83,41 @@ PrioServer_aggregate(PrioServer s, PrioVerifier v)
   return MPArray_addmod(s->data_shares, arr, &s->cfg->modulus);
 }
 
+int
+public_key_cmp(const_PublicKey pub, const_PublicKey pub_other)
+{
+  unsigned char data[CURVE25519_KEY_LEN];
+  unsigned char data_other[CURVE25519_KEY_LEN];
+
+  // if one of the keys is null, both of the keys must be null
+  if (pub == NULL || pub_other == NULL) {
+    return !(pub == NULL && pub_other == NULL);
+  }
+
+  PublicKey_export(pub, data, CURVE25519_KEY_LEN);
+  PublicKey_export(pub_other, data_other, CURVE25519_KEY_LEN);
+  return strncmp(
+    (const char*)data, (const char*)data_other, CURVE25519_KEY_LEN);
+}
+
+int
+server_cmp(PrioServer s, const_PrioServer s_i)
+{
+  return public_key_cmp(s->cfg->server_a_pub, s_i->cfg->server_a_pub) ||
+         public_key_cmp(s->cfg->server_b_pub, s_i->cfg->server_b_pub) ||
+         s->idx != s_i->idx ||
+         s->cfg->num_data_fields != s_i->cfg->num_data_fields ||
+         mp_cmp(&s->cfg->modulus, &s_i->cfg->modulus) ||
+         s->cfg->batch_id_len != s_i->cfg->batch_id_len ||
+         strncmp((const char*)s->cfg->batch_id,
+                 (const char*)s_i->cfg->batch_id,
+                 s->cfg->batch_id_len);
+}
+
 SECStatus
 PrioServer_merge(PrioServer s, const_PrioServer s_i)
 {
-  if (s->cfg->num_data_fields != s_i->cfg->num_data_fields ||
-      mp_cmp(&s->cfg->modulus, &s_i->cfg->modulus) ||
-      strncmp((const char*)s->cfg->batch_id,
-              (const char*)s_i->cfg->batch_id,
-              s->cfg->batch_id_len)) {
+  if (server_cmp(s, s_i)) {
     return SECFailure;
   }
   return MPArray_addmod(s->data_shares, s_i->data_shares, &s->cfg->modulus);
