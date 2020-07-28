@@ -83,7 +83,7 @@ PrioServer_aggregate(PrioServer s, PrioVerifier v)
   return MPArray_addmod(s->data_shares, arr, &s->cfg->modulus);
 }
 
-int
+static int
 public_key_cmp(const_PublicKey pub, const_PublicKey pub_other)
 {
   unsigned char data[CURVE25519_KEY_LEN];
@@ -100,7 +100,7 @@ public_key_cmp(const_PublicKey pub, const_PublicKey pub_other)
     (const char*)data, (const char*)data_other, CURVE25519_KEY_LEN);
 }
 
-int
+static int
 server_cmp(PrioServer s, const_PrioServer s_i)
 {
   return public_key_cmp(s->cfg->server_a_pub, s_i->cfg->server_a_pub) ||
