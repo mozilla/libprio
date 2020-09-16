@@ -88,6 +88,7 @@ Export("env")
 SConscript("mpi/SConscript", variant_dir="build/mpi")
 SConscript("pclient/SConscript", variant_dir="build/pclient")
 SConscript("pclient_uint/SConscript", variant_dir="build/pclient_uint")
+SConscript("pclient_fp/SConscript", variant_dir="build/pclient_fp")
 SConscript("prio/SConscript", variant_dir="build/prio")
 SConscript("ptest/SConscript", variant_dir="build/ptest")
 

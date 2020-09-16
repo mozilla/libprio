@@ -33,6 +33,18 @@ PrioConfig_maxUIntEntries(int prec)
   return PrioConfig_maxDataFields() / prec;
 }
 
+int
+PrioConfig_maxFPEntries(int ibits, int fbits)
+{
+  return PrioConfig_maxDataFields() / PrioConfig_FPReqPrec(ibits, fbits);
+}
+
+int
+PrioConfig_FPReqPrec(int ibits, int fbits)
+{
+  return (ibits + fbits) * 2;
+}
+
 PrioConfig
 PrioConfig_new(int n_fields,
                PublicKey server_a,
@@ -99,6 +111,28 @@ PrioConfig_new_uint(int num_uints,
 }
 
 PrioConfig
+PrioConfig_new_fp(int num_fp,
+                  int ibits,
+                  int fbits,
+                  PublicKey server_a,
+                  PublicKey server_b,
+                  const unsigned char* batch_id,
+                  unsigned int batch_id_len)
+{
+  if (ibits + fbits <= 0)
+    return NULL;
+  if (ibits + fbits > FPBITS_MAX)
+    return NULL;
+
+  return PrioConfig_new_uint(num_fp,
+                             PrioConfig_FPReqPrec(ibits, fbits),
+                             server_a,
+                             server_b,
+                             batch_id,
+                             batch_id_len);
+}
+
+PrioConfig
 PrioConfig_newTest(int nFields)
 {
   return PrioConfig_new(nFields, NULL, NULL, (unsigned char*)"testBatch", 9);
@@ -131,6 +165,41 @@ PrioConfig_numUIntEntries(const_PrioConfig cfg, int prec)
   if (prec > BBIT_PREC_MAX)
     return 0;
   return cfg->num_data_fields / prec;
+}
+
+int
+PrioConfig_numFPEntries(const_PrioConfig cfg, int ibits, int fbits)
+{
+  if (ibits + fbits < 1)
+    return 0;
+  if (ibits + fbits > FPBITS_MAX)
+    return 0;
+  return cfg->num_data_fields / PrioConfig_FPReqPrec(ibits, fbits);
+}
+
+int
+PrioConfig_FPQOne(int fbits)
+{
+  return (1 << fbits);
+}
+
+int
+PrioConfig_FPMBias(int ibits, int fbits)
+{
+  return (1 << (ibits + fbits));
+}
+
+float
+PrioConfig_FPEps(int fbits)
+{
+  return (1 / (float)PrioConfig_FPQOne(fbits));
+}
+
+float
+PrioConfig_FPMax(int ibits, int fbits)
+{
+  int max_int = (1l << ibits) - 1;
+  return max_int + (1 - PrioConfig_FPEps(fbits));
 }
 
 SECStatus

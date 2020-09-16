@@ -462,6 +462,208 @@ mu_test__verify_full_uint_bad5(void)
   verify_full_uint(5);
 }
 
+void
+gen_float_sample(int ibits, int fbits, int slice, float* sample)
+{
+  long max_i = (ibits + 1) * PrioConfig_FPQOne(fbits);
+  float fp_eps = PrioConfig_FPEps(fbits);
+
+  float C = 0.3;
+
+  // Small positive fps, including 0
+  for (int i = 0; i < slice; i++) {
+    sample[i] = (C * i) + (fp_eps * i);
+  }
+
+  // Small negative fps, including -0
+  for (int i = 0; i < slice; i++) {
+    sample[i + slice] = -((C * i) + (fp_eps * i));
+  }
+
+  // Large positive fps (including fp_max)
+  for (int i = 0; i < slice; i++) {
+    sample[i + (slice * 2)] = (C * i) + (fp_eps * (max_i - i));
+  }
+
+  // Large negative fps (including -fp_max)
+  for (int i = 0; i < slice; i++) {
+    sample[i + (slice * 3)] = -((C * i) + (fp_eps * (max_i - i)));
+  }
+
+  // Midrange positive fps
+  for (int i = (slice * 4); i < (slice * 5); i++) {
+    sample[i] = (C * i) + (fp_eps * ((max_i / 2) + i));
+  }
+
+  // Midrange negative fps
+  for (int i = (slice * 5); i < (slice * 6); i++) {
+    sample[i] = -((C * i) + (fp_eps * ((max_i / 2) + i)));
+  }
+}
+
+void
+verify_full_fp(int tweak)
+{
+  SECStatus rv = SECSuccess;
+  PublicKey pkA = NULL;
+  PublicKey pkB = NULL;
+  PrivateKey skA = NULL;
+  PrivateKey skB = NULL;
+  PrioConfig cfg = NULL;
+  PrioServer sA = NULL;
+  PrioServer sB = NULL;
+  PrioVerifier vA = NULL;
+  PrioVerifier vB = NULL;
+  PrioPacketVerify1 p1A = NULL;
+  PrioPacketVerify1 p1B = NULL;
+  PrioPacketVerify2 p2A = NULL;
+  PrioPacketVerify2 p2B = NULL;
+  unsigned char* for_a = NULL;
+  unsigned char* for_b = NULL;
+  float* data_items = NULL;
+
+  mp_int fR, gR, hR;
+  MP_DIGITS(&fR) = NULL;
+  MP_DIGITS(&gR) = NULL;
+  MP_DIGITS(&hR) = NULL;
+
+  PrioPRGSeed seed;
+  PT_CHECKC(PrioPRGSeed_randomize(&seed));
+
+  const int ibits = 10;
+  const int fbits = 11;
+  const int slice = 10;
+  const int ndata = slice * 6;
+
+  PT_CHECKC(Keypair_new(&skA, &pkA));
+  PT_CHECKC(Keypair_new(&skB, &pkB));
+  PT_CHECKA(cfg = PrioConfig_new_fp(
+              ndata, ibits, fbits, pkA, pkB, (unsigned char*)"test4", 5));
+
+  PT_CHECKCB(ndata == (PrioConfig_numDataFields(cfg) /
+                       PrioConfig_FPReqPrec(ibits, fbits)));
+  PT_CHECKCB(ndata == PrioConfig_numFPEntries(cfg, ibits, fbits));
+
+  PT_CHECKA(data_items = calloc(ndata, sizeof(float)));
+
+  // Arbitrary data
+  gen_float_sample(ibits, fbits, 10, data_items);
+
+  PT_CHECKA(sA = PrioServer_new(cfg, 0, skA, seed));
+  PT_CHECKA(sB = PrioServer_new(cfg, 1, skB, seed));
+
+  unsigned int aLen, bLen;
+  PT_CHECKC(PrioClient_encode_fp(
+    cfg, ibits, fbits, data_items, &for_a, &aLen, &for_b, &bLen));
+
+  if (tweak == 5) {
+    for_a[3] = 3;
+    for_a[4] = 4;
+  }
+
+  PT_CHECKA(vA = PrioVerifier_new(sA));
+  PT_CHECKA(vB = PrioVerifier_new(sB));
+  P_CHECKC(PrioVerifier_set_data(vA, for_a, aLen));
+  PT_CHECKC(PrioVerifier_set_data(vB, for_b, bLen));
+
+  if (tweak == 3) {
+    mp_add_d(&vA->share_fR, 1, &vA->share_fR);
+  }
+
+  if (tweak == 4) {
+    mp_add_d(&vB->share_gR, 1, &vB->share_gR);
+  }
+
+  PT_CHECKA(p1A = PrioPacketVerify1_new());
+  PT_CHECKA(p1B = PrioPacketVerify1_new());
+
+  PT_CHECKC(PrioPacketVerify1_set_data(p1A, vA));
+  PT_CHECKC(PrioPacketVerify1_set_data(p1B, vB));
+
+  if (tweak == 1) {
+    mp_add_d(&p1B->share_d, 1, &p1B->share_d);
+  }
+
+  PT_CHECKA(p2A = PrioPacketVerify2_new());
+  PT_CHECKA(p2B = PrioPacketVerify2_new());
+  PT_CHECKC(PrioPacketVerify2_set_data(p2A, vA, p1A, p1B));
+  PT_CHECKC(PrioPacketVerify2_set_data(p2B, vB, p1A, p1B));
+
+  if (tweak == 2) {
+    mp_add_d(&p2A->share_out, 1, &p2B->share_out);
+  }
+
+  int shouldBe = tweak ? SECFailure : SECSuccess;
+  mu_check(PrioVerifier_isValid(vA, p2A, p2B) == shouldBe);
+  mu_check(PrioVerifier_isValid(vB, p2A, p2B) == shouldBe);
+
+cleanup:
+  if (!tweak) {
+    mu_check(rv == SECSuccess);
+  }
+
+  if (data_items)
+    free(data_items);
+  if (for_a)
+    free(for_a);
+  if (for_b)
+    free(for_b);
+
+  PrioPacketVerify2_clear(p2A);
+  PrioPacketVerify2_clear(p2B);
+
+  PrioPacketVerify1_clear(p1A);
+  PrioPacketVerify1_clear(p1B);
+
+  PrioVerifier_clear(vA);
+  PrioVerifier_clear(vB);
+
+  PrioServer_clear(sA);
+  PrioServer_clear(sB);
+  PrioConfig_clear(cfg);
+
+  PublicKey_clear(pkA);
+  PublicKey_clear(pkB);
+  PrivateKey_clear(skA);
+  PrivateKey_clear(skB);
+}
+
+void
+mu_test__verify_full_fp__good(void)
+{
+  verify_full_fp(0);
+}
+
+void
+mu_test__verify_full_fp_bad1(void)
+{
+  verify_full_fp(1);
+}
+
+void
+mu_test__verify_full_fp_bad2(void)
+{
+  verify_full_fp(2);
+}
+
+void
+mu_test__verify_full_fp_bad3(void)
+{
+  verify_full_fp(3);
+}
+
+void
+mu_test__verify_full_fp_bad4(void)
+{
+  verify_full_fp(4);
+}
+
+void
+mu_test__verify_full_fp_bad5(void)
+{
+  verify_full_fp(5);
+}
+
 enum test_server_merge_tweaks
 {
   GOOD,

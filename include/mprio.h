@@ -34,10 +34,23 @@ extern "C"
 /*
  * Maximum of supported precision for b-bit integer circuit. Since
  * every PrioTotalShare_final result entry can hold only one MP_DIGIT,
- * which is at most ULONG_MAX, ULONG_MAX/(2^BBIT_PREC_MAX-1) will be
- * the maximum number of submissions that can be aggregated.
+ * which is at most ULONG_MAX, ULONG_MAX/((2^BBIT_PREC_MAX)-1) will be
+ * the maximum number of submissions with maximal precision that can
+ * be aggregated.
  */
 #define BBIT_PREC_MAX (int)MIN(sizeof(long) * CHAR_BIT - 12, 42)
+
+/*
+ * Maximum of supported bits for fixed point encoding.
+ *
+ * Since we use offset binary coding to represent negative numbers,
+ * FPBITS_MAX is half of BBIT_PREC_MAX.
+ *
+ * We treat the aggregator MP_DIGITs implicitly as long longs, thus
+ * the maxmimum number of fixed point submissions with maximal
+ * precision is LONG_MAX / ((2^BBIT_PREC_MAX)-1).
+ */
+#define FPBITS_MAX (int)(BBIT_PREC_MAX / 2)
 
   /*
    * Type for each of the two servers.
@@ -125,6 +138,36 @@ extern "C"
                                  const unsigned char* batchId,
                                  unsigned int batchIdLen);
 
+  /*
+   * Wraps PrioConfig_new_uint. Returns PrioConfig for nFP fixed point
+   * numbers with ibits integer bits and fbits fractional bits which
+   * this configuration supports.
+   *
+   * We use the Q number format:
+   * https://en.wikipedia.org/wiki/Q_(number_format)
+   *
+   * To represent negative numbers, we use a biased mantissa:
+   * https://en.wikipedia.org/wiki/Offset_binary
+   *
+   * Valid range for format paramenters: 1 < ibits + fbits <= FPBITS_MAX
+   *
+   * Valid range for values:
+   * -PrioConfig_FPMax(ibits, fbits) <= x <= PrioConfig_FPMax(ibits, fbits)
+   *
+   * Resolution: PrioConfig_FPEps(fbits)
+   *
+   * NOTE: For compatibility reasons, ibits and fbits are not
+   * contained in the PrioConfig struct and must be kept in sync on
+   * clients and servers by out-of-band means.
+   */
+  PrioConfig PrioConfig_new_fp(int nFP,
+                               int ibits,
+                               int scale,
+                               PublicKey serverA,
+                               PublicKey serverB,
+                               const unsigned char* batchId,
+                               unsigned int batchIdLen);
+
   void PrioConfig_clear(PrioConfig cfg);
   int PrioConfig_numDataFields(const_PrioConfig cfg);
 
@@ -133,6 +176,13 @@ extern "C"
    * supports. Returns 0 for invalid values of prec.
    */
   int PrioConfig_numUIntEntries(const_PrioConfig cfg, int prec);
+
+  /*
+   * Return the number of fixed-points fractionals with ibits integer
+   * bits that this configuration supports. Returns 0 for invalid
+   * values of ibits.
+   */
+  int PrioConfig_numFPEntries(const_PrioConfig cfg, int ibits, int fbits);
 
   /*
    * Return the maximum number of data fields that the implementation supports.
@@ -144,6 +194,45 @@ extern "C"
    * precision. Returns 0 for invalid values of prec.
    */
   int PrioConfig_maxUIntEntries(int prec);
+
+  /*
+   * Return the maximum number of fractional entries with given
+   * integer bits. Returns 0 for invalid values of prec.
+   */
+  int PrioConfig_maxFPEntries(int ibits, int fbits);
+
+  /*
+   * Returns required precision of uints able to represent a fixed
+   * point number in Q format with ibits, fbits.
+   */
+  int PrioConfig_FPReqPrec(int ibits, int fbits);
+
+  /*
+   * Return fixed point representation of one for given fbits.
+   */
+  int PrioConfig_FPQOne(int fbits);
+
+  /*
+   * Return mantissa bias of fixed point representation with given
+   * ibits and fbits.
+   *
+   */
+  int PrioConfig_FPMBias(int ibits, int fbits);
+
+  /*
+   * Return resolution of fixed point representation with given fbits.
+   */
+  float PrioConfig_FPEps(int fbits);
+
+  /*
+   * Return maximum value of fixed point representation with given
+   * ibits and ibits. -PrioConfig_FPMax(ibits, fbits) is the minimal value.
+   *
+   * NOTE: Because of our use of offset binary coding, we get the
+   * range of a Q format using an unsigned integer container in positive
+   * and negative direction.
+   */
+  float PrioConfig_FPMax(int ibits, int fbits);
 
   /*
    * Create a PrioConfig object with no encryption keys.  This routine is
@@ -255,6 +344,26 @@ extern "C"
                                    unsigned int* aLen,
                                    unsigned char** forServerB,
                                    unsigned int* bLen);
+
+  /*
+   * Takes as input a pointer to an array (`data_float`) of float
+   * values, converts them to fixed point representation with ibits
+   * integer bits and fbits fractional bits.
+   *
+   * It then encodes the integer bits as a boolean array and hands it
+   * to PrioClient_encode.
+   *
+   * NOTE: The caller must free() the strings `for_server_a` and
+   * `for_server_b` to avoid memory leaks.
+   */
+  SECStatus PrioClient_encode_fp(const_PrioConfig cfg,
+                                 const int ibits,
+                                 const int fbits,
+                                 const float* data_float,
+                                 unsigned char** forServerA,
+                                 unsigned int* aLen,
+                                 unsigned char** forServerB,
+                                 unsigned int* bLen);
 
   /*
    * Generate a new PRG seed using the NSS global randomness source.
@@ -369,11 +478,20 @@ extern "C"
   SECStatus PrioTotalShare_set_data(PrioTotalShare t, const_PrioServer s);
 
   /*
-   * Aggregates bit shares into unsigned integer shares
+   * Aggregates bit shares into unsigned integer shares.
    */
   SECStatus PrioTotalShare_set_data_uint(PrioTotalShare t,
                                          const_PrioServer s,
                                          const int prec);
+
+  /*
+   * Aggregates bit shares into integer bit shares for fixed-point
+   * encoding.
+   */
+  SECStatus PrioTotalShare_set_data_fp(PrioTotalShare t,
+                                       const_PrioServer s,
+                                       const int ibits,
+                                       const int fbits);
 
   SECStatus PrioTotalShare_write(const_PrioTotalShare t, msgpack_packer* pk);
   SECStatus PrioTotalShare_read(PrioTotalShare t,
@@ -407,6 +525,26 @@ extern "C"
                                       unsigned long long* output,
                                       const_PrioTotalShare tA,
                                       const_PrioTotalShare tB);
+
+  /*
+   * Wraps PrioTotalShare_final_uint. Ensures that output is an array
+   * of nFP unsigned long longs. This is equal to num_data_fields
+   * divided by ibits. It then converts the long longs to double by
+   * scaling with scale and reverses the additive shift. To do that
+   * correctly the number of aggregated client packets nsubmissions needs
+   * to be given as an argument.
+   *
+   * This function returns failure if some final data value is too
+   * long to fit in a `long long`.
+   */
+  SECStatus PrioTotalShare_final_fp(const_PrioConfig cfg,
+                                    const int ibits,
+                                    const int fbits,
+                                    const int nsubmissions,
+                                    unsigned long long* output,
+                                    long double* output_fp,
+                                    const_PrioTotalShare tA,
+                                    const_PrioTotalShare tB);
 
 #endif /* __PRIO_H__ */
 

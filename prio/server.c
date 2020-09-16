@@ -234,6 +234,26 @@ cleanup:
 }
 
 SECStatus
+PrioTotalShare_set_data_fp(PrioTotalShare t,
+                           const_PrioServer s,
+                           const int ibits,
+                           const int fbits)
+{
+  SECStatus rv = SECSuccess;
+
+  // NOTE: PrioTotalShare_set_data_uint implicitly checks if
+  // (s->data_shares->len
+  // == PrioConfig_FPReqPrec(ibits, fbits)). Since we communicate ibits
+  // and fbits out of band we can only check wether ((ibits + fbits) ==
+  // prec), but not wether ibits and fbits match client settings.
+  P_CHECKC(
+    PrioTotalShare_set_data_uint(t, s, PrioConfig_FPReqPrec(ibits, fbits)));
+
+cleanup:
+  return rv;
+}
+
+SECStatus
 PrioTotalShare_final(const_PrioConfig cfg,
                      unsigned long long* output,
                      const_PrioTotalShare tA,
@@ -299,6 +319,47 @@ PrioTotalShare_final_uint(const_PrioConfig cfg,
 
 cleanup:
   PrioConfig_clear(uint_cfg);
+  return rv;
+}
+
+SECStatus
+PrioTotalShare_final_fp(const_PrioConfig cfg,
+                        const int ibits,
+                        const int fbits,
+                        const int nsubmissions,
+                        unsigned long long* output_uint,
+                        long double* output_fp,
+                        const_PrioTotalShare tA,
+                        const_PrioTotalShare tB)
+{
+  SECStatus rv = SECSuccess;
+
+  // Bounds checks
+  P_CHECKCB(ibits + fbits >= 1);
+  P_CHECKCB(ibits + fbits <= FPBITS_MAX);
+
+  int bits = PrioConfig_FPReqPrec(ibits, fbits);
+  long max_submissions = (long)(LONG_MAX / ((2 ^ bits) - 1));
+  P_CHECKCB(nsubmissions <= max_submissions);
+
+  long long m_bias = PrioConfig_FPMBias(ibits, fbits);
+  long double q_one = PrioConfig_FPQOne(fbits);
+
+  int num_fps = PrioConfig_numFPEntries(cfg, ibits, fbits);
+
+  P_CHECKC(PrioTotalShare_final_uint(
+    cfg, PrioConfig_FPReqPrec(ibits, fbits), output_uint, tA, tB));
+
+  for (int i = 0; i < num_fps; i++) {
+    // Cast to long long for signed results. Subtract bias *
+    // nsubmissions to revert additive shift (/offset binary
+    // coding). Divide by q_one to revert multiplicative shift (/fixed
+    // point encoding).
+    output_fp[i] =
+      ((long long)output_uint[i] - (nsubmissions * m_bias)) / q_one;
+  }
+
+cleanup:
   return rv;
 }
 

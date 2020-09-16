@@ -421,6 +421,81 @@ cleanup:
   return rv;
 }
 
+// Convert floats to unsigned long. Bounds checks on ibits/fbits need
+// to be done in the calling function.
+SECStatus
+float_to_long(long* dst, float x, const int ibits, const int fbits)
+{
+  SECStatus rv = SECSuccess;
+
+  // Check wether x can be represented
+  P_CHECKCB(x <= PrioConfig_FPMax(ibits, fbits));
+  P_CHECKCB(-PrioConfig_FPMax(ibits, fbits) <= x);
+
+  // The summand of the additive shift (mantissa bias).
+  int m_bias = PrioConfig_FPMBias(ibits, fbits);
+
+  // The scaling factor of fixed point conversion
+  int q_one = PrioConfig_FPQOne(fbits);
+
+  // First x gets scaled to shift the point. The fractional
+  // part is then cut by casting to int.
+
+  // Scale float up to move point.
+  // Cast to long to discard remaining fractional part.
+  // (see ISO/IEC 9899:1999, 6.3.1.4 1)
+  long x_scaled = x * q_one;
+
+  // Represent long as an unsigned long, using offset binary coding.
+  // Add m_bias to move all elements to non-negative range.
+  long x_scaled_biased = x_scaled + m_bias;
+
+  *dst = x_scaled_biased;
+
+cleanup:
+  return rv;
+}
+
+SECStatus
+PrioClient_encode_fp(const_PrioConfig cfg,
+                     const int ibits,
+                     const int fbits,
+                     const float* data_float,
+                     unsigned char** forServerA,
+                     unsigned int* aLen,
+                     unsigned char** forServerB,
+                     unsigned int* bLen)
+{
+  SECStatus rv = SECSuccess;
+  bool* data_bool = NULL;
+
+  long tmp = 0;
+
+  // Bounds checks
+  P_CHECKCB(ibits + fbits >= 1);
+  P_CHECKCB(ibits + fbits <= FPBITS_MAX);
+
+  int num_fp = PrioConfig_numFPEntries(cfg, ibits, fbits);
+  P_CHECKCB(cfg->num_data_fields ==
+            PrioConfig_FPReqPrec(ibits, fbits) * num_fp);
+
+  P_CHECKA(data_bool = calloc(cfg->num_data_fields, sizeof(bool)));
+
+  for (int i = 0; i < num_fp; i++) {
+    P_CHECKC(float_to_long(&tmp, data_float[i], ibits, fbits));
+    P_CHECKC(
+      long_to_bool(data_bool, tmp, PrioConfig_FPReqPrec(ibits, fbits), i));
+  }
+
+  P_CHECKC(
+    PrioClient_encode(cfg, data_bool, forServerA, aLen, forServerB, bLen));
+
+cleanup:
+  if (data_bool)
+    free(data_bool);
+  return rv;
+}
+
 SECStatus
 PrioPacketClient_decrypt(PrioPacketClient p,
                          const_PrioConfig cfg,
