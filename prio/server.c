@@ -216,6 +216,7 @@ PrioTotalShare_set_data_uint(PrioTotalShare t,
    */
 
   for (int uint = 0; uint < num_uints; uint++) {
+    mp_zero(&t->data_shares->data[uint]);
     for (int bit = 0; bit < prec; bit++) {
       MP_CHECKC(mp_mul_d(&s->data_shares->data[(uint * prec) + bit],
                          (1l << (prec - bit - 1)),
