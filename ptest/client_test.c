@@ -399,12 +399,14 @@ test_client_agg_uint(int nclients,
   long max = (1l << (prec)) - 1;
 
   PT_CHECKA(data_items = calloc(num_uint_entries, sizeof(long)));
+  PT_CHECKA(output = calloc(num_uint_entries, sizeof(unsigned long)));
+
   for (int i = 0; i < num_uint_entries; i++) {
     // Arbitrary data
     data_items[i] = max - i;
   }
 
-  for (int i = 0; i < nclients; i++) {
+  for (int c = 0; c < nclients; c++) {
     unsigned int aLen, bLen;
     PT_CHECKC(PrioClient_encode_uint(
       cfg, prec, data_items, &for_a, &aLen, &for_b, &bLen));
@@ -420,23 +422,23 @@ test_client_agg_uint(int nclients,
 
     for_a = NULL;
     for_b = NULL;
-  }
 
-  if (tweak == 0) {
-    mu_check(PrioTotalShare_set_data_uint(tA, sA, prec) == SECSuccess);
-    mu_check(PrioTotalShare_set_data_uint(tB, sB, prec) == SECSuccess);
-  }
+    if (tweak == 0) {
+      mu_check(PrioTotalShare_set_data_uint(tA, sA, prec) == SECSuccess);
+      mu_check(PrioTotalShare_set_data_uint(tB, sB, prec) == SECSuccess);
+    }
 
-  if (tweak == 1) {
-    P_CHECKC(PrioTotalShare_set_data_uint(tA, sA, prec + 1));
-    P_CHECKC(PrioTotalShare_set_data_uint(tB, sB, prec + 1));
-  }
+    if (tweak == 1) {
+      P_CHECKC(PrioTotalShare_set_data_uint(tA, sA, prec + 1));
+      P_CHECKC(PrioTotalShare_set_data_uint(tB, sB, prec + 1));
+    }
 
-  PT_CHECKA(output = calloc(num_uint_entries, sizeof(unsigned long)));
-  mu_check(PrioTotalShare_final_uint(cfg, prec, output, tA, tB) == SECSuccess);
-  for (int i = 0; i < num_uint_entries; i++) {
-    unsigned long v = max - i;
-    mu_check(output[i] == v * nclients);
+    mu_check(PrioTotalShare_final_uint(cfg, prec, output, tA, tB) ==
+             SECSuccess);
+    for (int i = 0; i < num_uint_entries; i++) {
+      unsigned long v = max - i;
+      mu_check(output[i] == v * (c + 1));
+    }
   }
 
 cleanup:
