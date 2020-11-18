@@ -1,5 +1,7 @@
 # libprio - A Prio library in C using NSS 
 
+# NOTE - this repository is being used for Firefox as part of a pilot experiment, this repository will be archived in favor of [the new Rust implementation, libprio-rs](https://github.com/abetterinternet/libprio-rs). Please direct contributions that are not related to the Firefox pilot to this new project.
+
 **Warning:**
 We do our best to write bug-free code, but I have no doubt
 that there are scary bugs, side-channel attacks, and memory leaks 
