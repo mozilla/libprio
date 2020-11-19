@@ -35,7 +35,8 @@ extern "C"
  * Maximum of supported precision for b-bit integer circuit. Since
  * every PrioTotalShare_final result entry can hold only one MP_DIGIT,
  * which is at most ULONG_MAX, ULONG_MAX/(2^BBIT_PREC_MAX-1) will be
- * the maximum number of submissions that can be aggregated.
+ * the maximum number of submissions with maximal precision that can
+ * be aggregated.
  */
 #define BBIT_PREC_MAX (int)MIN(sizeof(long) * CHAR_BIT - 12, 42)
 
